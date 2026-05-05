@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docuflow - Página no encontrada</title>
+    <!-- Importar fuente de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* === RESET BASICO === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f4f7fc;
+        }
+
+        /* === CONTENEDOR PRINCIPAL === */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-container {
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* === ICONO SUPERIOR === */
+        .icon-circle {
+            width: 72px;
+            height: 72px;
+            background-color: #ebf8ff; /* Azul claro para 404 */
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .icon-circle svg {
+            width: 32px;
+            height: 32px;
+            stroke: #3182ce; /* Azul oscuro para 404 */
+        }
+
+        /* === TEXTOS DE ERROR === */
+        .error-code {
+            font-size: 110px;
+            font-weight: 500;
+            color: #e2e8f0;
+            line-height: 1;
+            letter-spacing: 2px;
+            font-variant-numeric: slashed-zero;
+            margin-bottom: -25px; 
+            position: relative;
+            z-index: 0;
+        }
+
+        .error-title {
+            font-size: 24px;
+            color: #1a202c;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 15px;
+        }
+
+        .error-description {
+            font-size: 14.5px;
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 35px;
+            padding: 0 10px;
+        }
+
+        /* === BOTONES === */
+        .actions-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            flex: 1;
+            max-width: 200px;
+            padding: 14px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #1e3a63;
+            color: white;
+            border: 1px solid #1e3a63;
+        }
+
+        .btn-primary:hover {
+            background-color: #152b4a;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #1e3a63;
+            border: 1px solid #1e3a63;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(30, 58, 99, 0.05);
+        }
+
+        /* === FOOTER === */
+        footer {
+            background-color: white;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-text {
+            font-size: 10px;
+            color: #4a5568;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 500px) {
+            .error-code {
+                font-size: 90px;
+                margin-bottom: -20px;
+            }
+            .error-title {
+                font-size: 20px;
+            }
+            .actions-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .btn {
+                max-width: 100%;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CONTENIDO CENTRAL -->
+    <main>
+        <div class="error-container">
+            
+            <!-- Icono de Búsqueda -->
+            <div class="icon-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+
+            <!-- Textos Principales -->
+            <div class="error-code">404</div>
+            <h1 class="error-title">Página no encontrada</h1>
+            <p class="error-description">
+                Lo sentimos, la página que buscas no existe o ha sido movida.<br>
+                Verifica la URL e intenta nuevamente.
+            </p>
+
+            <!-- Botones de Acción -->
+            <div class="actions-container">
+                <a href="{% if request.user.rol == 'DOCENTE_PLANTA' %}{% url 'documentos:mis_documentos' %}{% else %}{% url 'documentos:dashboard' %}{% endif %}" class="btn btn-primary">Volver al inicio</a>
+                <a href="#" class="btn btn-secondary">Contactar soporte</a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER INFERIOR -->
+    <footer>
+        <div class="footer-text">DOCUFLOW - SISTEMA DE GESTIÓN DE CALIDAD - 2026</div>
+    </footer>
+
+</body>
+</html>

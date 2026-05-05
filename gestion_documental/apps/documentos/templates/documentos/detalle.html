@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% block title %}{{ documento.titulo }} - Docuflow{% endblock %}
+{% block page_title %}Detalles del Documento{% endblock %}
+
+{% block content %}
+<div class="max-w-[1150px] mx-auto pb-10 animate-[fadeIn_0.3s_ease-out]">
+    
+    <!-- Breadcrumbs -->
+    <div class="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-6">
+        <a href="{% url 'documentos:mis_documentos' %}" class="hover:text-brand-900 transition-colors">MIS DOCUMENTOS</a>
+        <span>&gt;</span>
+        <span class="text-brand-900">{{ documento.titulo|truncatechars:50|upper }}</span>
+    </div>
+
+    <!-- Banner Hero -->
+    <div class="bg-brand-900 rounded-2xl p-8 lg:p-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 shadow-lg shadow-brand-900/10">
+        <div class="flex items-center gap-6">
+            <!-- Icono Dinámico según extensión -->
+            <div class="w-20 h-20 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner p-3">
+                {% with filename=documento.archivo.name|lower %}
+                    {% if ".pdf" in filename %}
+                        <img src="https://img.icons8.com/papercut/96/pdf.png" alt="PDF Icon" class="w-full h-full object-contain drop-shadow-md">
+                    {% elif ".doc" in filename %}
+                        <img src="https://img.icons8.com/fluency/96/microsoft-word-2019.png" alt="Word Icon" class="w-full h-full object-contain drop-shadow-md">
+                    {% elif ".xls" in filename %}
+                        <img src="https://img.icons8.com/fluency/96/microsoft-excel-2019.png" alt="Excel Icon" class="w-full h-full object-contain drop-shadow-md">
+                    {% elif ".ppt" in filename %}
+                        <img src="https://img.icons8.com/fluency/96/microsoft-powerpoint-2019.png" alt="PowerPoint Icon" class="w-full h-full object-contain drop-shadow-md">
+                    {% else %}
+                        <img src="https://img.icons8.com/fluency/96/file.png" alt="File Icon" class="w-full h-full object-contain drop-shadow-md">
+                    {% endif %}
+                {% endwith %}
+            </div>
+            
+            <div class="flex flex-col gap-2.5">
+                <div class="flex items-center gap-3">
+                    {% if documento.estado == 'APROBADO' %}
+                        <span class="bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded">Aprobado</span>
+                    {% elif documento.estado == 'RECHAZADO' %}
+                        <span class="bg-rose-500 text-white text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded">Rechazado</span>
+                    {% else %}
+                        <span class="bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded">Pendiente</span>
+                    {% endif %}
+                    <span class="text-white/60 text-xs font-mono">v{{ versiones.count|default:"1.0" }}</span>
+                </div>
+                
+                <h1 class="text-white text-2xl lg:text-3xl font-bold tracking-tight m-0 leading-tight">{{ documento.titulo }}</h1>
+                
+                <div class="flex flex-wrap items-center gap-5 text-white/70 text-sm mt-1">
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        {{ documento.fecha_creacion|date:"d M Y" }}
+                    </div>
+                    {% if documento.archivo %}
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="hard-drive" class="w-4 h-4"></i>
+                        {{ documento.archivo.size|filesizeformat }}
+                    </div>
+                    {% endif %}
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        {{ documento.autor.get_full_name }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if puede_descargar and documento.archivo %}
+        <a href="{% url 'documentos:descargar_doc' documento.id %}" class="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2.5 transition-all shadow-sm">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Descargar Documento
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Layout Dividido -->
+    <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
+        {% if acceso_denegado %}
+        <div class="lg:col-span-2">
+            <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-3xl p-12 text-center max-w-3xl mx-auto">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100 text-brand-900">
+                    <i data-lucide="lock" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-brand-900 mb-3">Acceso Restringido</h2>
+                <p class="text-slate-500 max-w-lg mx-auto mb-8 leading-relaxed">
+                    Este documento es de carácter restringido (sensible o de otra unidad académica). 
+                    Para visualizar su contenido y descargar archivos, debe contar con la aprobación del autor o la decanatura.
+                </p>
+
+                {% if solicitud_pendiente %}
+                    <div class="inline-flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-amber-600 font-bold">
+                        <i data-lucide="clock" class="w-5 h-5"></i>
+                        Ya tienes una solicitud de acceso pendiente de revisión.
+                    </div>
+                {% else %}
+                    <div class="bg-white border border-slate-200 rounded-2xl p-8 max-w-lg mx-auto text-left shadow-sm">
+                        <form method="post" action="{% url 'permisos:solicitar_acceso' documento.id %}">
+                            {% csrf_token %}
+                            <label class="block text-xs font-bold text-brand-900 mb-2 uppercase tracking-wide">Motivo de la solicitud</label>
+                            <textarea name="motivo" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-700 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all min-h-[120px] mb-6 resize-y" placeholder="Ej: Requiero este documento para el proceso de autoevaluación del factor 3..." required></textarea>
+                            <button type="submit" class="w-full bg-brand-900 hover:bg-brand-950 text-white px-6 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                Enviar Solicitud de Acceso
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        
+        <!-- COLUMNA PRINCIPAL (IZQUIERDA) -->
+        <div class="flex flex-col gap-6">
+            <!-- Tarjeta 1: Información del Registro -->
+            <div class="bg-white rounded-2xl p-7 lg:p-8 border border-slate-100 shadow-sm">
+                <div class="flex items-center gap-3 text-lg font-bold text-brand-900 mb-8">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                    Información del Registro
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-8 gap-x-4">
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Categoría</span>
+                        <span class="text-sm font-semibold text-slate-800">{{ documento.categoria.nombre }}</span>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Programa / Factor</span>
+                        <span class="text-sm font-semibold text-slate-800">{{ documento.get_factor_cna_display|default:documento.programa.nombre }}</span>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estado Actual</span>
+                        <span class="text-sm font-semibold text-slate-800">{{ documento.get_estado_display }}</span>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fecha Carga</span>
+                        <span class="text-sm font-semibold text-slate-800">{{ documento.fecha_creacion|date:"d M Y, H:i A" }}</span>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Última Modificación</span>
+                        <span class="text-sm font-semibold text-slate-800">{{ documento.fecha_modificacion|date:"d M Y, H:i A" }}</span>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Visibilidad</span>
+                        <span class="text-sm font-semibold text-slate-800">{{ documento.get_visibilidad_display }}{% if documento.es_sensible %} · Sensible{% endif %}</span>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100 my-8">
+
+                <div class="flex flex-col gap-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Descripción Institucional</span>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        {{ documento.descripcion|default:"Sin descripción proporcionada para este documento." }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tarjeta 2: Historial de Versiones -->
+            <div class="bg-white rounded-2xl p-7 lg:p-8 border border-slate-100 shadow-sm">
+                <div class="flex items-center gap-3 text-lg font-bold text-brand-900 mb-8">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    Historial de Versiones
+                </div>
+
+                <div class="relative pl-6 before:absolute before:inset-y-2 before:left-2 before:w-0.5 before:bg-slate-100">
+                    {% for version in versiones %}
+                    <div class="relative mb-8 last:mb-0">
+                        <div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full border-2 border-white z-10 {% if forloop.first %}bg-brand-900 ring-4 ring-brand-50{% else %}bg-slate-300{% endif %}"></div>
+                        <div class="{% if forloop.first %}bg-slate-50 border border-slate-100 rounded-xl p-5{% else %}pl-5 pt-1{% endif %}">
+                            <div class="flex justify-between items-center mb-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-mono font-bold text-sm text-brand-900">v{{ version.numero_version }}</span>
+                                    {% if forloop.first %}
+                                        <span class="bg-slate-200 text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Actual</span>
+                                    {% endif %}
+                                </div>
+                                <span class="font-mono text-xs text-slate-400 uppercase">{{ version.fecha_creacion|date:"d M Y" }}</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-4 leading-relaxed">{{ version.comentario|default:"Actualización de contenidos del documento." }}</p>
+                            
+                            {% if puede_descargar and version.archivo %}
+                            <a href="{% url 'documentos:descargar_version' version.id %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-900 transition-colors">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                Descargar versión
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="relative">
+                        <div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full border-2 border-white z-10 bg-brand-900 ring-4 ring-brand-50"></div>
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-5">
+                            <div class="flex justify-between items-center mb-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-mono font-bold text-sm text-brand-900">v1.0</span>
+                                    <span class="bg-slate-200 text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Actual</span>
+                                </div>
+                                <span class="font-mono text-xs text-slate-400 uppercase">{{ documento.fecha_creacion|date:"d M Y" }}</span>
+                            </div>
+                            <p class="text-sm text-slate-600 leading-relaxed">Versión inicial cargada por el autor.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if request.user == documento.autor or request.user.rol == 'DECANA' %}
+            <div class="text-right">
+                <form method="post" action="{% url 'documentos:eliminar' documento.id %}" onsubmit="return confirm('¿Seguro que deseas eliminar este documento permanentemente? Esta acción es irreversible.');">
+                    {% csrf_token %}
+                    <button type="submit" class="inline-flex items-center gap-2 bg-transparent border-2 border-rose-100 text-rose-500 hover:bg-rose-50 hover:border-rose-200 px-5 py-2.5 rounded-xl font-bold text-xs transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Eliminar Documento Permanentemente
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- COLUMNA SIDEBAR (DERECHA) -->
+        <div class="flex flex-col gap-6">
+            <!-- Acciones de Aprobación -->
+            {% if puede_aprobar %}
+            <div class="bg-white rounded-2xl p-6 border-2 border-amber-400 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-amber-50 rounded-bl-full -mr-4 -mt-4"></div>
+                <div class="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-3 relative z-10">Acción Requerida</div>
+                <p class="text-sm text-slate-600 mb-6 relative z-10">Este documento requiere tu revisión para ser aprobado en el sistema.</p>
+                
+                <form method="post" action="{% url 'documentos:aprobar_doc' documento.id %}" class="mb-3 relative z-10">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        Aprobar Documento
+                    </button>
+                </form>
+
+                <button type="button" onclick="document.getElementById('reject-form').classList.remove('hidden'); this.classList.add('hidden');" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 px-5 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors relative z-10">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                    Rechazar
+                </button>
+                
+                <form id="reject-form" method="post" action="{% url 'documentos:rechazar_doc' documento.id %}" class="hidden mt-4 relative z-10 animate-[fadeIn_0.2s_ease-out]">
+                    {% csrf_token %}
+                    <textarea name="comentario" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-700 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all mb-3 resize-y" placeholder="Indique el motivo del rechazo..." required></textarea>
+                    <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors">
+                        Confirmar Rechazo
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Gestión Rápida -->
+            <div class="bg-white rounded-2xl p-6 lg:p-8 border border-slate-100 shadow-sm">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-5">Gestión Rápida</div>
+                <ul class="flex flex-col gap-2">
+                    {% if documento.archivo %}
+                    <li>
+                        <a href="{{ documento.archivo.url }}" target="_blank" class="flex items-center gap-3 text-slate-700 hover:text-brand-900 hover:bg-slate-50 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors group">
+                            <i data-lucide="external-link" class="w-4 h-4 text-brand-600 group-hover:scale-110 transition-transform"></i>
+                            Visualizar Archivo
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <a href="{% url 'versiones:lista' documento.id %}" class="flex items-center gap-3 text-slate-700 hover:text-brand-900 hover:bg-slate-50 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors group">
+                            <i data-lucide="layers" class="w-4 h-4 text-brand-600 group-hover:scale-110 transition-transform"></i>
+                            Historial Completo
+                        </a>
+                    </li>
+                    {% if puede_gestionar_accesos %}
+                    <li>
+                        <a href="{% url 'permisos:gestionar_accesos' documento.id %}" class="flex items-center gap-3 text-slate-700 hover:text-brand-900 hover:bg-slate-50 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors group">
+                            <i data-lucide="shield" class="w-4 h-4 text-brand-600 group-hover:scale-110 transition-transform"></i>
+                            Gestionar Accesos
+                            {% if solicitudes_pendientes_count > 0 %}
+                                <span class="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto">{{ solicitudes_pendientes_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Metadatos Clave -->
+            <div class="bg-white rounded-2xl p-6 lg:p-8 border border-slate-100 shadow-sm">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-5">Metadatos Clave</div>
+                <div class="flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-medium">Tipo:</span>
+                        <span class="text-xs font-bold text-brand-900 font-mono">
+                            {% if ".pdf" in documento.archivo.name|lower %}PDF{% elif ".doc" in documento.archivo.name|lower %}WORD{% elif ".xls" in documento.archivo.name|lower %}EXCEL{% elif ".ppt" in documento.archivo.name|lower %}POWERPOINT{% else %}DOCUMENTO{% endif %}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-medium">ID Registro:</span>
+                        <span class="text-xs font-bold text-brand-900 font-mono">#{{ documento.id|stringformat:"05d" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-medium">Versiones:</span>
+                        <span class="text-xs font-bold text-emerald-600 font-mono">{{ versiones.count|default:"1" }} registrada(s)</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-medium">Interacciones:</span>
+                        <span class="text-xs font-bold text-brand-900 font-mono">{{ total_descargas|default:"0" }} descargas</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-medium">Privacidad:</span>
+                        <span class="text-xs font-bold text-brand-900 font-mono">{{ documento.get_visibilidad_display }}{% if documento.es_sensible %} · Sensible{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Forzamos el resaltado de "Mis documentos" en el sidebar global
+        const misDocsUrl = "{% url 'documentos:mis_documentos' %}";
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            if (link.getAttribute('href') === misDocsUrl) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

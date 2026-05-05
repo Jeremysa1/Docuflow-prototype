@@ -1,0 +1,435 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Docuflow{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-[1200px] mx-auto text-slate-800 animate-[fadeIn_0.4s_ease-out]">
+
+  {# === DECANA: BANNER VENCIDOS === #}
+  {% if user.rol == 'DECANA' and hay_docs_vencidos %}
+  <div class="bg-amber-50 border border-amber-200 text-amber-900 px-6 py-5 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 shadow-sm gap-4">
+    <div class="flex items-center gap-4">
+      <div class="bg-amber-100 p-2 rounded-lg text-amber-600">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <strong class="block text-[15px] font-bold">Atención: Documentos Vencidos</strong>
+        <span class="text-sm opacity-90">Hay documentos de auditoría que requieren su revisión inmediata antes del cierre trimestral.</span>
+      </div>
+    </div>
+    <a href="{% url 'documentos:lista' %}?estado=PENDIENTE" class="shrink-0 bg-amber-900 hover:bg-amber-950 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
+      Revisar ahora
+    </a>
+  </div>
+  {% endif %}
+
+  {# === CABECERA === #}
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+    <div>
+      <h1 class="text-3xl font-bold text-brand-900 mb-2 tracking-tight">
+        Bienvenido de nuevo, {{ user.first_name|default:user.username }}.
+      </h1>
+      <p class="text-slate-500 text-[15px]">
+        {% if user.rol == 'DECANA' %}
+        Resumen ejecutivo del sistema de gestión de calidad. Monitoreo de la integridad documental.
+        {% else %}
+        Tu espacio de trabajo y estado de documentación.
+        {% endif %}
+      </p>
+    </div>
+    <a href="{% url 'documentos:subir' %}" class="shrink-0 bg-brand-900 hover:bg-brand-950 text-white px-6 py-3.5 rounded-xl font-semibold text-sm flex items-center gap-2.5 transition-all shadow-[0_4px_12px_rgba(20,42,89,0.2)] hover:shadow-[0_8px_20px_rgba(20,42,89,0.3)] hover:-translate-y-0.5">
+      <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+      Subir nuevo documento
+    </a>
+  </div>
+
+
+  {# ════════════════════ ROL: DOCENTE ════════════════════ #}
+  {% if user.rol == 'DOCENTE_PLANTA' %}
+  
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
+    <a href="{% url 'documentos:mis_documentos' %}" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-brand-900 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-brand-900 mb-4 group-hover:bg-brand-900 group-hover:text-white transition-colors">
+        <i data-lucide="folder" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Mis documentos</div>
+      <div class="text-3xl font-bold text-brand-900">{{ mis_docs_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+    
+    <a href="{% url 'documentos:mis_documentos' %}?estado=PENDIENTE" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-amber-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-amber-500 mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+        <i data-lucide="clock" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Pendientes</div>
+      <div class="text-3xl font-bold text-brand-900">{{ pendientes_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+    
+    <a href="{% url 'documentos:mis_documentos' %}?estado=APROBADO" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-emerald-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-emerald-500 mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Aprobados</div>
+      <div class="text-3xl font-bold text-brand-900">{{ aprobados_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+    
+    <a href="{% url 'documentos:mis_documentos' %}?estado=RECHAZADO" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-rose-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-rose-500 mb-4 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+        <i data-lucide="x-circle" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Rechazados</div>
+      <div class="text-3xl font-bold text-brand-900">{{ rechazados_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-16">
+    <div class="bg-white rounded-2xl p-7 shadow-sm border border-slate-100">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-lg font-bold text-brand-900">Actividad Reciente</h2>
+        <a href="{% url 'documentos:lista' %}" class="text-sm font-medium text-slate-500 hover:text-brand-900 transition-colors">Ver todo el historial &rarr;</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr>
+              <th class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-4 border-b border-slate-100">Documento</th>
+              <th class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-4 border-b border-slate-100">Categoría</th>
+              <th class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-4 border-b border-slate-100">Factor</th>
+              <th class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-4 border-b border-slate-100">Fecha</th>
+              <th class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-4 border-b border-slate-100">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">
+            {% for doc in actividad_reciente %}
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <td class="py-4 border-b border-slate-50">
+                <div class="flex items-center gap-3 font-semibold text-brand-900">
+                  <div class="w-8 h-8 flex items-center justify-center shrink-0">
+                    {% if ".pdf" in doc.archivo.name|lower %}
+                      <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF" class="w-full h-full object-contain drop-shadow-sm">
+                    {% elif ".doc" in doc.archivo.name|lower %}
+                      <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word" class="w-full h-full object-contain drop-shadow-sm">
+                    {% elif ".xls" in doc.archivo.name|lower %}
+                      <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel" class="w-full h-full object-contain drop-shadow-sm">
+                    {% elif ".ppt" in doc.archivo.name|lower %}
+                      <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT" class="w-full h-full object-contain drop-shadow-sm">
+                    {% else %}
+                      <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc" class="w-full h-full object-contain drop-shadow-sm">
+                    {% endif %}
+                  </div>
+                  {{ doc.titulo|truncatechars:35 }}
+                </div>
+              </td>
+              <td class="py-4 border-b border-slate-50 text-slate-500 font-medium">{{ doc.categoria.nombre }}</td>
+              <td class="py-4 border-b border-slate-50 text-slate-400 font-bold text-xs">{{ doc.factor_cna|default:"--" }}</td>
+              <td class="py-4 border-b border-slate-50 text-slate-500">{{ doc.fecha_creacion|date:"d/m/y" }}</td>
+              <td class="py-4 border-b border-slate-50">
+                {% if doc.estado == 'APROBADO' %}
+                  <span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Aprobado</span>
+                {% elif doc.estado == 'RECHAZADO' %}
+                  <span class="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Rechazado</span>
+                {% else %}
+                  <span class="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Pendiente</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center py-12 text-slate-400 font-medium">Sin actividad reciente</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-[15px] font-bold text-brand-900 mb-5 uppercase tracking-wide">Acciones Rápidas</h2>
+      
+      <a href="{% url 'documentos:subir' %}" class="flex items-center justify-between p-5 mb-4 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+        <div class="flex items-center gap-4 text-brand-900 font-bold text-sm">
+          <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center group-hover:bg-brand-50 transition-colors">
+            <i data-lucide="upload-cloud" class="w-5 h-5 text-brand-900"></i>
+          </div>
+          Subir documento
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-brand-900 transition-colors"></i>
+      </a>
+
+      <a href="{% url 'documentos:mis_documentos' %}" class="flex items-center justify-between p-5 mb-4 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+        <div class="flex items-center gap-4 text-brand-900 font-bold text-sm">
+          <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center group-hover:bg-brand-50 transition-colors">
+            <i data-lucide="folder" class="w-5 h-5 text-brand-900"></i>
+          </div>
+          Mis documentos
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-brand-900 transition-colors"></i>
+      </a>
+
+      <a href="{% url 'notificaciones:lista' %}" class="flex items-center justify-between p-5 mb-8 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+        <div class="flex items-center gap-4 text-brand-900 font-bold text-sm">
+          <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center group-hover:bg-brand-50 transition-colors">
+            <i data-lucide="bell" class="w-5 h-5 text-brand-900"></i>
+          </div>
+          Notificaciones
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-brand-900 transition-colors"></i>
+      </a>
+
+      <h2 class="text-[15px] font-bold text-brand-900 mb-5 uppercase tracking-wide">Notificaciones</h2>
+      <div class="relative pl-6 border-l-2 border-slate-100">
+        {% for notif in notificaciones %}
+        <div class="mb-6 relative">
+          <div class="absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-white 
+            {% if notif.tipo == 'APROBADO' %}bg-emerald-500
+            {% elif notif.tipo == 'RECHAZADO' %}bg-rose-500
+            {% elif notif.tipo == 'ACTUALIZADO' %}bg-amber-500
+            {% else %}bg-brand-500{% endif %}">
+          </div>
+          <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">{{ notif.fecha_creacion|timesince }} atrás</span>
+          <h4 class="text-sm font-semibold text-brand-900 leading-tight mb-1">{{ notif.mensaje }}</h4>
+          {% if notif.documento %}
+          <p class="text-xs text-slate-500">Doc: {{ notif.documento.titulo|truncatechars:35 }}</p>
+          {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-xs text-slate-400 py-4">No hay notificaciones nuevas.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+
+  {# ════════════════════ ROL: COORDINADOR ════════════════════ #}
+  {% elif user.rol == 'COORDINADOR' %}
+  
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
+    <a href="{% url 'documentos:mis_documentos' %}" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-brand-900 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-brand-900 mb-4 group-hover:bg-brand-900 group-hover:text-white transition-colors">
+        <i data-lucide="folder" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Mis documentos</div>
+      <div class="text-3xl font-bold text-brand-900">{{ mis_docs_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+    
+    <a href="{% url 'documentos:aprobar' %}" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-amber-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-amber-500 mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+        <i data-lucide="inbox" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Por aprobar</div>
+      <div class="text-3xl font-bold text-brand-900">{{ por_aprobar_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+    
+    <a href="{% url 'documentos:aprobar' %}?estado=APROBADO" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-emerald-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-emerald-500 mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+        <i data-lucide="check-square" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Aprobados hoy</div>
+      <div class="text-3xl font-bold text-brand-900">{{ aprobados_hoy_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+    
+    <a href="{% url 'documentos:aprobar' %}?estado=RECHAZADO" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-rose-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-rose-500 mb-4 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+        <i data-lucide="x-square" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Rechazados hoy</div>
+      <div class="text-3xl font-bold text-brand-900">{{ rechazados_hoy_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-16">
+    <div class="bg-white rounded-2xl p-7 shadow-sm border border-slate-100">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-lg font-bold text-brand-900">Documentos pendientes de aprobación</h2>
+        <a href="{% url 'documentos:aprobar' %}" class="text-sm font-medium text-brand-600 hover:text-brand-900 transition-colors">Ver flujo de aprobación &rarr;</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr>
+              <th class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-4 border-b border-slate-100">Documento</th>
+              <th class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-4 border-b border-slate-100">Remitente</th>
+              <th class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-4 border-b border-slate-100 text-center">Acciones Rápidas</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">
+            {% for doc in docs_pendientes %}
+            <tr class="hover:bg-slate-50/50 transition-colors group">
+              <td class="py-4 border-b border-slate-50">
+                <div class="flex items-center gap-3 font-semibold text-brand-900">
+                  <div class="w-8 h-8 flex items-center justify-center shrink-0">
+                    {% if ".pdf" in doc.archivo.name|lower %}
+                      <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF" class="w-full h-full object-contain drop-shadow-sm">
+                    {% elif ".doc" in doc.archivo.name|lower %}
+                      <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word" class="w-full h-full object-contain drop-shadow-sm">
+                    {% elif ".xls" in doc.archivo.name|lower %}
+                      <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel" class="w-full h-full object-contain drop-shadow-sm">
+                    {% elif ".ppt" in doc.archivo.name|lower %}
+                      <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT" class="w-full h-full object-contain drop-shadow-sm">
+                    {% else %}
+                      <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc" class="w-full h-full object-contain drop-shadow-sm">
+                    {% endif %}
+                  </div>
+                  <a href="{% url 'documentos:detalle' doc.id %}" class="hover:underline">{{ doc.titulo|truncatechars:40 }}</a>
+                </div>
+              </td>
+              <td class="py-4 border-b border-slate-50">
+                <div class="font-bold text-xs text-brand-900">{{ doc.autor.get_full_name }}</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400 mt-0.5">{{ doc.categoria.nombre }}</div>
+              </td>
+              <td class="py-4 border-b border-slate-50 text-center">
+                <div class="flex justify-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                  <form method="post" action="{% url 'documentos:aprobar_doc' doc.id %}" onsubmit="return confirm('¿Aprobar rápidamente este documento?');">
+                    {% csrf_token %}
+                    <button type="submit" title="Aprobar" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors">
+                      <i data-lucide="check" class="w-4 h-4"></i>
+                    </button>
+                  </form>
+                  <form method="post" action="{% url 'documentos:rechazar_doc' doc.id %}" onsubmit="return confirm('¿Rechazar este documento?');">
+                    {% csrf_token %}
+                    <button type="submit" title="Rechazar" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-100 transition-colors">
+                      <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center py-12 text-slate-400 font-medium">No hay documentos en cola de aprobación</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-[15px] font-bold text-brand-900 mb-5 uppercase tracking-wide">Actividad Reciente</h2>
+      <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+        <div class="relative pl-6 border-l-2 border-slate-200 mb-6">
+            {% for notif in notificaciones %}
+            <div class="mb-6 relative">
+                <div class="absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-slate-50 
+                  {% if notif.tipo == 'APROBADO' %}bg-emerald-500
+                  {% elif notif.tipo == 'RECHAZADO' %}bg-rose-500
+                  {% elif notif.tipo == 'ACTUALIZADO' %}bg-amber-500
+                  {% else %}bg-brand-500{% endif %}">
+                </div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">{{ notif.fecha_creacion|timesince }} atrás</span>
+                <h4 class="text-sm font-semibold text-brand-900 leading-tight">{{ notif.mensaje }}</h4>
+            </div>
+            {% empty %}
+            <p class="text-xs text-slate-400 py-4">Sin actividad reciente.</p>
+            {% endfor %}
+        </div>
+        <a href="{% url 'notificaciones:lista' %}" class="block w-full py-2.5 text-center bg-white border border-slate-200 rounded-lg text-sm font-bold text-brand-900 hover:bg-slate-100 transition-colors">
+          Ver historial completo
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  {# ════════════════════ ROL: DECANA ════════════════════ #}
+  {% elif user.rol == 'DECANA' %}
+  
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
+    <a href="{% url 'documentos:lista' %}" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-brand-900 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-brand-900 mb-4 group-hover:bg-brand-900 group-hover:text-white transition-colors">
+        <i data-lucide="layers" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Total documentos</div>
+      <div class="text-3xl font-bold text-brand-900">{{ total_docs_count|default:"0" }}</div>
+    </a>
+    
+    <a href="{% url 'documentos:aprobar' %}" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-amber-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-amber-500 mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+        <i data-lucide="inbox" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Por aprobar</div>
+      <div class="text-3xl font-bold text-brand-900">{{ por_aprobar_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+    
+    <a href="{% url 'usuarios:gestion_usuarios' %}" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-emerald-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-emerald-500 mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+        <i data-lucide="users" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Usuarios activos</div>
+      <div class="text-3xl font-bold text-brand-900">{{ usuarios_activos_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+    
+    <a href="{% url 'documentos:lista' %}?vigente=1" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-b-4 border-b-brand-500 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md group">
+      <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-brand-500 mb-4 group-hover:bg-brand-500 group-hover:text-white transition-colors">
+        <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+      </div>
+      <div class="text-sm font-semibold text-slate-500 mb-1">Crecimiento (Mes)</div>
+      <div class="text-3xl font-bold text-brand-900">{{ docs_este_mes_count|default:"0"|stringformat:"02d" }}</div>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-16">
+    <div class="bg-white rounded-2xl p-7 shadow-sm border border-slate-100">
+      <h2 class="text-lg font-bold text-brand-900 mb-6">Categorías de Documentación</h2>
+      
+      <div class="space-y-6">
+        {% for cat in categorias_conteo %}
+        <a href="{% url 'documentos:lista' %}?categoria={{ cat.id }}" class="block group">
+            <div class="flex justify-between text-sm font-bold text-brand-900 mb-2 group-hover:text-brand-600 transition-colors">
+                <span>{{ cat.nombre }}</span>
+                <span class="text-slate-500">{{ cat.cantidad }} docs</span>
+            </div>
+            <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden group-hover:bg-slate-200 transition-colors">
+                {% with total_safe=total_docs_count|default:1 %}
+                <div class="h-full bg-brand-900 rounded-full transition-all duration-700 ease-out bar-fill group-hover:bg-brand-600" 
+                     style="width: 0%;" 
+                     data-width="{% widthratio cat.cantidad total_safe 100 %}%">
+                </div>
+                {% endwith %}
+            </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-[15px] font-bold text-brand-900 mb-5 uppercase tracking-wide">Trazabilidad Reciente</h2>
+      <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+        <div class="relative pl-6 border-l-2 border-slate-200 mb-6">
+            {% for reg in trazabilidad_reciente %}
+            <div class="mb-6 relative">
+                <div class="absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-slate-50 
+                  {% if reg.accion == 'APROBO' %}bg-emerald-500
+                  {% elif reg.accion == 'RECHAZO' %}bg-rose-500
+                  {% elif reg.accion == 'SUBIO' %}bg-brand-500
+                  {% else %}bg-amber-500{% endif %}">
+                </div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">{{ reg.fecha_hora|timesince }} atrás</span>
+                <h4 class="text-sm font-semibold text-brand-900 leading-tight">{{ reg.usuario.get_full_name|default:"Sistema" }} — {{ reg.get_accion_display }}</h4>
+                {% if reg.documento %}
+                <p class="text-xs text-slate-500 mt-1 truncate">Doc: {{ reg.documento.titulo }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-xs text-slate-400 py-4">Sin actividad registrada.</p>
+            {% endfor %}
+        </div>
+        <a href="{% url 'auditoria:lista' %}" class="block w-full py-2.5 text-center bg-white border border-slate-200 rounded-lg text-sm font-bold text-brand-900 hover:bg-slate-100 transition-colors">
+          Ver auditoría completa
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animación suave de las barras de progreso
+        setTimeout(() => {
+            document.querySelectorAll('.bar-fill').forEach(el => {
+                const width = el.getAttribute('data-width');
+                if (width) {
+                    el.style.width = width;
+                }
+            });
+        }, 150);
+    });
+</script>
+{% endblock %}

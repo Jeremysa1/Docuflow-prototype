@@ -1,0 +1,20 @@
+{% if page_obj.has_other_pages %}
+  <div class="paginacion" style="display:flex; justify-content:space-between; align-items:center; padding: 1rem 0; font-size: 0.9rem; color: var(--gris-texto);">
+    <div>
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" style="text-decoration: none; color: var(--azul-marino); font-weight: 500;">← Anterior</a>
+    {% endif %}
+    </div>
+
+    <div style="text-align:center;">
+      <span>Página <strong>{{ page_obj.number }}</strong> de {{ page_obj.paginator.num_pages }}</span><br>
+      <span style="font-size: 0.8rem;">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }} resultados</span>
+    </div>
+
+    <div>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" style="text-decoration: none; color: var(--azul-marino); font-weight: 500;">Siguiente →</a>
+    {% endif %}
+    </div>
+  </div>
+{% endif %}

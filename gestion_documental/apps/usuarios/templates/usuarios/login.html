@@ -1,0 +1,435 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docuflow - Iniciar Sesión</title>
+    <!-- Importar fuente de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* === RESET BASICO === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8fafc; /* Color más claro y limpio */
+            font-size: 15px; /* Escala unificada */
+        }
+
+        /* === CONTENEDOR PRINCIPAL === */
+        .container {
+            display: flex;
+            width: 100%;
+        }
+
+        /* === PANEL IZQUIERDO (INFO) === */
+        .left-panel {
+            background-color: #142a59; /* Brand-900 exacto */
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 12%; 
+            color: white;
+            box-shadow: 10px 0 50px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centrar el logo */
+            margin-bottom: 30px;
+        }
+
+        .logo-img {
+            width: 380px; 
+            height: auto;
+            max-width: 100%;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+
+        .left-panel h1 {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-bottom: 20px;
+            max-width: 95%;
+            letter-spacing: -0.02em;
+        }
+
+        .left-panel p {
+            color: #a4b4cb;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 40px;
+            max-width: 95%;
+        }
+
+        .features-list {
+            list-style: none;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+
+        .icon-circle {
+            width: 32px;
+            height: 32px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .icon-check {
+            width: 16px;
+            height: 16px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-check svg {
+            width: 10px;
+            height: 10px;
+            stroke: #1e3a63;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        /* === PANEL DERECHO (LOGIN) === */
+        .right-panel {
+            width: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f4f6fb;
+        }
+
+        .login-card {
+            background-color: white;
+            width: 100%;
+            max-width: 540px;
+            padding: 64px; /* Más aire interno */
+            border-radius: 20px; /* Bordes más modernos */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        }
+
+        .welcome-text {
+            font-size: 12px;
+            color: #8c98a9;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .login-card h2 {
+            font-size: 24px;
+            color: #1a202c;
+            margin-top: 5px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        /* Formulario y Botones */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: #8c98a9;
+        }
+
+        .input-icon-right {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: #8c98a9;
+            cursor: pointer;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            background-color: #eff3fa;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1a202c;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .form-control::placeholder {
+            color: #a0aec0;
+        }
+
+        .form-control:focus {
+            border-color: #1e3a63;
+        }
+
+        .actions-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: #4a5568;
+        }
+
+        .checkbox-container input {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            accent-color: #1e3a63;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: #2b4c7e;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background-color: #142a59;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(20,42,89,0.2);
+        }
+
+        .btn-submit:hover {
+            background-color: #031838;
+        }
+
+        .support-text {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .support-text a {
+            color: #2b4c7e;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        /* Mensajes de error y exito */
+        .auth-error {
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .alert-success {
+            background-color: #dcfce7;
+            color: #16a34a;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* === RESPONSIVE (Para móviles) === */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .left-panel, .right-panel {
+                width: 100%;
+            }
+            .left-panel {
+                padding: 60px 5%;
+            }
+            .right-panel {
+                padding: 40px 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- MITAD IZQUIERDA -->
+        <div class="left-panel">
+            <div class="logo-container">
+                <!-- Tu logo original -->
+                <img src="{% static 'img/logodocusvg.svg' %}" alt="Logo Docuflow" class="logo-img">
+            </div>
+
+            <h1>Gestiona el proceso de acreditación con precisión y eficiencia.</h1>
+            
+            <p>Centraliza, organiza y controla toda la documentación institucional en un solo lugar.</p>
+
+            <ul class="features-list">
+                <li>
+                    <div class="icon-circle">
+                        <div class="icon-check">
+                            <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+                        </div>
+                    </div>
+                    Gestión documental centralizada
+                </li>
+                <li>
+                    <div class="icon-circle">
+                        <div class="icon-check">
+                            <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+                        </div>
+                    </div>
+                    Control de versiones por documento
+                </li>
+                <li>
+                    <div class="icon-circle">
+                        <div class="icon-check">
+                            <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+                        </div>
+                    </div>
+                    Flujos de aprobación por roles
+                </li>
+            </ul>
+        </div>
+
+        <!-- MITAD DERECHA -->
+        <div class="right-panel">
+            <div class="login-card">
+                <div class="welcome-text">BIENVENIDO</div>
+                <h2>Inicia sesión en Docuflow</h2>
+
+                <!-- Mensajes de Django -->
+                {% if error_tipo == '401' %}
+                <div class="auth-error">{{ error_mensaje }}</div>
+                {% endif %}
+
+                {% if messages %}
+                {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}auth-error{% else %}alert-success{% endif %}">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+
+                <form action="{% url 'auth:login' %}" method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- Input de Usuario -->
+                    <div class="input-group">
+                        <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <input type="email" name="email" class="form-control" placeholder="usuario@campusucc.edu.co" value="{{ form.email.value|default:'' }}" required autofocus>
+                    </div>
+
+                    <!-- Input de Contraseña -->
+                    <div class="input-group">
+                        <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        <input type="password" name="password" id="login-password" class="form-control" placeholder="Contraseña" required>
+                        <svg class="input-icon-right toggle-password" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </div>
+
+                    <!-- Recordarme y Olvidó contraseña -->
+                    <div class="actions-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="remember">
+                            Recordarme
+                        </label>
+                        <a href="{% url 'auth:recuperar_contrasena' %}" class="forgot-link">¿Olvidaste tu contraseña?</a>
+                    </div>
+
+                    <!-- Botón -->
+                    <button type="submit" class="btn-submit">Iniciar sesión</button>
+
+                </form>
+
+                <!-- Pie de tarjeta -->
+                <div class="support-text">
+                    ¿No tienes cuenta? <a href="{% url 'auth:registro' %}">Regístrate aquí</a><br><br>
+                    ¿Necesitas ayuda? <a href="#">Contacta soporte TI</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script para revelar contraseña -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePassword = document.querySelector('.toggle-password');
+            const passwordInput = document.getElementById('login-password');
+            
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    if (type === 'text') {
+                        this.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
+                    } else {
+                        this.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Docuflow{% endblock %}</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f5fa',
+              100: '#e1ebf6',
+              200: '#c8dbed',
+              300: '#a2c3e1',
+              400: '#75a4d1',
+              500: '#5386c1',
+              600: '#406ba7',
+              700: '#345587',
+              800: '#2d4872',
+              900: '#142a59', /* Navy Blue Original */
+              950: '#1a2741',
+            },
+            accent: {
+              DEFAULT: '#3b82f6',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Densidad Visual Ultra-Refinada (Efecto 90% Zoom) */
+    body {
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+    table td, table th {
+      padding-top: 1.5rem !important;
+      padding-bottom: 1.5rem !important;
+    }
+    
+    /* Ajuste de iconos para escala reducida */
+    [data-lucide] {
+      stroke-width: 2.2px;
+    }
+    
+    /* =============================================
+       REDISEÑO DE SCROLLBARS (GLOBAL)
+       ============================================= */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+    }
+    ::-webkit-scrollbar {
+      width: 8px !important;
+      height: 8px !important;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.3) !important;
+      border-radius: 10px !important;
+      border: 2px solid transparent !important; 
+      background-clip: padding-box !important;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(100, 116, 139, 0.6) !important;
+    }
+    /* Contraste Sidebar */
+    aside ::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    aside ::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.3) !important;
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans h-screen overflow-hidden flex selection:bg-brand-200 selection:text-brand-900">
+  <div class="flex w-full h-full overflow-hidden">
+    
+    {# === SIDEBAR === #}
+    <aside class="w-[260px] bg-brand-900 flex flex-col shrink-0 border-r border-white/5 relative z-50">
+      
+      <!-- Logo -->
+      <div class="flex flex-col items-center justify-center pt-12 pb-10 px-5 mb-2">
+        <img src="{% static 'img/logodocusvg.svg' %}" alt="Docuflow Logo" class="w-[120px] h-auto drop-shadow-[0_0_10px_rgba(0,230,118,0.2)]">
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="flex-1 px-3 overflow-y-auto">
+        <a href="{% url 'documentos:dashboard' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.url_name == 'dashboard' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="layout-grid" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Dashboard
+        </a>
+        <a href="{% url 'documentos:mis_documentos' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.url_name == 'mis_documentos' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="folder" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Mis documentos
+        </a>
+        <a href="{% url 'documentos:subir' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.url_name == 'subir' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="upload-cloud" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Subir documento
+        </a>
+        <a href="{% url 'documentos:lista' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.namespace == 'documentos' and request.resolver_match.url_name == 'lista' or request.resolver_match.namespace == 'documentos' and request.resolver_match.url_name == 'busqueda' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="search" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Búsqueda avanzada
+        </a>
+        
+        {% if user.rol == 'DECANA' %}
+        <a href="{% url 'documentos:factores_cna' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.url_name == 'factores_cna' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="bar-chart-2" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Factores CNA
+        </a>
+        {% endif %}
+
+        {% if user.rol == 'COORDINADOR' or user.rol == 'DECANA' %}
+        <a href="{% url 'documentos:aprobar' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.url_name == 'aprobar' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="check-square" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Aprobar documentos
+        </a>
+        <a href="{% url 'auditoria:lista' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.namespace == 'auditoria' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="shield" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Auditoría
+        </a>
+        {% endif %}
+
+        {% if user.rol == 'DECANA' %}
+        <a href="{% url 'usuarios:gestion_usuarios' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.url_name == 'gestion_usuarios' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="users" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Gestión de Usuarios
+        </a>
+        {% endif %}
+
+        <hr class="border-white/10 my-5 mx-2">
+        
+        <a href="{% url 'notificaciones:lista' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors relative {% if request.resolver_match.namespace == 'notificaciones' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <div class="relative shrink-0 mr-3.5">
+            <i data-lucide="bell" class="w-[18px] h-[18px]"></i>
+            {% if notificaciones_no_leidas_count > 0 %}
+              <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white border-2 border-brand-900">{{ notificaciones_no_leidas_count }}</span>
+            {% endif %}
+          </div>
+          Notificaciones
+        </a>
+        <a href="{% url 'usuarios:perfil' %}" class="flex items-center px-5 py-3.5 mb-1 rounded-lg text-slate-400 font-medium text-[13px] hover:bg-white/10 hover:text-white transition-colors {% if request.resolver_match.url_name == 'perfil' %}bg-white/10 text-white font-semibold relative before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-1 before:bg-emerald-400 before:rounded-r-md{% endif %}">
+          <i data-lucide="settings" class="w-[18px] h-[18px] mr-3.5 shrink-0"></i>
+          Configuración
+        </a>
+      </nav>
+
+      <div class="p-6 mt-auto border-t border-white/5">
+        <form method="post" action="{% url 'auth:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="flex items-center gap-3 text-rose-400 hover:text-rose-300 font-bold text-[13px] w-full transition-all hover:translate-x-1 group">
+            <i data-lucide="log-out" class="w-[18px] h-[18px] group-hover:scale-110 transition-transform"></i>
+            Cerrar sesión
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col overflow-hidden bg-slate-50">
+      
+      {# === NAVBAR === #}
+      <nav class="h-[75px] bg-white flex items-center justify-between px-10 border-b border-slate-200 shrink-0 relative z-40">
+        <span class="text-lg font-bold text-brand-900 tracking-tight">{% block page_title %}Dashboard{% endblock %}</span>
+        
+        {% block navbar_search %}
+        <div class="relative flex-1 max-w-[800px] mx-8">
+          <form id="navbarSearchForm" method="get" action="{% url 'documentos:lista' %}">
+            <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-slate-400 pointer-events-none z-10"></i>
+            <input type="text" id="navbarSearchInput" name="q" placeholder="Buscar documentos, reportes o carpetas..." autocomplete="off" class="w-full bg-slate-50 border border-transparent rounded-full py-3.5 pl-12 pr-6 text-[15px] font-medium text-brand-900 focus:outline-none focus:bg-white focus:border-slate-300 focus:shadow-sm transition-all placeholder:text-slate-400">
+          </form>
+          <div id="searchResults" class="absolute top-full mt-2 left-0 w-full bg-white rounded-2xl shadow-lg border border-slate-200 z-50 hidden overflow-hidden animate-[fadeIn_0.2s_ease-out]"></div>
+        </div>
+        {% endblock %}
+        
+        <div class="flex items-center gap-5">
+          <a href="{% url 'notificaciones:lista' %}" class="relative text-slate-400 hover:text-brand-900 hover:bg-slate-50 p-2 rounded-full transition-colors">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+            {% if notificaciones_no_leidas_count > 0 %}
+              <span class="absolute top-1.5 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+            {% endif %}
+          </a>
+          <a href="{% url 'usuarios:perfil' %}" class="block group">
+            <div class="w-9 h-9 rounded-full bg-brand-900 text-white flex items-center justify-center text-[13px] font-bold border-2 border-transparent group-hover:border-brand-200 transition-all shadow-sm overflow-hidden" title="{{ user.get_full_name }}">
+              {% if user.foto_perfil %}
+                <img src="{{ user.foto_perfil.url }}" alt="Avatar" class="w-full h-full object-cover">
+              {% else %}
+                {{ user.get_iniciales|default:"U" }}
+              {% endif %}
+            </div>
+          </a>
+        </div>
+      </nav>
+
+      {# === CONTENT === #}
+      <main class="flex-1 overflow-y-auto p-8 sm:p-12 lg:p-16 relative bg-slate-50/50 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+        {% if messages %}
+        <div class="max-w-[1200px] mx-auto mb-10 space-y-4">
+          {% for message in messages %}
+          <div class="flex items-center justify-between p-4 rounded-xl text-sm font-medium animate-[fadeIn_0.3s_ease-out]
+              {% if message.tags == 'error' %}bg-rose-50 text-rose-700 border border-rose-200
+              {% elif message.tags == 'success' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+              {% elif message.tags == 'warning' %}bg-amber-50 text-amber-700 border border-amber-200
+              {% else %}bg-sky-50 text-sky-700 border border-sky-200{% endif %}">
+            <div class="flex items-center gap-3">
+              {% if message.tags == 'error' %}<i data-lucide="alert-circle" class="w-5 h-5"></i>
+              {% elif message.tags == 'success' %}<i data-lucide="check-circle-2" class="w-5 h-5"></i>
+              {% elif message.tags == 'warning' %}<i data-lucide="alert-triangle" class="w-5 h-5"></i>
+              {% else %}<i data-lucide="info" class="w-5 h-5"></i>{% endif %}
+              {{ message }}
+            </div>
+            <button class="opacity-70 hover:opacity-100 transition-opacity focus:outline-none" onclick="this.parentElement.remove();"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+      </main>
+
+    </div>
+  </div>
+  
+  <script src="{% static 'js/main.js' %}"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,145 @@
+[
+  {
+    "model": "usuarios.programaacademico",
+    "pk": 1,
+    "fields": {"nombre": "Ingeniería Civil", "codigo": "civil"}
+  },
+  {
+    "model": "usuarios.programaacademico",
+    "pk": 2,
+    "fields": {"nombre": "Ingeniería de Software", "codigo": "software"}
+  },
+  {
+    "model": "usuarios.programaacademico",
+    "pk": 3,
+    "fields": {"nombre": "Ingeniería Mecánica", "codigo": "mecanica"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 1,
+    "fields": {"nombre": "Autoevaluación"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 2,
+    "fields": {"nombre": "Laboratorios"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 3,
+    "fields": {"nombre": "Estadísticas"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 4,
+    "fields": {"nombre": "Egresados/Estudiantes"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 5,
+    "fields": {"nombre": "Prácticas"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 6,
+    "fields": {"nombre": "Homologaciones"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 7,
+    "fields": {"nombre": "Formulación de programas"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 8,
+    "fields": {"nombre": "Actas Institucionales"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 9,
+    "fields": {"nombre": "Planificación"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 10,
+    "fields": {"nombre": "Informes"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 11,
+    "fields": {"nombre": "Evaluación"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 12,
+    "fields": {"nombre": "Guía Pedagógica"}
+  },
+  {
+    "model": "documentos.categoria", "pk": 13,
+    "fields": {"nombre": "Administrativo"}
+  },
+  {
+    "model": "usuarios.usuario",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$5qG1L6zo8Qnd4Of3L4VZOa$mbmjxvCMuCP/a88gtXwnSnYgIcWTdI8BLWFbbY4vpTg=",
+      "is_superuser": true,
+      "username": "decana",
+      "first_name": "María",
+      "last_name": "García",
+      "email": "decana@campusucc.edu.co",
+      "is_staff": true,
+      "is_active": true,
+      "rol": "DECANA",
+      "programa_academico": null,
+      "esta_habilitado": true,
+      "intentos_fallidos": 0,
+      "token_intentos": 0
+    }
+  },
+  {
+    "model": "usuarios.usuario",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$5qG1L6zo8Qnd4Of3L4VZOa$mbmjxvCMuCP/a88gtXwnSnYgIcWTdI8BLWFbbY4vpTg=",
+      "is_superuser": false,
+      "username": "coordinador",
+      "first_name": "Carlos",
+      "last_name": "Rodríguez",
+      "email": "coordinador@campusucc.edu.co",
+      "is_staff": false,
+      "is_active": true,
+      "rol": "COORDINADOR",
+      "programa_academico": 2,
+      "esta_habilitado": true,
+      "intentos_fallidos": 0,
+      "token_intentos": 0
+    }
+  },
+  {
+    "model": "usuarios.usuario",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$5qG1L6zo8Qnd4Of3L4VZOa$mbmjxvCMuCP/a88gtXwnSnYgIcWTdI8BLWFbbY4vpTg=",
+      "is_superuser": false,
+      "username": "docente",
+      "first_name": "Ana",
+      "last_name": "Martínez",
+      "email": "docente@campusucc.edu.co",
+      "is_staff": false,
+      "is_active": true,
+      "rol": "DOCENTE_PLANTA",
+      "programa_academico": 2,
+      "esta_habilitado": true,
+      "intentos_fallidos": 0,
+      "token_intentos": 0
+    }
+  },
+  {
+    "model": "usuarios.usuario",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$5qG1L6zo8Qnd4Of3L4VZOa$mbmjxvCMuCP/a88gtXwnSnYgIcWTdI8BLWFbbY4vpTg=",
+      "is_superuser": false,
+      "username": "docente_inactivo",
+      "first_name": "Pedro",
+      "last_name": "López",
+      "email": "docente_inactivo@campusucc.edu.co",
+      "is_staff": false,
+      "is_active": true,
+      "rol": "DOCENTE_PLANTA",
+      "programa_academico": null,
+      "esta_habilitado": false,
+      "intentos_fallidos": 0,
+      "token_intentos": 0
+    }
+  }
+]

@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - Docuflow</title>
+    <!-- Importar fuente de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Reseteo básico y tipografía */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Fondo de la pantalla */
+        body {
+            background-color: #f2f5fc; /* Color azul claro del fondo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Contenedor principal (La Tarjeta) */
+        .login-card {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            padding: 50px 40px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            border-top: 3px solid #142a59; /* Línea superior azul oscuro */
+            text-align: center;
+        }
+
+        /* Ícono superior circular */
+        .icon-container {
+            background-color: #eef2fb;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px auto;
+        }
+
+        .icon-container svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Textos de cabecera */
+        h1 {
+            color: #0b1e42;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 40px;
+            padding: 0 10px;
+        }
+
+        /* Formulario y Label */
+        .form-group {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        /* Contenedor del Input con ícono y línea inferior */
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #d1d5db;
+            padding-bottom: 8px;
+            transition: border-color 0.3s;
+        }
+
+        .input-wrapper:focus-within {
+            border-bottom-color: #142a59; /* Cambia de color al enfocar */
+        }
+
+        .input-wrapper svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #a0aec0;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            margin-right: 12px;
+        }
+
+        input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+            color: #374151;
+            background: transparent;
+        }
+
+        input::placeholder {
+            color: #a0aec0;
+        }
+
+        /* Botón de enviar */
+        .btn-submit {
+            background-color: #142a59;
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #0a1733;
+        }
+
+        .btn-submit svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: #ffffff;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Enlace de volver */
+        .back-link {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 35px;
+            color: #142a59;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .back-link svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: #142a59;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            text-align: center;
+        }
+        .alert-error { background-color: #fee2e2; color: #dc2626; }
+        .alert-success { background-color: #dcfce7; color: #16a34a; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <!-- Ícono superior -->
+        <div class="icon-container">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#142a59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <!-- Flecha de rotación -->
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                <path d="M16 8h5V3" />
+                
+                <!-- Candado interno -->
+                <rect x="8" y="11" width="8" height="6" rx="1.5" fill="#142a59" stroke="none" />
+                <path d="M10 11V9a2 2 0 1 1 4 0v2" />
+            </svg>
+        </div>
+
+        <!-- Textos -->
+        <h1>¿Olvidó su Contraseña?</h1>
+        <p class="subtitle">Puedes recuperar tu contraseña de Docuflow aquí</p>
+
+        <!-- Mensajes de Django -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Formulario -->
+        <form action="{% url 'auth:recuperar_contrasena' %}" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>CORREO INSTITUCIONAL</label>
+                <div class="input-wrapper">
+                    <!-- Ícono de sobre (email) -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <input type="email" name="email" placeholder="usuario@institucion.edu" required autofocus>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Recuperar Contraseña
+                <!-- Ícono de flecha derecha -->
+                <svg viewBox="0 0 24 24">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </button>
+        </form>
+
+        <!-- Enlace Volver -->
+        <a href="{% url 'auth:login' %}" class="back-link">
+            <!-- Ícono de flecha izquierda -->
+            <svg viewBox="0 0 24 24">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Volver al inicio de sesión
+        </a>
+    </div>
+
+</body>
+</html>

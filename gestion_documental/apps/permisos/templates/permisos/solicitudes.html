@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Solicitudes de Acceso - Docuflow{% endblock %}
+{% block page_title %}Solicitudes de Acceso{% endblock %}
+
+{% block content %}
+<div class="max-w-[1400px] mx-auto animate-[fadeIn_0.3s_ease-out]">
+  
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-brand-900 mb-1 tracking-tight">Solicitudes Pendientes</h1>
+    <p class="text-sm text-slate-500">Revisa y responde a las peticiones de acceso a documentos privados.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    {% for sol in page_obj %}
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden transition-all hover:shadow-md hover:-translate-y-1 relative group">
+        
+        <!-- Badge de Documento Sensible -->
+        {% if sol.documento.es_sensible %}
+        <div class="absolute top-4 right-4 bg-rose-100 text-rose-600 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide flex items-center gap-1.5 z-10">
+          <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+          Sensible
+        </div>
+        {% else %}
+        <div class="absolute top-4 right-4 bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide flex items-center gap-1.5 z-10">
+          <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+          Estándar
+        </div>
+        {% endif %}
+
+        <div class="p-6 bg-gradient-to-b from-slate-50 to-white border-b border-slate-100 flex gap-4 items-center">
+          <div class="w-12 h-12 rounded-xl bg-brand-900 text-white flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">
+            {{ sol.solicitante.first_name|first|upper }}{{ sol.solicitante.last_name|first|upper }}
+          </div>
+          <div>
+            <h3 class="m-0 text-sm font-bold text-slate-800 leading-tight">{{ sol.solicitante.get_full_name }}</h3>
+            <p class="m-0 mt-0.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{{ sol.solicitante.programa_academico.nombre|default:"Usuario Institucional" }}</p>
+          </div>
+        </div>
+
+        <div class="p-6 flex-1 flex flex-col gap-4">
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+              <i data-lucide="file" class="w-3.5 h-3.5"></i>
+              Documento Solicitado
+            </div>
+            <a href="{% url 'documentos:detalle' sol.documento.id %}" class="text-sm font-semibold text-brand-900 hover:text-brand-600 transition-colors flex items-start gap-1.5 group-hover:underline">
+              {{ sol.documento.titulo|truncatechars:45 }}
+              <i data-lucide="external-link" class="w-3.5 h-3.5 mt-0.5 opacity-50 shrink-0"></i>
+            </a>
+          </div>
+
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Motivo de la Solicitud</div>
+            <div class="text-sm text-slate-700 italic bg-slate-50 p-3 rounded-lg border border-slate-100">"{{ sol.motivo }}"</div>
+          </div>
+
+          <div class="mt-auto">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fecha de Solicitud</div>
+            <div class="text-xs font-mono text-slate-500">
+              {{ sol.fecha_solicitud|date:"d M, Y" }} a las {{ sol.fecha_solicitud|date:"H:i" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+          <!-- Botón Aprobar -->
+          <form action="{% url 'permisos:responder_solicitud' sol.id %}" method="post" class="flex-1">
+            {% csrf_token %}
+            <input type="hidden" name="decision" value="APROBADA">
+            <button type="submit" onclick="return confirm('¿Aprobar el acceso de {{ sol.solicitante.get_full_name }} a este documento?');" 
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-10 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              Aprobar
+            </button>
+          </form>
+
+          <!-- Botón Rechazar -->
+          <form action="{% url 'permisos:responder_solicitud' sol.id %}" method="post" class="flex-1">
+            {% csrf_token %}
+            <input type="hidden" name="decision" value="RECHAZADA">
+            <button type="submit" onclick="return confirm('¿Rechazar esta solicitud de acceso?');" 
+                    class="w-full bg-white hover:bg-rose-50 border border-rose-200 text-rose-500 hover:text-rose-600 h-10 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+              <i data-lucide="x" class="w-4 h-4"></i>
+              Rechazar
+            </button>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm">
+        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+          <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-500"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800 mb-2">No hay solicitudes pendientes</h3>
+        <p class="text-sm text-slate-500">Todo está al día. Las nuevas peticiones de acceso aparecerán aquí.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-center">
+      {% include 'partials/paginacion.html' %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

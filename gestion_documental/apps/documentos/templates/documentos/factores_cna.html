@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Factores CNA - Docuflow{% endblock %}
+{% block page_title %}Factores CNA{% endblock %}
+
+{% block content %}
+<style>
+    /* Temas de color para cada factor CNA */
+    .theme-1 { background-color: #EEF2FF; border-left-color: #4338CA; border-color: #E0E7FF; --fc-main: #4338CA; }
+    .theme-2 { background-color: #F0FDF4; border-left-color: #16A34A; border-color: #DCFCE7; --fc-main: #16A34A; }
+    .theme-3 { background-color: #FAF5FF; border-left-color: #9333EA; border-color: #F3E8FF; --fc-main: #9333EA; }
+    .theme-4 { background-color: #FFF7ED; border-left-color: #EA580C; border-color: #FFEDD5; --fc-main: #EA580C; }
+    .theme-5 { background-color: #ECFEFF; border-left-color: #0891B2; border-color: #CFFAFE; --fc-main: #0891B2; }
+    .theme-6 { background-color: #FEF2F2; border-left-color: #DC2626; border-color: #FEE2E2; --fc-main: #DC2626; }
+    .theme-7 { background-color: #FDF2F8; border-left-color: #DB2777; border-color: #FCE7F3; --fc-main: #DB2777; }
+    .theme-8 { background-color: #F8FAFC; border-left-color: #475569; border-color: #F1F5F9; --fc-main: #475569; }
+    .theme-9 { background-color: #FFFBEB; border-left-color: #D97706; border-color: #FEF3C7; --fc-main: #D97706; }
+    .theme-10 { background-color: #F0FDFA; border-left-color: #0D9488; border-color: #CCFBF1; --fc-main: #0D9488; }
+    .theme-11 { background-color: #F5F3FF; border-left-color: #7C3AED; border-color: #EDE9FE; --fc-main: #7C3AED; }
+    .theme-12 { background-color: #FFF1F2; border-left-color: #E11D48; border-color: #FFE4E6; --fc-main: #E11D48; }
+</style>
+
+<div class="max-w-[1400px] mx-auto animate-[fadeIn_0.3s_ease-out] pb-10">
+    
+    <!-- Cabecera -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-brand-900 mb-1 tracking-tight">Factores de Acreditación CNA</h1>
+        <p class="text-sm text-slate-500">Estado documental por factor (Acuerdo 02 de 2020) — Facultad de Ingeniería UCC</p>
+    </div>
+
+    <!-- Widget de Progreso General -->
+    <div class="bg-white rounded-2xl p-8 lg:p-10 shadow-sm border border-slate-200 mb-10">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-6">
+            
+            <div class="flex flex-col">
+                <span class="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-1">Progreso General Documental</span>
+                <div class="flex items-baseline gap-2">
+                    <h2 class="text-5xl lg:text-6xl font-bold text-brand-900 tracking-tighter m-0 leading-none">{{ progreso_general }}%</h2>
+                    <span class="text-lg font-medium text-slate-500">completado</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-6 sm:gap-10">
+                <div class="flex flex-col items-center gap-1.5">
+                    <span class="text-3xl font-bold text-brand-900 leading-none">{{ factores|length }}</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Factores</span>
+                </div>
+                <div class="flex flex-col items-center gap-1.5">
+                    <span class="text-3xl font-bold text-cyan-700 leading-none">{{ total_requeridos }}</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Requeridos</span>
+                </div>
+                <div class="flex flex-col items-center gap-1.5">
+                    <span class="text-3xl font-bold text-emerald-600 leading-none">{{ total_aprobados }}</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Aprobados</span>
+                </div>
+                <div class="flex flex-col items-center gap-1.5">
+                    <span class="text-3xl font-bold text-rose-600 leading-none">{{ total_faltantes }}</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Faltantes</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-full bg-emerald-600 rounded-full transition-all duration-1000 ease-out bar-fill" style="width: 0%;" data-width="{{ progreso_general }}%"></div>
+        </div>
+    </div>
+
+    <!-- Grid de Factores -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        
+        {% for factor in factores %}
+        <div class="rounded-2xl p-6 flex flex-col border-l-[6px] border-y border-r shadow-sm transition-all hover:-translate-y-1 hover:shadow-md theme-{{ factor.numero }}">
+            <div class="flex justify-between items-start mb-5">
+                <div class="flex flex-col gap-1.5 pr-4 flex-1">
+                    <span class="text-xs font-bold bg-white px-2 py-1 rounded-md w-max shadow-sm" style="color: var(--fc-main);">Factor {{ factor.numero }}</span>
+                    <h3 class="text-[15px] font-bold text-brand-900 m-0 leading-snug">{{ factor.nombre }}</h3>
+                </div>
+                <span class="text-2xl font-bold bg-white px-2.5 py-1 rounded-lg shadow-sm leading-none shrink-0" style="color: var(--fc-main);">{{ factor.porcentaje }}%</span>
+            </div>
+            
+            <div class="w-full h-2 bg-white/60 rounded-full mb-6 overflow-hidden border border-black/5">
+                <div class="h-full rounded-full transition-all duration-1000 ease-out bar-fill" style="background-color: var(--fc-main); width: 0%;" data-width="{{ factor.porcentaje }}%"></div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 text-[11px] font-bold uppercase tracking-widest mt-auto">
+                <div class="flex flex-col items-center gap-1 py-2 px-1 bg-white rounded-lg shadow-sm" style="color: var(--fc-main);">
+                    <span class="text-base font-bold">{{ factor.aprobados }}</span>Aprobados
+                </div>
+                <div class="flex flex-col items-center gap-1 py-2 px-1 bg-white rounded-lg shadow-sm {% if factor.pendientes == 0 %}text-slate-400{% else %}text-slate-800{% endif %}">
+                    <span class="text-base font-bold">{{ factor.pendientes }}</span>Revisión
+                </div>
+                <div class="flex flex-col items-center gap-1 py-2 px-1 bg-white rounded-lg shadow-sm {% if factor.faltantes == 0 %}text-slate-400{% else %}text-rose-600{% endif %}">
+                    <span class="text-base font-bold">{{ factor.faltantes }}</span>Faltantes
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animación de las barras de progreso
+        setTimeout(() => {
+            document.querySelectorAll('.bar-fill').forEach(bar => {
+                const targetWidth = bar.getAttribute('data-width');
+                if (targetWidth) {
+                    bar.style.width = targetWidth;
+                }
+            });
+        }, 150);
+    });
+</script>
+{% endblock %}

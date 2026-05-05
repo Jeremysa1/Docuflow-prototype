@@ -1,0 +1,42 @@
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+**/venv/
+**/env/
+**/.venv/
+
+# Environment variables
+.env
+**/.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Django
+*.sqlite3
+db.sqlite3
+**/db.sqlite3
+gestion_documental/db.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+gestion_documental/media/
+gestion_documental/documentacion/test_output.html
+test_output.html

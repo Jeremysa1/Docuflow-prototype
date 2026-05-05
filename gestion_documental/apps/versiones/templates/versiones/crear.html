@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Nueva Versión - Docuflow{% endblock %}
+{% block page_title %}Agregar Versión{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Nueva versión de: {{ documento.titulo }}</h1>
+  </div>
+  <a href="{% url 'versiones:lista' documento.id %}" class="btn btn-secondary">&larr; Cancelar</a>
+</div>
+
+<div class="card" style="max-width:600px;">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label>Archivo (Nueva versión)</label>
+        <div class="upload-zone" id="upload-zone">
+          <div class="upload-zone-icon">⬆️</div>
+          <div class="upload-zone-text">
+            Haz clic o arrastra el nuevo archivo aquí
+          </div>
+        </div>
+        <input type="file" name="archivo" id="archivo-input" style="display:none;" required>
+        <div id="file-name" style="margin-top:10px; font-weight:600; color:var(--color-primario);"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Comentarios sobre el cambio</label>
+        <textarea name="descripcion_cambio" class="form-control" rows="4" placeholder="Describe brevemente qué cambió en esta versión..." required></textarea>
+        <p style="font-size:0.75rem;color:var(--gris-texto);margin-top:4px;">Esta información ayuda a rastrear la evolución del documento.</p>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Guardar Nueva Versión</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const uploadZone = document.getElementById('upload-zone');
+    const fileInput = document.getElementById('archivo-input');
+    const fileNameDisplay = document.getElementById('file-name');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        fileNameDisplay.textContent = "📄 Seleccionado: " + this.files[0].name;
+        uploadZone.querySelector('.upload-zone-text').textContent = "Cambiar archivo seleccionado";
+      }
+    });
+
+    // Drag and drop basic support
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = 'var(--color-primario)';
+      uploadZone.style.background = 'rgba(20, 42, 89, 0.05)';
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.style.borderColor = '#e2e8f0';
+      uploadZone.style.background = 'transparent';
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = '#e2e8f0';
+      uploadZone.style.background = 'transparent';
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        const event = new Event('change');
+        fileInput.dispatchEvent(event);
+      }
+    });
+  });
+</script>
+{% endblock %}
