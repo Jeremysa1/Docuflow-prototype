@@ -183,7 +183,7 @@
                             <td colspan="7" class="p-6">
                                 <div class="flex flex-col gap-3">
                                     <label class="text-xs font-bold text-rose-800 uppercase tracking-widest">Motivo del rechazo para: <span class="text-rose-600">{{ doc.titulo }}</span></label>
-                                    <textarea id="comment-{{ doc.id }}" class="w-full bg-white border border-rose-200 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 min-h-[80px]" placeholder="Explique por qué se rechaza el documento..." required></textarea>
+                                    <textarea id="comment-{{ doc.id }}" class="w-full bg-white border border-rose-200 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 min-h-[80px]" placeholder="Explique por qué se rechaza el documento..."></textarea>
                                     <div class="flex justify-end gap-3 mt-2">
                                         <button type="button" data-action="cancel-reject" data-doc-id="{{ doc.id }}" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-200 transition-colors">Cancelar</button>
                                         <button type="button" data-action="confirm-reject" data-doc-id="{{ doc.id }}" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm">Confirmar Rechazo</button>
@@ -219,7 +219,7 @@
                 <div class="h-10 w-px bg-white/10"></div>
                 
                 <div class="flex items-center gap-4">
-                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2.5 transition-all shadow-lg active:scale-95">
+                    <button type="button" id="btn-bulk-approve" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2.5 transition-all shadow-lg active:scale-95">
                         <i data-lucide="check-circle" class="w-4 h-4"></i>
                         Aprobar Seleccionados
                     </button>
@@ -258,6 +258,37 @@
     </div>
 </div>
 
+<!-- Modal de Confirmación Estético -->
+<div id="custom-confirm-modal" class="fixed inset-0 z-[200] hidden">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="confirm-backdrop"></div>
+    
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+        <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all duration-300 sm:my-8 sm:max-w-sm w-full opacity-0 translate-y-8 sm:scale-95 border border-slate-100" id="confirm-panel">
+            <div class="bg-white px-6 pt-6 pb-6">
+                <div class="flex flex-col items-center text-center">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-full bg-emerald-50 mb-4">
+                        <i data-lucide="check-circle-2" class="h-7 w-7 text-emerald-500"></i>
+                    </div>
+                    <h3 class="text-lg leading-6 font-bold text-brand-900 mb-2" id="confirm-title">
+                        Confirmar Acción
+                    </h3>
+                    <p class="text-sm text-slate-500 font-medium px-2" id="confirm-message">
+                        ¿Estás seguro de continuar?
+                    </p>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex flex-col sm:flex-row-reverse gap-3 border-t border-slate-100">
+                <button type="button" id="confirm-btn-yes" class="w-full inline-flex justify-center items-center gap-2 rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-emerald-500 text-sm font-bold text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:w-auto transition-all active:scale-95">
+                    <i data-lucide="check" class="w-4 h-4"></i> Confirmar
+                </button>
+                <button type="button" id="confirm-btn-no" class="w-full inline-flex justify-center items-center gap-2 rounded-xl border border-slate-200 shadow-sm px-5 py-2.5 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus:outline-none sm:w-auto transition-all">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -269,6 +300,50 @@
     const selectionCounter = document.getElementById('selection-counter');
     const selectedCount = document.getElementById('selected-count');
     const docsTable = document.getElementById('docs-table');
+
+    // Lógica del Modal Personalizado
+    let pendingConfirmAction = null;
+
+    function showConfirmModal(title, message, onConfirm) {
+        document.getElementById('confirm-title').innerText = title;
+        document.getElementById('confirm-message').innerText = message;
+        pendingConfirmAction = onConfirm;
+        
+        const modal = document.getElementById('custom-confirm-modal');
+        const backdrop = document.getElementById('confirm-backdrop');
+        const panel = document.getElementById('confirm-panel');
+        
+        modal.classList.remove('hidden');
+        
+        requestAnimationFrame(() => {
+            backdrop.classList.remove('opacity-0');
+            backdrop.classList.add('opacity-100');
+            panel.classList.remove('opacity-0', 'translate-y-8', 'sm:scale-95');
+            panel.classList.add('opacity-100', 'translate-y-0', 'sm:scale-100');
+        });
+    }
+
+    function hideConfirmModal() {
+        const modal = document.getElementById('custom-confirm-modal');
+        const backdrop = document.getElementById('confirm-backdrop');
+        const panel = document.getElementById('confirm-panel');
+        
+        backdrop.classList.remove('opacity-100');
+        backdrop.classList.add('opacity-0');
+        panel.classList.remove('opacity-100', 'translate-y-0', 'sm:scale-100');
+        panel.classList.add('opacity-0', 'translate-y-8', 'sm:scale-95');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            pendingConfirmAction = null;
+        }, 300); // Coincide con duration-300
+    }
+
+    document.getElementById('confirm-btn-no').addEventListener('click', hideConfirmModal);
+    document.getElementById('confirm-btn-yes').addEventListener('click', () => {
+        if (pendingConfirmAction) pendingConfirmAction();
+        hideConfirmModal();
+    });
 
     function updateUI() {
         if (!checkboxes.length) return;
@@ -358,19 +433,24 @@
     }
 
     function submitApproval(docId) {
-        if (!confirm('¿Aprobar este documento?')) return;
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/documentos/${docId}/aprobar/`;
-        
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
-        form.appendChild(csrfInput);
-        document.body.appendChild(form);
-        form.submit();
+        showConfirmModal(
+            'Aprobar Documento',
+            '¿Está seguro de que desea aprobar este documento individualmente?',
+            () => {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/documentos/${docId}/aprobar/`;
+                
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        );
     }
 
     function submitRejection(docId) {
@@ -398,6 +478,20 @@
         form.appendChild(commentInput);
         document.body.appendChild(form);
         form.submit();
+    }
+
+    const btnBulkApprove = document.getElementById('btn-bulk-approve');
+    if (btnBulkApprove) {
+        btnBulkApprove.addEventListener('click', () => {
+            const count = Array.from(checkboxes).filter(cb => cb.checked).length;
+            showConfirmModal(
+                'Aprobar Lote',
+                `¿Está seguro de aprobar ${count} documento${count !== 1 ? 's' : ''} seleccionado${count !== 1 ? 's' : ''}?`,
+                () => {
+                    document.getElementById('bulk-action-form').submit();
+                }
+            );
+        });
     }
 </script>
 {% endblock %}
