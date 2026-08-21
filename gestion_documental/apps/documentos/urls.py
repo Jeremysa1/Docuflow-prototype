@@ -1,6 +1,6 @@
 """URLs del módulo de documentos."""
 from django.urls import path
-from apps.documentos import views
+from . import views
 
 app_name = 'documentos'
 
@@ -12,12 +12,17 @@ urlpatterns = [
     path('aprobar/', views.aprobar_documentos_view, name='aprobar'),
     path('subir/', views.subir_documento, name='subir'),
     path('aprobar-lote/', views.aprobar_documentos_lote, name='aprobar_lote'),
+    path('papelera/', views.papelera_documentos, name='papelera'),
+    path('<int:documento_id>/restaurar/', views.restaurar_documento, name='restaurar_doc'),
     path('<int:documento_id>/', views.detalle_documento, name='detalle'),
+    path('<int:documento_id>/editar/', views.editar_documento, name='editar'),
     path('<int:documento_id>/eliminar/', views.eliminar_documento, name='eliminar'),
     path('<int:documento_id>/aprobar/', views.aprobar_documento, name='aprobar_doc'),
     path('<int:documento_id>/rechazar/', views.rechazar_documento, name='rechazar_doc'), # Kept param name as in views.py but changed name
     path('<int:documento_id>/descargar/', views.descargar_documento_view, name='descargar_doc'),
     path('version/<int:ver_id>/descargar/', views.descargar_version_view, name='descargar_version'),
     path('factores-cna/', views.factores_cna_view, name='factores_cna'),
+    path('factores-cna/exportar/csv/', views.exportar_factores_csv, name='exportar_factores_csv'),
+    path('factores-cna/exportar/pdf/', views.exportar_factores_pdf, name='exportar_factores_pdf'),
     path('api/buscar/', views.buscar_documentos_ajax, name='buscar_ajax'),
 ]

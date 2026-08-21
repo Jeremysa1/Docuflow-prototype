@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .forms import DocumentoForm
+from .forms import DocumentoForm, DocumentoEditForm
 from .services import DocumentoService
 from .models import Documento
 from ..usuarios.models import ProgramaAcademico
@@ -41,7 +41,7 @@ def dashboard_view(request):
 def busqueda_avanzada_view(request):
     """Vista de búsqueda avanzada."""
     from ..permisos.services import PermisoService
-    from apps.permisos.models import SolicitudAcceso
+    from ..permisos.models import SolicitudAcceso
 
     query        = request.GET.get('q', '').strip()
     categoria_id = request.GET.get('categoria')
@@ -213,6 +213,42 @@ def subir_documento(request):
 
 
 @login_required
+def editar_documento(request, documento_id):
+    """Vista para editar metadatos de un documento existente."""
+    from .models import Documento
+    from core.services.audit_service import AuditService
+    
+    documento = get_object_or_404(Documento, id=documento_id)
+    
+    # Solo el autor o decana/coordinador pueden editar
+    if request.user != documento.autor and request.user.rol not in ['DECANA', 'COORDINADOR']:
+        messages.error(request, 'No tienes permiso para editar este documento.')
+        return redirect('documentos:detalle', documento_id=documento.id)
+
+    if request.method == 'POST':
+        form = DocumentoEditForm(request.POST, instance=documento)
+        if form.is_valid():
+            form.save()
+            
+            # Registrar en auditoría
+            AuditService.log(
+                usuario=request.user,
+                accion='EDITO_METADATOS',
+                documento=documento,
+                request=request,
+                detalle='Se actualizaron los metadatos del documento.'
+            )
+            
+            messages.success(request, f'Metadatos de "{documento.titulo}" actualizados exitosamente.')
+            return redirect('documentos:detalle', documento_id=documento.id)
+    else:
+        form = DocumentoEditForm(instance=documento)
+
+    return render(request, 'documentos/editar.html', {'form': form, 'documento': documento})
+
+
+
+@login_required
 def detalle_documento(request, documento_id):
     """Vista de detalle de un documento."""
     try:
@@ -223,7 +259,7 @@ def detalle_documento(request, documento_id):
     except PermissionError:
         # Si no tiene acceso, mostramos una versión bloqueada del detalle
         from .models import Documento
-        from apps.permisos.models import SolicitudAcceso
+        from ..permisos.models import SolicitudAcceso
         doc = get_object_or_404(Documento, pk=documento_id)
         
         solicitud_pendiente = SolicitudAcceso.objects.filter(
@@ -304,82 +340,88 @@ def rechazar_documento(request, documento_id):
 
 @login_required
 def eliminar_documento(request, documento_id):
-    """Vista para eliminar un documento."""
+    """Vista para enviar un documento a la papelera (Soft Delete)."""
     if request.method == 'POST':
         try:
             DocumentoService.eliminar_documento(
                 documento_id, request.user, request
             )
-            messages.success(request, 'Documento eliminado exitosamente.')
+            messages.success(request, 'Documento enviado a la papelera exitosamente.')
         except Exception as e:
             messages.error(request, f'Error al eliminar el documento: {e}')
     return redirect('documentos:lista')
+
+@login_required
+def papelera_documentos(request):
+    """Vista de la papelera de reciclaje."""
+    from .models import Documento
+    # Solo mostrar documentos en la papelera
+    if request.user.rol in ['DECANA', 'COORDINADOR']:
+        documentos = Documento.all_objects.filter(is_deleted=True).order_by('-deleted_at')
+    else:
+        # Docentes u otros roles solo ven sus propios documentos eliminados
+        documentos = Documento.all_objects.filter(
+            is_deleted=True,
+            autor=request.user
+        ).order_by('-deleted_at')
+        
+    return render(request, 'documentos/papelera.html', {'documentos': documentos})
+
+@login_required
+def restaurar_documento(request, documento_id):
+    """Restaura un documento desde la papelera."""
+    if request.method == 'POST':
+        try:
+            from .models import Documento
+            doc = Documento.all_objects.get(pk=documento_id)
+            
+            # Verificar permisos
+            if request.user.rol not in ['DECANA', 'COORDINADOR'] and doc.autor != request.user:
+                messages.error(request, 'No tienes permiso para restaurar este documento.')
+                return redirect('documentos:papelera')
+                
+            DocumentoService.restaurar_documento(documento_id, request.user, request)
+            messages.success(request, 'Documento restaurado exitosamente.')
+        except Exception as e:
+            messages.error(request, f'Error al restaurar: {e}')
+    return redirect('documentos:papelera')
 
 
 @login_required
 @role_required('DECANA')
 def factores_cna_view(request):
     """Vista de Factores CNA para la Decana."""
-    from django.db.models import Count, Q
-
-    # Metas requeridas por factor (teóricas, pueden moverse a BBDD en el futuro)
-    metas_por_factor = {
-        'F1': 15, 'F2': 25, 'F3': 20, 'F4': 10, 'F5': 30, 'F6': 15,
-        'F7': 10, 'F8': 20, 'F9': 15, 'F10': 15, 'F11': 20, 'F12': 10,
-    }
-
-    # Agrupar documentos por factor y contar aprobados y pendientes
-    stats = Documento.objects.exclude(factor_cna__isnull=True).exclude(factor_cna='').values('factor_cna').annotate(
-        total_aprobados=Count('id', filter=Q(estado='APROBADO')),
-        total_pendientes=Count('id', filter=Q(estado='PENDIENTE'))
-    )
-    stats_dict = {item['factor_cna']: item for item in stats}
-
-    factores_data = []
-    total_requeridos = 0
-    total_aprobados_global = 0
-
-    for codigo, nombre in Documento.FACTORES_CNA:
-        meta = metas_por_factor.get(codigo, 10)
-        total_requeridos += meta
-
-        f_stats = stats_dict.get(codigo, {'total_aprobados': 0, 'total_pendientes': 0})
-        aprobados = f_stats['total_aprobados']
-        pendientes = f_stats['total_pendientes']
-        
-        faltantes = max(0, meta - aprobados)
-        porcentaje = int((aprobados / meta) * 100) if meta > 0 else 100
-        if porcentaje > 100: porcentaje = 100
-
-        total_aprobados_global += aprobados
-
-        # Limpiar el nombre (quitar "Factor X: ")
-        nombre_limpio = nombre.split(':', 1)[-1].strip() if ':' in nombre else nombre
-
-        factores_data.append({
-            'codigo': codigo,
-            'numero': codigo.replace('F', ''),
-            'nombre': nombre_limpio,
-            'aprobados': aprobados,
-            'pendientes': pendientes,
-            'faltantes': faltantes,
-            'porcentaje': porcentaje,
-        })
-
-    # Calcular progreso general
-    total_faltantes_global = max(0, total_requeridos - total_aprobados_global)
-    progreso_general = int((total_aprobados_global / total_requeridos) * 100) if total_requeridos > 0 else 0
-    if progreso_general > 100: progreso_general = 100
-
-    context = {
-        'factores': factores_data,
-        'total_requeridos': total_requeridos,
-        'total_aprobados': total_aprobados_global,
-        'total_faltantes': total_faltantes_global,
-        'progreso_general': progreso_general,
-    }
-
+    from .services import ReporteService
+    
+    context = ReporteService.obtener_estadisticas_cna()
     return render(request, 'documentos/factores_cna.html', context)
+
+@login_required
+@role_required('DECANA')
+def exportar_factores_csv(request):
+    """Exporta las estadísticas CNA a CSV."""
+    from django.http import HttpResponse
+    from .services import ReporteService
+    
+    csv_data = ReporteService.generar_csv_cna()
+    # Codificar con BOM para que Excel reconozca utf-8 automáticamente
+    response = HttpResponse(csv_data.encode('utf-8-sig'), content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="estadisticas_cna.csv"'
+    return response
+
+@login_required
+@role_required('DECANA')
+def exportar_factores_pdf(request):
+    """Exporta las estadísticas CNA a PDF."""
+    from django.http import HttpResponse
+    from .services import ReporteService
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="estadisticas_cna.pdf"'
+    
+    ReporteService.generar_pdf_cna(response)
+    
+    return response
 
 @login_required
 def descargar_documento_view(request, documento_id):
@@ -401,7 +443,7 @@ def descargar_documento_view(request, documento_id):
 @login_required
 def descargar_version_view(request, ver_id):
     """Descarga de una versión anterior con auditoría."""
-    from apps.versiones.models import Version
+    from ..versiones.models import Version
     from core.services.audit_service import AuditService
     try:
         version = Version.objects.get(pk=ver_id)

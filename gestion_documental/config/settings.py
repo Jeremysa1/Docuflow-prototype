@@ -154,3 +154,6 @@ FIXTURE_DIRS = [BASE_DIR / 'apps' / 'fixtures']
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Permitir IFRAMES del mismo origen para el visor PDF inline
+X_FRAME_OPTIONS = 'SAMEORIGIN'

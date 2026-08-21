@@ -53,3 +53,30 @@ class DocumentoForm(forms.ModelForm):
                 max_mb = settings.MAX_UPLOAD_SIZE // (1024 * 1024)
                 raise forms.ValidationError(f'El archivo excede el tamaño máximo de {max_mb}MB.')
         return archivo
+
+class DocumentoEditForm(forms.ModelForm):
+    """Formulario para editar metadatos de documentos existentes (sin archivo)."""
+    visibilidad = forms.ChoiceField(
+        choices=[
+            ('PROGRAMA', 'Por programa'),
+            ('INSTITUCIONAL', 'Institucional'),
+        ],
+        widget=forms.RadioSelect(attrs={'class': 'visibilidad-radio'}),
+        label='Visibilidad'
+    )
+
+    class Meta:
+        model = Documento
+        fields = [
+            'titulo', 'descripcion', 'programa', 'categoria',
+            'factor_cna', 'fecha_vigencia', 'visibilidad', 'es_sensible'
+        ]
+        widgets = {
+            'titulo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Título del documento'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Descripción'}),
+            'programa': forms.Select(attrs={'class': 'form-control'}),
+            'categoria': forms.Select(attrs={'class': 'form-control'}),
+            'factor_cna': forms.Select(attrs={'class': 'form-control'}),
+            'fecha_vigencia': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'es_sensible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }

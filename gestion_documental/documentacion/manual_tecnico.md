@@ -158,7 +158,7 @@ El archivo `datos_iniciales.json` incluye:
 - Notificaciones internas por acciones clave.
 
 ### ⚠️ Limitaciones / Pendientes
-- **Previsualización Inline:** Los documentos se descargan o abren en pestaña nueva según el navegador; no hay un visor de PDF integrado en la misma página (modal).
+- **Previsualización Inline:** Los documentos se descargan directamente al darle click en visualizar archivo, no hay un visor de PDF integrado en la misma página 
 - **Edición de Documentos:** Actualmente no se pueden editar los metadatos de un documento una vez subido (solo se puede subir una nueva versión).
 - **Eliminación Física:** La eliminación de documentos borra el archivo del disco, pero no hay una "papelera de reciclaje" intermedia.
 - **Reportes:** La exportación a CSV/PDF de estadísticas de acreditación está en fase inicial.

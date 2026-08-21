@@ -265,12 +265,12 @@
                     <div class="form-label mb-lg">Gestión Rápida</div>
                     <div class="flex-stack" style="gap: var(--space-xs);">
                         {% if documento.archivo %}
-                        <a href="{{ documento.archivo.url }}" target="_blank" class="quick-action" style="padding: var(--space-sm) var(--space-lg);">
+                        <button type="button" onclick="openDocumentModal('{{ documento.archivo.url }}', '{{ documento.archivo.name|lower }}')" class="quick-action" style="padding: var(--space-sm) var(--space-lg); border: none; background: transparent; width: 100%; text-align: left; cursor: pointer;">
                             <div class="quick-action-content" style="font-size: 0.867rem;">
                                 <i data-lucide="external-link" style="width: 18px; height: 18px; color: var(--brand-600);"></i>
                                 Visualizar Archivo
                             </div>
-                        </a>
+                        </button>
                         {% endif %}
                         <a href="{% url 'versiones:lista' documento.id %}" class="quick-action" style="padding: var(--space-sm) var(--space-lg);">
                             <div class="quick-action-content" style="font-size: 0.867rem;">
@@ -278,6 +278,14 @@
                                 Historial Completo
                             </div>
                         </a>
+                        {% if request.user == documento.autor or request.user.rol in 'DECANA,COORDINADOR' %}
+                        <a href="{% url 'documentos:editar' documento.id %}" class="quick-action" style="padding: var(--space-sm) var(--space-lg);">
+                            <div class="quick-action-content" style="font-size: 0.867rem;">
+                                <i data-lucide="edit-3" style="width: 18px; height: 18px; color: var(--brand-600);"></i>
+                                Editar Metadatos
+                            </div>
+                        </a>
+                        {% endif %}
                         {% if puede_gestionar_accesos %}
                         <a href="{% url 'permisos:gestionar_accesos' documento.id %}" class="quick-action" style="padding: var(--space-sm) var(--space-lg);">
                             <div class="quick-action-content" style="font-size: 0.867rem;">
@@ -327,6 +335,24 @@
         </div>
         {% endif %}
     </div>
+
+    <!-- Modal Previsualizador de Documentos -->
+    <div class="modal-backdrop" id="documentModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i data-lucide="file-text" style="width: 24px; height: 24px; color: var(--brand-600);"></i>
+                    Previsualización de Documento
+                </h3>
+                <button type="button" class="modal-close-btn" onclick="closeDocumentModal()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- El contenido se inyecta por JS -->
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
@@ -339,6 +365,60 @@
                 link.classList.add('active');
             }
         });
+    });
+
+    // Lógica del Modal
+    const documentModal = document.getElementById('documentModal');
+    const modalBody = document.getElementById('modalBody');
+
+    function openDocumentModal(fileUrl, fileName) {
+        if (fileName.includes('.pdf')) {
+            // Render PDF via iframe
+            modalBody.innerHTML = `<iframe src="${fileUrl}" class="iframe-viewer"></iframe>`;
+        } else {
+            // Fallback for non-PDFs
+            modalBody.innerHTML = `
+                <div class="modal-fallback">
+                    <i data-lucide="file-warning" class="modal-fallback-icon"></i>
+                    <h4 class="modal-fallback-title">Formato no soportado para previsualización</h4>
+                    <p class="modal-fallback-text">
+                        Los navegadores web no pueden renderizar nativamente archivos de Word, Excel o PowerPoint de forma local. 
+                        Por favor, descargue el archivo para visualizarlo en su equipo.
+                    </p>
+                    <a href="${fileUrl}" class="btn" style="background: var(--brand-900); color: #fff;">
+                        <i data-lucide="download"></i>
+                        Descargar Archivo
+                    </a>
+                </div>
+            `;
+            // Re-render lucide icons inside the new HTML
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+        documentModal.classList.add('show');
+    }
+
+    function closeDocumentModal() {
+        documentModal.classList.remove('show');
+        // Limpiar el src para detener descargas o procesos del iframe
+        setTimeout(() => {
+            modalBody.innerHTML = '';
+        }, 300); // Esperar a que termine la animación
+    }
+
+    // Cerrar al hacer click fuera del modal
+    documentModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDocumentModal();
+        }
+    });
+
+    // Cerrar con tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && documentModal.classList.contains('show')) {
+            closeDocumentModal();
+        }
     });
 </script>
 {% endblock %}

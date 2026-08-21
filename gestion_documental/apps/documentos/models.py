@@ -22,6 +22,11 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nombre
 
+class ActiveDocumentManager(models.Manager):
+    """Manager para filtrar documentos que no están en la papelera."""
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
 
 class Documento(models.Model):
     """Modelo principal de documento."""
@@ -103,6 +108,14 @@ class Documento(models.Model):
     comentario_rechazo = models.TextField(blank=True, null=True, verbose_name='Motivo de rechazo')
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
     fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name='Fecha de modificación')
+    
+    # Soft Delete
+    is_deleted = models.BooleanField(default=False, verbose_name='En papelera')
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    # Managers
+    objects = ActiveDocumentManager()
+    all_objects = models.Manager()
 
     class Meta:
         verbose_name = 'Documento'

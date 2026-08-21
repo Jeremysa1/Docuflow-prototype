@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Editar Metadatos - SIGEA{% endblock %}
+{% block page_title %}Editar Metadatos del Documento{% endblock %}
+{% block navbar_search %}{% endblock %}
+
+{% block content %}
+
+    <header class="page-header">
+        <div class="page-header-info">
+            <h1>Editar Metadatos del Documento</h1>
+            <p>Actualiza la información y configuración de seguridad del documento "{{ documento.titulo }}".</p>
+        </div>
+    </header>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="grid-form-sidebar">
+            
+            <!-- COLUMNA IZQUIERDA -->
+            <div class="flex-stack">
+                
+                <!-- Archivo Info (No editable aquí) -->
+                <div class="card" style="border: 1px solid var(--emerald-200); background: var(--emerald-50);">
+                    <div class="card-body" style="padding: var(--space-lg); display: flex; align-items: center; gap: var(--space-lg);">
+                        <div style="background: #fff; padding: var(--space-sm); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                            <i data-lucide="file-check-2" style="width: 32px; height: 32px; color: var(--emerald-600);"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 0.9rem; color: var(--emerald-900); font-weight: 700;">Archivo Actual</h4>
+                            <p style="margin: 0; font-size: 0.8rem; color: var(--emerald-700);">{% if documento.archivo %}{{ documento.archivo.name|slice:"11:" }}{% else %}Sin archivo adjunto{% endif %}</p>
+                            <p style="margin: 0; font-size: 0.75rem; color: var(--emerald-600); margin-top: 2px;">Para actualizar el archivo físico, debes subir una nueva versión desde el panel del documento.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Registro -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="section-title mb-xl" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="file-edit" style="width: 20px; height: 20px;"></i>
+                            Información del Registro
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Nombre del documento*</label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}<span class="form-error">{{ form.titulo.errors.0 }}</span>{% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <div class="flex-between mb-sm">
+                                <label class="form-label" style="margin-bottom: 0;">Descripción</label>
+                                <span id="char-count" class="text-xxs font-bold text-light">0 / 500</span>
+                            </div>
+                            {{ form.descripcion }}
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Programa Académico*</label>
+                                <div class="select-wrapper">
+                                    {{ form.programa }}
+                                    <i data-lucide="chevron-down"></i>
+                                </div>
+                                {% if form.programa.errors %}<span class="form-error">{{ form.programa.errors.0 }}</span>{% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Categoría*</label>
+                                <div class="select-wrapper">
+                                    {{ form.categoria }}
+                                    <i data-lucide="chevron-down"></i>
+                                </div>
+                                {% if form.categoria.errors %}<span class="form-error">{{ form.categoria.errors.0 }}</span>{% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Factor CNA (Opcional)</label>
+                                <div class="select-wrapper">
+                                    {{ form.factor_cna }}
+                                    <i data-lucide="chevron-down"></i>
+                                </div>
+                                {% if form.factor_cna.errors %}<span class="form-error">{{ form.factor_cna.errors.0 }}</span>{% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Fecha de vigencia</label>
+                                <div class="select-wrapper">
+                                    {{ form.fecha_vigencia }}
+                                    <i data-lucide="calendar"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visibilidad -->
+                        <div class="form-group">
+                            <label class="form-label">Visibilidad del documento</label>
+                            <div class="grid-2">
+                                <label class="radio-card">
+                                    <input type="radio" name="visibilidad" value="PROGRAMA" {% if form.visibilidad.value == 'PROGRAMA' or not form.visibilidad.value %}checked{% endif %}>
+                                    <div>
+                                        <span class="radio-card-title">Por programa</span>
+                                        <span class="radio-card-desc">Solo visible para usuarios del mismo programa</span>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="visibilidad" value="INSTITUCIONAL" {% if form.visibilidad.value == 'INSTITUCIONAL' %}checked{% endif %}>
+                                    <div>
+                                        <span class="radio-card-title">Institucional</span>
+                                        <span class="radio-card-desc">Visible para todos los usuarios del sistema</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Sensible -->
+                        <div>
+                            <label class="form-label">Opciones de seguridad</label>
+                            <label class="sensitive-card">
+                                <input type="checkbox" name="es_sensible" {% if form.es_sensible.value %}checked{% endif %} style="margin-top: 3px; accent-color: var(--amber-500); width: 16px; height: 16px; cursor: pointer;">
+                                <div>
+                                    <span class="radio-card-title" style="color: var(--amber-900);">Documento Sensible</span>
+                                    <span class="radio-card-desc" style="color: var(--amber-700);">Requiere aprobación de al menos 2 de 3 (autor, coordinador, decana) para dar acceso</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA -->
+            <div class="flex-stack" style="height: 100%;">
+                
+                <div class="dark-panel">
+                    <div class="dark-panel-title">
+                        <i data-lucide="lightbulb"></i>
+                        Recomendaciones
+                    </div>
+                    <ul class="dark-panel-list">
+                        <li>
+                            <i data-lucide="check"></i>
+                            Asegúrate que el nombre siga siendo descriptivo si lo cambias.
+                        </li>
+                        <li>
+                            <i data-lucide="check"></i>
+                            Los cambios en metadatos no alteran la versión actual del archivo.
+                        </li>
+                        <li>
+                            <i data-lucide="check"></i>
+                            Cualquier cambio a la visibilidad o sensibilidad se aplicará de inmediato.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="grid-2 mt-auto pt-xl">
+                    <a href="{% url 'documentos:detalle' documento.id %}" class="btn btn-secondary w-full" style="padding: 1rem;">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary w-full" style="padding: 1rem;">
+                        <i data-lucide="save"></i> Guardar Cambios
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Agregar estilos dinámicos para los form inputs de Django renderizados -->
+<style>
+    /* Estilos globales inyectados para elementos de formulario Django */
+    input[type="text"], input[type="date"], select, textarea {
+        width: 100%;
+        background-color: var(--slate-50);
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        padding: 0.85rem 1rem;
+        font-size: 0.867rem;
+        color: var(--slate-800);
+        outline: none;
+        transition: all var(--transition-base);
+        font-family: inherit;
+    }
+    input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+        border-color: var(--slate-300);
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(20,42,89,0.06);
+    }
+    textarea { resize: vertical; min-height: 110px; line-height: 1.65; }
+    
+    select { appearance: none; cursor: pointer; padding-right: 2.5rem; }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0; cursor: pointer; width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const textarea = document.querySelector('textarea[name="descripcion"]');
+        const charCount = document.getElementById('char-count');
+
+        // Character Count for textarea
+        if (textarea && charCount) {
+            // Inicializar contador
+            const updateCount = () => {
+                const length = textarea.value.length;
+                charCount.textContent = `${length} / 500`;
+                if (length > 500) {
+                    charCount.style.color = 'var(--rose-500)';
+                } else {
+                    charCount.style.color = 'var(--slate-400)';
+                }
+            };
+            
+            updateCount();
+            textarea.addEventListener('input', updateCount);
+        }
+    });
+</script>
+{% endblock %}
