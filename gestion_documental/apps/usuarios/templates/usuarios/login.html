@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Docuflow - Iniciar Sesión</title>
+    <title>SIGEA - Iniciar Sesión</title>
+    <link rel="icon" type="image/png" href="{% static 'img/sigea_logo_p2.png' %}">
     <!-- Importar fuente de Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,6 +40,8 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
+            text-align: center;
             padding: 0 12%; 
             color: white;
             box-shadow: 10px 0 50px rgba(0,0,0,0.1);
@@ -312,46 +315,19 @@
         <div class="left-panel">
             <div class="logo-container">
                 <!-- Tu logo original -->
-                <img src="{% static 'img/logodocusvg.svg' %}" alt="Logo Docuflow" class="logo-img">
+                <img src="{% static 'img/sigea_logo.png' %}" alt="Logo SIGEA" class="logo-img">
             </div>
 
-            <h1>Gestiona el proceso de acreditación con precisión y eficiencia.</h1>
+            <h1>Sistema Integrado de Gestión de Evidencias para la Acreditación.</h1>
             
             <p>Centraliza, organiza y controla toda la documentación institucional en un solo lugar.</p>
-
-            <ul class="features-list">
-                <li>
-                    <div class="icon-circle">
-                        <div class="icon-check">
-                            <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-                        </div>
-                    </div>
-                    Gestión documental centralizada
-                </li>
-                <li>
-                    <div class="icon-circle">
-                        <div class="icon-check">
-                            <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-                        </div>
-                    </div>
-                    Control de versiones por documento
-                </li>
-                <li>
-                    <div class="icon-circle">
-                        <div class="icon-check">
-                            <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-                        </div>
-                    </div>
-                    Flujos de aprobación por roles
-                </li>
-            </ul>
         </div>
 
         <!-- MITAD DERECHA -->
         <div class="right-panel">
             <div class="login-card">
                 <div class="welcome-text">BIENVENIDO</div>
-                <h2>Inicia sesión en Docuflow</h2>
+                <h2>Inicia sesión en SIGEA</h2>
 
                 <!-- Mensajes de Django -->
                 {% if error_tipo == '401' %}

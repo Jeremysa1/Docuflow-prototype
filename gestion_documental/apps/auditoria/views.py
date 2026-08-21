@@ -81,7 +81,7 @@ def exportar_auditoria(request):
     response = HttpResponse(
         content_type='text/csv',
     )
-    response['Content-Disposition'] = 'attachment; filename="auditoria_docuflow.csv"'
+    response['Content-Disposition'] = 'attachment; filename="auditoria_SIGEA.csv"'
     # Añadir BOM para que Excel lea correctamente el UTF-8 con caracteres especiales
     response.write('\ufeff'.encode('utf8'))
 

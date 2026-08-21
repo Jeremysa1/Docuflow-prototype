@@ -1,98 +1,107 @@
 {% extends 'base.html' %}
-{% block title %}Configuración de Perfil - Docuflow{% endblock %}
+{% block title %}Configuración de Perfil - SIGEA{% endblock %}
 {% block page_title %}Mi Perfil{% endblock %}
 
 {% block content %}
-<div class="max-w-[1000px] mx-auto animate-[fadeIn_0.3s_ease-out] pb-10">
-    <div class="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-8 items-start">
+
+    <header class="page-header">
+        <div class="page-header-info">
+            <h1>Mi Perfil</h1>
+            <p>Configuración y datos administrativos de tu cuenta.</p>
+        </div>
+    </header>
+
+    <div class="grid-profile">
         
         <!-- LADO IZQUIERDO: AVATAR Y ROL -->
-        <div class="bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-200">
-            <form id="avatarForm" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="relative w-[140px] h-[140px] mx-auto mb-6 group">
-                    <div class="w-full h-full rounded-full border-4 border-white shadow-lg bg-brand-900 text-white flex items-center justify-center text-5xl font-bold overflow-hidden transition-transform group-hover:scale-[1.02]">
-                        {% if usuario.foto_perfil %}
-                            <img src="{{ usuario.foto_perfil.url }}" alt="Perfil" class="w-full h-full object-cover">
-                        {% else %}
-                            {{ usuario.get_iniciales }}
-                        {% endif %}
+        <div class="card">
+            <div class="card-body text-center">
+                <form id="avatarForm" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="avatar-container">
+                        <div class="avatar-circle">
+                            {% if usuario.foto_perfil %}
+                                <img src="{{ usuario.foto_perfil.url }}" alt="Perfil">
+                            {% else %}
+                                {{ usuario.get_iniciales }}
+                            {% endif %}
+                        </div>
+                        <label for="foto_perfil_input" class="avatar-edit-btn" title="Cambiar foto">
+                            <i data-lucide="camera"></i>
+                        </label>
+                        <input type="file" id="foto_perfil_input" name="foto_perfil" accept="image/*" onchange="document.getElementById('avatarForm').submit()" class="hidden">
                     </div>
-                    <label for="foto_perfil_input" class="absolute bottom-1 right-1 w-10 h-10 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white cursor-pointer border-4 border-white transition-all hover:scale-110 shadow-sm" title="Cambiar foto">
-                        <i data-lucide="camera" class="w-4 h-4"></i>
-                    </label>
-                    <input type="file" id="foto_perfil_input" name="foto_perfil" accept="image/*" onchange="document.getElementById('avatarForm').submit()" class="hidden">
-                </div>
-            </form>
+                </form>
 
-            <h2 class="text-2xl font-bold text-brand-900 mb-1 tracking-tight">{{ usuario.get_full_name }}</h2>
-            <p class="text-sm text-slate-500 mb-5">{{ usuario.email }}</p>
-            
-            <div class="flex justify-center">
-                {% if usuario.rol == 'DECANA' %}
-                    <span class="bg-purple-50 text-purple-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-purple-100 shadow-sm">{{ usuario.get_rol_display }}</span>
-                {% elif usuario.rol == 'COORDINADOR' %}
-                    <span class="bg-sky-50 text-sky-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-sky-100 shadow-sm">{{ usuario.get_rol_display }}</span>
-                {% else %}
-                    <span class="bg-slate-100 text-slate-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-slate-200 shadow-sm">{{ usuario.get_rol_display }}</span>
-                {% endif %}
+                <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--brand-900); margin-bottom: 0.25rem;">{{ usuario.get_full_name }}</h2>
+                <p class="text-sm text-muted mb-lg">{{ usuario.email }}</p>
+                
+                <div style="display: flex; justify-content: center;">
+                    {% if usuario.rol == 'DECANA' %}
+                        <span class="badge badge-purple badge-pill">{{ usuario.get_rol_display }}</span>
+                    {% elif usuario.rol == 'COORDINADOR' %}
+                        <span class="badge badge-brand badge-pill" style="border: 1px solid var(--brand-100);">{{ usuario.get_rol_display }}</span>
+                    {% else %}
+                        <span class="badge badge-neutral badge-pill">{{ usuario.get_rol_display }}</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
         <!-- LADO DERECHO: DETALLES -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-            <div class="bg-slate-50 px-8 border-b border-slate-200 flex gap-8">
-                <div class="py-5 text-sm font-bold text-brand-900 border-b-2 border-brand-900 uppercase tracking-widest">
+        <div class="card" style="overflow: hidden;">
+            <div class="tab-bar">
+                <div class="tab-item active">
                     Datos Administrativos
                 </div>
             </div>
             
-            <div class="p-8">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
-                    <div class="flex flex-col gap-1.5">
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Nombre de usuario</span>
-                        <span class="text-[15px] font-bold text-brand-900">{{ usuario.username }}</span>
+            <div class="card-body">
+                <div class="grid-2 mb-3xl" style="gap: var(--space-2xl);">
+                    <div class="info-field">
+                        <span class="info-label">Nombre de usuario</span>
+                        <span class="info-value">{{ usuario.username }}</span>
                     </div>
-                    <div class="flex flex-col gap-1.5">
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Programa Académico</span>
-                        <span class="text-[15px] font-bold text-brand-900">{{ usuario.programa_academico.nombre|default:"Institucional" }}</span>
+                    <div class="info-field">
+                        <span class="info-label">Programa Académico</span>
+                        <span class="info-value">{{ usuario.programa_academico.nombre|default:"Institucional" }}</span>
                     </div>
-                    <div class="flex flex-col gap-1.5">
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Estado de la cuenta</span>
+                    <div class="info-field">
+                        <span class="info-label">Estado de la cuenta</span>
                         <div>
                             {% if usuario.is_active and usuario.esta_habilitado %}
-                                <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold border border-emerald-100">
-                                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Habilitada
+                                <span class="badge badge-success badge-pill">
+                                    <i data-lucide="check"></i> Habilitada
                                 </span>
                             {% else %}
-                                <span class="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-3 py-1 rounded-full text-xs font-bold border border-rose-100">
-                                    <i data-lucide="x" class="w-3.5 h-3.5"></i> Inhabilitada
+                                <span class="badge badge-danger badge-pill">
+                                    <i data-lucide="x"></i> Inhabilitada
                                 </span>
                             {% endif %}
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1.5">
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Miembro desde</span>
-                        <span class="text-[15px] font-bold text-brand-900">{{ usuario.date_joined|date:"d M, Y" }}</span>
+                    <div class="info-field">
+                        <span class="info-label">Miembro desde</span>
+                        <span class="info-value">{{ usuario.date_joined|date:"d M, Y" }}</span>
                     </div>
                 </div>
 
-                <div class="w-full h-px bg-slate-100 mb-8"></div>
+                <hr style="border: none; border-top: 1px solid var(--slate-100); margin-bottom: var(--space-2xl);">
 
-                <div class="flex flex-col gap-1.5 mb-8">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Último acceso al sistema</span>
-                    <span class="text-sm font-medium text-slate-500">{{ usuario.last_login|date:"l, d de F de Y - H:i"|default:"Primera sesión en curso" }}</span>
+                <div class="info-field mb-2xl">
+                    <span class="info-label">Último acceso al sistema</span>
+                    <span class="text-sm font-semibold text-muted">{{ usuario.last_login|date:"l, d de F de Y - H:i"|default:"Primera sesión en curso" }}</span>
                 </div>
 
-                <div class="bg-slate-50 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-200">
+                <div style="background: var(--slate-50); border-radius: var(--radius-md); padding: var(--space-xl); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-md); border: 1px solid var(--slate-200);">
                     <div>
-                        <h4 class="text-sm font-bold text-brand-900 mb-1">Seguridad de la Cuenta</h4>
-                        <p class="text-xs text-slate-500 font-medium">Para cambiar tu contraseña, utiliza el flujo de recuperación institucional.</p>
+                        <h4 class="text-sm font-bold text-brand mb-sm">Seguridad de la Cuenta</h4>
+                        <p class="text-xs text-muted">Para cambiar tu contraseña, utiliza el flujo de recuperación institucional.</p>
                     </div>
-                    <form method="post" action="{% url 'auth:logout' %}" class="m-0 shrink-0">
+                    <form method="post" action="{% url 'auth:logout' %}" style="margin: 0; flex-shrink: 0;">
                         {% csrf_token %}
-                        <button type="submit" class="bg-white border border-slate-300 hover:border-brand-900 text-brand-900 px-5 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-2">
-                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        <button type="submit" class="btn btn-ghost btn-sm">
+                            <i data-lucide="log-out"></i>
                             Cerrar Sesión
                         </button>
                     </form>
@@ -101,5 +110,4 @@
         </div>
 
     </div>
-</div>
 {% endblock %}

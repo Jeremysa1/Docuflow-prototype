@@ -1,288 +1,313 @@
 {% extends 'base.html' %}
-{% block title %}Aprobar documentos - Docuflow{% endblock %}
+{% block title %}Aprobar documentos - SIGEA{% endblock %}
 {% block page_title %}Aprobar documentos{% endblock %}
 
 {% block content %}
-<div class="max-w-[1200px] mx-auto animate-[fadeIn_0.3s_ease-out] pb-10">
-    <div class="mb-4"></div> <!-- Espaciador -->
+<style>
+    tr.doc-row[data-status="PENDIENTE"] {
+        cursor: pointer;
+    }
+    .filter-chip-active {
+        background: #fff !important;
+        color: var(--brand-900) !important;
+        box-shadow: var(--shadow-xs) !important;
+    }
+</style>
 
-    <!-- Banner de Alerta -->
-    {% if hay_urgentes %}
-    <div class="bg-rose-50 border-l-4 border-rose-600 rounded-r-xl p-5 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
-        <div class="flex items-center gap-3 text-rose-800 text-sm font-bold">
-            <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600"></i>
-            Atención: {{ docs_urgentes_count }} documento{{ docs_urgentes_count|pluralize:"s" }} lleva{{ docs_urgentes_count|pluralize:"n" }} más de 3 días sin revisión
+<!-- Banner de Alerta -->
+{% if hay_urgentes %}
+<div class="alert-banner"
+    style="background: var(--rose-50); border: 1px solid var(--rose-200); border-left: 4px solid var(--rose-600);">
+    <div class="alert-banner-content">
+        <div class="alert-banner-icon" style="background: var(--rose-100); color: var(--rose-600);">
+            <i data-lucide="alert-triangle"></i>
         </div>
-        <a href="?urgente=1" class="shrink-0 text-rose-700 hover:text-rose-900 hover:underline text-sm font-bold transition-colors">
-            Priorizar urgentes
-        </a>
+        <div>
+            <strong class="text-sm font-bold" style="color: var(--rose-800);">Atención: {{ docs_urgentes_count }}
+                documento{{ docs_urgentes_count|pluralize:"s" }} lleva{{ docs_urgentes_count|pluralize:"n" }} más de 3
+                días sin revisión</strong>
+        </div>
+    </div>
+    <a href="?urgente=1" class="btn btn-sm" style="background: var(--rose-600); color: #fff;">
+        Priorizar urgentes
+    </a>
+</div>
+{% endif %}
+
+<!-- Tarjetas de Estadísticas -->
+<div class="stats-grid">
+    <div class="stat-card stat-card--amber">
+        <div class="stat-card-icon"><i data-lucide="clock"></i></div>
+        <div class="stat-card-label">Pendientes</div>
+        <div class="stat-card-value">{{ por_revisar }}</div>
+    </div>
+
+    <div class="stat-card stat-card--emerald">
+        <div class="stat-card-icon"><i data-lucide="check-circle"></i></div>
+        <div class="stat-card-label">Aprobados hoy</div>
+        <div class="stat-card-value">{{ aprobados_hoy }}</div>
+    </div>
+
+    <div class="stat-card stat-card--rose">
+        <div class="stat-card-icon"><i data-lucide="x-circle"></i></div>
+        <div class="stat-card-label">Rechazados hoy</div>
+        <div class="stat-card-value">{{ rechazados_hoy }}</div>
+    </div>
+
+    {% if hay_urgentes %}
+    <div class="stat-card" style="border-bottom-color: var(--rose-700); background: var(--rose-50);">
+        <div class="stat-card-icon" style="color: var(--rose-700); background: var(--rose-100);"><i
+                data-lucide="flame"></i></div>
+        <div class="stat-card-label" style="color: var(--rose-700);">Urgentes</div>
+        <div class="stat-card-value" style="color: var(--rose-800);">{{ docs_urgentes_count }}</div>
     </div>
     {% endif %}
+</div>
 
-    <!-- Tarjetas de Estadísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-        <!-- Pendientes -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-b-4 border-b-amber-500 hover:-translate-y-1 transition-transform">
-            <div class="flex justify-between items-start mb-4">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Pendientes</span>
-                <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
-                    <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
-                </div>
-            </div>
-            <h2 class="text-4xl font-bold text-brand-900 m-0 leading-none">{{ por_revisar }}</h2>
+<!-- Contenedor Principal (Tabla) -->
+<div class="table-container" style="position: relative;">
+
+    <!-- Toolbar (Tabs) -->
+    <div
+        style="background: var(--slate-50); padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--slate-200); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md);">
+        <div class="flex-row"
+            style="gap: 0.35rem; background: rgba(226,232,240,0.5); padding: 4px; border-radius: var(--radius-md);">
+            <a href="?estado=" class="filter-chip {% if not estado_actual and not es_urgente %}filter-chip-active{% endif %}"
+                style="padding: 0.4rem 1rem; font-size: 0.75rem;">Todos</a>
+            <a href="?estado=PENDIENTE" class="filter-chip {% if estado_actual == 'PENDIENTE' and not es_urgente %}filter-chip-active{% endif %}"
+                style="padding: 0.4rem 1rem; font-size: 0.75rem;">Pendientes</a>
+            <a href="?estado=APROBADO" class="filter-chip {% if estado_actual == 'APROBADO' %}filter-chip-active{% endif %}"
+                style="padding: 0.4rem 1rem; font-size: 0.75rem;">Aprobados</a>
+            <a href="?urgente=1" class="filter-chip {% if es_urgente %}filter-chip-active{% endif %}"
+                style="padding: 0.4rem 1rem; font-size: 0.75rem;">Urgentes</a>
         </div>
 
-        <!-- Aprobados hoy -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-b-4 border-b-emerald-500 hover:-translate-y-1 transition-transform">
-            <div class="flex justify-between items-start mb-4">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Aprobados hoy</span>
-                <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>
-                </div>
-            </div>
-            <h2 class="text-4xl font-bold text-brand-900 m-0 leading-none">{{ aprobados_hoy }}</h2>
+        <div id="selection-counter" class="hidden flex-row"
+            style="background: var(--brand-900); color: #fff; padding: 0.4rem 1rem; border-radius: var(--radius-md); animation: fadeIn 0.3s ease-out;">
+            <span class="text-xxs font-bold uppercase tracking-wide"
+                style="border-right: 1px solid rgba(255,255,255,0.2); padding-right: 0.75rem; margin-right: 0.75rem;"><span
+                    id="selected-count">0</span> Seleccionados</span>
+            <button type="button" data-action="clear-selection" class="text-xxs font-bold"
+                style="background: none; border: none; color: rgba(255,255,255,0.5);">Limpiar</button>
         </div>
-
-        <!-- Rechazados hoy -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-b-4 border-b-rose-500 hover:-translate-y-1 transition-transform">
-            <div class="flex justify-between items-start mb-4">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Rechazados hoy</span>
-                <div class="w-10 h-10 rounded-lg bg-rose-50 flex items-center justify-center">
-                    <i data-lucide="x-circle" class="w-5 h-5 text-rose-500"></i>
-                </div>
-            </div>
-            <h2 class="text-4xl font-bold text-brand-900 m-0 leading-none">{{ rechazados_hoy }}</h2>
-        </div>
-
-        <!-- Urgentes (Opcional) -->
-        {% if hay_urgentes %}
-        <div class="bg-rose-50 rounded-2xl p-6 shadow-sm border border-rose-200 border-b-4 border-b-rose-700 hover:-translate-y-1 transition-transform">
-            <div class="flex justify-between items-start mb-4">
-                <span class="text-[11px] font-bold text-rose-700 uppercase tracking-widest">Urgentes</span>
-                <div class="w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center">
-                    <i data-lucide="flame" class="w-5 h-5 text-rose-700"></i>
-                </div>
-            </div>
-            <h2 class="text-4xl font-bold text-rose-800 m-0 leading-none">{{ docs_urgentes_count }}</h2>
-        </div>
-        {% endif %}
     </div>
 
-    <!-- Contenedor Principal (Tabla) -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
-        
-        <!-- Toolbar (Tabs) -->
-        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex flex-wrap gap-2 bg-slate-200/50 p-1 rounded-xl">
-                <a href="?estado=" class="px-4 py-2 rounded-lg text-xs font-bold transition-all {% if not estado_actual and not es_urgente %}bg-white text-brand-900 shadow-sm{% else %}text-slate-500 hover:text-brand-900{% endif %}">Todos</a>
-                <a href="?estado=PENDIENTE" class="px-4 py-2 rounded-lg text-xs font-bold transition-all {% if estado_actual == 'PENDIENTE' and not es_urgente %}bg-white text-brand-900 shadow-sm{% else %}text-slate-500 hover:text-brand-900{% endif %}">Pendientes</a>
-                <a href="?estado=APROBADO" class="px-4 py-2 rounded-lg text-xs font-bold transition-all {% if estado_actual == 'APROBADO' %}bg-white text-brand-900 shadow-sm{% else %}text-slate-500 hover:text-brand-900{% endif %}">Aprobados</a>
-                <a href="?urgente=1" class="px-4 py-2 rounded-lg text-xs font-bold transition-all {% if es_urgente %}bg-white text-brand-900 shadow-sm{% else %}text-slate-500 hover:text-brand-900{% endif %}">Urgentes</a>
-            </div>
+    <!-- Tabla de Documentos -->
+    <form id="bulk-action-form" method="post" action="{% url 'documentos:aprobar_lote' %}">
+        {% csrf_token %}
+        <div class="table-scroll">
+            <table class="data-table" id="docs-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">
+                            <input type="checkbox" id="select-all"
+                                style="cursor: pointer; accent-color: var(--brand-900);">
+                        </th>
+                        <th>Documento</th>
+                        <th>Cargado por</th>
+                        <th>Categoría / Factor</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th style="text-align: right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in page_obj %}
+                    <tr class="doc-row" data-doc-id="{{ doc.id }}" data-status="{{ doc.estado }}">
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="documento_ids" value="{{ doc.id }}" id="check-{{ doc.id }}"
+                                class="doc-checkbox" style="cursor: pointer; accent-color: var(--brand-900);" {% if doc.estado != 'PENDIENTE' %}disabled{% endif %}>
+                        </td>
+                        <td>
+                            <div class="flex-row">
+                                <div class="doc-icon">
+                                    {% if ".pdf" in doc.archivo.name|lower %}
+                                    <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
+                                    {% elif ".doc" in doc.archivo.name|lower %}
+                                    <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word">
+                                    {% elif ".xls" in doc.archivo.name|lower %}
+                                    <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel">
+                                    {% elif ".ppt" in doc.archivo.name|lower %}
+                                    <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png"
+                                        alt="PPT">
+                                    {% else %}
+                                    <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc">
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'documentos:detalle' doc.id %}" class="font-semibold text-brand">{{ doc.titulo|truncatechars:35 }}</a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex-row">
+                                <img src="https://ui-avatars.com/api/?name={{ doc.autor.get_full_name|urlencode }}&background=0D1B2A&color=fff&size=32"
+                                    style="width: 32px; height: 32px; border-radius: var(--radius-full); box-shadow: var(--shadow-xs);"
+                                    alt="Avatar">
+                                <div>
+                                    <div class="font-bold text-xs text-brand">{{ doc.autor.get_full_name }}</div>
+                                    <div class="text-xxs font-bold text-light uppercase tracking-wide mt-sm">{{ doc.autor.rol|default:"USUARIO" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="font-semibold text-muted">{{ doc.categoria.nombre|default:"Sin categoría" }}
+                            </div>
+                            <div class="text-xxs font-bold uppercase tracking-wide mt-sm">
+                                {% if doc.factor_cna %}
+                                <span style="color: var(--brand-600);">{{ doc.get_factor_cna_display|truncatechars:25 }}</span>
+                                {% else %}
+                                <span style="color: var(--rose-500);">No asignado</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-muted text-xs" style="font-family: monospace;">{{ doc.fecha_modificacion|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if doc.estado == 'APROBADO' %}
+                            <span class="badge badge-success">Aprobado</span>
+                            {% elif doc.estado == 'RECHAZADO' %}
+                            <span class="badge badge-danger">Rechazado</span>
+                            {% else %}
+                            <span class="badge badge-warning">Pendiente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="flex-row" style="justify-content: flex-end; gap: 0.5rem;">
+                                {% if doc.estado == 'PENDIENTE' %}
+                                <button type="button" data-action="approve" data-doc-id="{{ doc.id }}"
+                                    class="btn-icon btn-approve" title="Aprobar">
+                                    <i data-lucide="check"></i>
+                                </button>
+                                <button type="button" data-action="toggle-reject" data-doc-id="{{ doc.id }}"
+                                    class="btn-icon btn-reject" title="Rechazar">
+                                    <i data-lucide="x"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
 
-            <!-- Contador de selección (Hidden by default) -->
-            <div id="selection-counter" class="hidden animate-[fadeIn_0.3s_ease-out] items-center gap-3 bg-brand-900 text-white px-4 py-2 rounded-xl">
-                <span class="text-[10px] font-bold uppercase tracking-widest border-r border-white/20 pr-3"><span id="selected-count">0</span> Seleccionados</span>
-                <button type="button" data-action="clear-selection" class="text-[10px] font-bold hover:text-rose-300 transition-colors">Limpiar</button>
-            </div>
+                    <!-- Panel de Rechazo (Oculto por defecto) -->
+                    {% if doc.estado == 'PENDIENTE' %}
+                    <tr id="reject-{{ doc.id }}" class="hidden"
+                        style="background: var(--rose-50); border-bottom: 1px solid var(--rose-100);">
+                        <td colspan="7" style="padding: var(--space-xl);">
+                            <div class="flex-stack" style="gap: var(--space-md);">
+                                <label class="form-label" style="color: var(--rose-800);">Motivo del rechazo para: <span
+                                        style="color: var(--rose-600);">{{ doc.titulo }}</span></label>
+                                <textarea id="comment-{{ doc.id }}" class="form-textarea"
+                                    style="min-height: 80px; border-color: var(--rose-200);"
+                                    placeholder="Explique por qué se rechaza el documento..."></textarea>
+                                <div class="flex-row" style="justify-content: flex-end; gap: var(--space-md);">
+                                    <button type="button" data-action="cancel-reject" data-doc-id="{{ doc.id }}"
+                                        class="btn btn-ghost btn-sm">Cancelar</button>
+                                    <button type="button" data-action="confirm-reject" data-doc-id="{{ doc.id }}"
+                                        class="btn btn-sm" style="background: var(--rose-600); color: #fff;">Confirmar
+                                        Rechazo</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i data-lucide="check-circle-2"></i>
+                                </div>
+                                <p>No hay documentos para mostrar en esta vista.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
-        <!-- Tabla de Documentos -->
-        <form id="bulk-action-form" method="post" action="{% url 'documentos:aprobar_lote' %}">
-            {% csrf_token %}
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse" id="docs-table">
-                    <thead>
-                        <tr class="bg-white border-b border-slate-200">
-                            <th class="py-4 px-5 text-center w-[60px]">
-                                <input type="checkbox" id="select-all" class="w-4 h-4 rounded border-slate-300 text-brand-900 focus:ring-brand-500 cursor-pointer" />
-                            </th>
-                            <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Documento</th>
-                            <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Cargado por</th>
-                            <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Categoría / Factor</th>
-                            <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Fecha</th>
-                            <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Estado</th>
-                            <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm divide-y divide-slate-100">
-                        {% for doc in page_obj %}
-                        <tr class="hover:bg-slate-50/80 transition-colors group {% if doc.estado == 'PENDIENTE' %}cursor-pointer{% endif %} doc-row" 
-                            data-doc-id="{{ doc.id }}" data-status="{{ doc.estado }}">
-                            <td class="py-4 px-5 text-center">
-                                <input type="checkbox" name="documento_ids" value="{{ doc.id }}" id="check-{{ doc.id }}" 
-                                       class="doc-checkbox w-4 h-4 rounded border-slate-300 text-brand-900 focus:ring-brand-500 cursor-pointer"
-                                       {% if doc.estado != 'PENDIENTE' %}disabled{% endif %} />
-                            </td>
-                            <td class="py-4 px-5">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 flex items-center justify-center shrink-0">
-                                        {% if ".pdf" in doc.archivo.name|lower %}
-                                          <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF" class="w-full h-full object-contain drop-shadow-sm" />
-                                        {% elif ".doc" in doc.archivo.name|lower %}
-                                          <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word" class="w-full h-full object-contain drop-shadow-sm" />
-                                        {% elif ".xls" in doc.archivo.name|lower %}
-                                          <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel" class="w-full h-full object-contain drop-shadow-sm" />
-                                        {% elif ".ppt" in doc.archivo.name|lower %}
-                                          <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT" class="w-full h-full object-contain drop-shadow-sm" />
-                                        {% else %}
-                                          <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc" class="w-full h-full object-contain drop-shadow-sm" />
-                                        {% endif %}
-                                    </div>
-                                    <a href="{% url 'documentos:detalle' doc.id %}" class="font-semibold text-brand-900 hover:text-brand-600 hover:underline transition-colors block">
-                                        {{ doc.titulo|truncatechars:35 }}
-                                    </a>
-                                </div>
-                            </td>
-                            <td class="py-4 px-5">
-                                <div class="flex items-center gap-3">
-                                    <img src="https://ui-avatars.com/api/?name={{ doc.autor.get_full_name|urlencode }}&background=0D1B2A&color=fff&size=32" class="w-8 h-8 rounded-full shadow-sm" alt="Avatar" />
-                                    <div>
-                                        <div class="font-bold text-slate-800 text-xs">{{ doc.autor.get_full_name }}</div>
-                                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{{ doc.autor.rol|default:"USUARIO" }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="py-4 px-5">
-                                <div class="font-medium text-slate-700">{{ doc.categoria.nombre|default:"Sin categoría" }}</div>
-                                <div class="text-[10px] font-bold uppercase tracking-widest mt-0.5">
-                                    {% if doc.factor_cna %}
-                                        <span class="text-brand-600">{{ doc.get_factor_cna_display|truncatechars:25 }}</span>
-                                    {% else %}
-                                        <span class="text-rose-500">No asignado</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td class="py-4 px-5 text-slate-500 font-mono text-xs">{{ doc.fecha_modificacion|date:"d/m/Y" }}</td>
-                            <td class="py-4 px-5">
-                                {% if doc.estado == 'APROBADO' %}
-                                    <span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Aprobado</span>
-                                {% elif doc.estado == 'RECHAZADO' %}
-                                    <span class="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Rechazado</span>
-                                {% else %}
-                                    <span class="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Pendiente</span>
-                                {% endif %}
-                            </td>
-                            <td class="py-4 px-5">
-                                <div class="flex items-center justify-end gap-2">
-                                    {% if doc.estado == 'PENDIENTE' %}
-                                        <button type="button" data-action="approve" data-doc-id="{{ doc.id }}" class="w-8 h-8 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors shadow-sm" title="Aprobar Individual">
-                                            <i data-lucide="check" class="w-4 h-4"></i>
-                                        </button>
-                                        <button type="button" data-action="toggle-reject" data-doc-id="{{ doc.id }}" class="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shadow-sm" title="Rechazar Individual">
-                                            <i data-lucide="x" class="w-4 h-4"></i>
-                                        </button>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Panel de Rechazo (Oculto por defecto) -->
-                        {% if doc.estado == 'PENDIENTE' %}
-                        <tr id="reject-{{ doc.id }}" class="hidden bg-rose-50/50 border-b border-rose-100">
-                            <td colspan="7" class="p-6">
-                                <div class="flex flex-col gap-3">
-                                    <label class="text-xs font-bold text-rose-800 uppercase tracking-widest">Motivo del rechazo para: <span class="text-rose-600">{{ doc.titulo }}</span></label>
-                                    <textarea id="comment-{{ doc.id }}" class="w-full bg-white border border-rose-200 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 min-h-[80px]" placeholder="Explique por qué se rechaza el documento..."></textarea>
-                                    <div class="flex justify-end gap-3 mt-2">
-                                        <button type="button" data-action="cancel-reject" data-doc-id="{{ doc.id }}" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-200 transition-colors">Cancelar</button>
-                                        <button type="button" data-action="confirm-reject" data-doc-id="{{ doc.id }}" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm">Confirmar Rechazo</button>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endif %}
-
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="py-16 text-center text-slate-400 font-medium">
-                                <div class="flex flex-col items-center justify-center gap-3">
-                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-2">
-                                        <i data-lucide="check-circle-2" class="w-8 h-8 text-slate-300"></i>
-                                    </div>
-                                    <p>No hay documentos para mostrar en esta vista.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <!-- Floating Action Bar (Bulk Actions) -->
+        <div id="bulk-action-bar"
+            style="position: fixed; bottom: 2.5rem; left: 50%; transform: translate(-50%, 200%); background: var(--brand-900); color: #fff; padding: var(--space-lg) var(--space-2xl); border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); display: flex; align-items: center; gap: var(--space-3xl); z-index: 100; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); border: 1px solid rgba(255,255,255,0.1);">
+            <div>
+                <span class="text-xxs font-bold uppercase tracking-wide"
+                    style="color: var(--emerald-400); display: block; margin-bottom: 0.2rem;">Acción en Lote</span>
+                <span class="text-sm font-bold"><span id="bulk-count">0</span> Documentos Seleccionados</span>
             </div>
 
-            <!-- Floating Action Bar (Bulk Actions) -->
-            <div id="bulk-action-bar" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-brand-900 text-white px-8 py-5 rounded-3xl shadow-2xl flex items-center gap-10 z-[100] translate-y-[200%] transition-all duration-500 border border-white/10 backdrop-blur-md bg-opacity-95">
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-0.5">Acción en Lote</span>
-                    <span class="text-sm font-bold"><span id="bulk-count">0</span> Documentos Seleccionados</span>
-                </div>
-                
-                <div class="h-10 w-px bg-white/10"></div>
-                
-                <div class="flex items-center gap-4">
-                    <button type="button" id="btn-bulk-approve" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2.5 transition-all shadow-lg active:scale-95">
-                        <i data-lucide="check-circle" class="w-4 h-4"></i>
-                        Aprobar Seleccionados
-                    </button>
-                    
-                    <button type="button" data-action="clear-selection" class="text-xs font-bold text-white/50 hover:text-white transition-colors">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </form>
+            <div style="height: 40px; width: 1px; background: rgba(255,255,255,0.1);"></div>
 
-        <!-- Paginación -->
-        {% if page_obj.has_other_pages %}
-        <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center">
-            <span class="text-xs text-slate-500 font-medium">Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} documentos</span>
-            <div class="flex gap-2">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}" class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-500 hover:border-brand-500 hover:text-brand-600 transition-colors"><i data-lucide="chevron-left" class="w-4 h-4"></i></a>
+            <div class="flex-row" style="gap: var(--space-md);">
+                <button type="button" id="btn-bulk-approve" class="btn"
+                    style="background: var(--emerald-500); color: #fff; box-shadow: var(--shadow-lg);">
+                    <i data-lucide="check-circle"></i>
+                    Aprobar Seleccionados
+                </button>
+
+                <button type="button" data-action="clear-selection" class="text-xs font-bold"
+                    style="background: none; border: none; color: rgba(255,255,255,0.5);">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination"
+        style="border-radius: 0; border-top: 1px solid var(--slate-200); border-bottom: none; border-left: none; border-right: none; box-shadow: none;">
+        <div class="pagination-info">
+            Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} documentos
+        </div>
+        <div class="pagination-buttons">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}"
+                class="pagination-btn"><i data-lucide="chevron-left"></i></a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="pagination-btn active">{{ num }}</span>
+            {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %} <a
+                href="?page={{ num }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}"
+                class="pagination-btn">{{ num }}</a>
                 {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <span class="w-8 h-8 flex items-center justify-center bg-brand-900 text-white rounded-lg text-xs font-bold shadow-sm">{{ num }}</span>
-                    {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-                        <a href="?page={{ num }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}" class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-500 text-xs font-bold hover:border-brand-500 hover:text-brand-600 transition-colors">{{ num }}</a>
-                    {% endif %}
                 {% endfor %}
 
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}" class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-500 hover:border-brand-500 hover:text-brand-600 transition-colors"><i data-lucide="chevron-right" class="w-4 h-4"></i></a>
+                <a href="?page={{ page_obj.next_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}"
+                    class="pagination-btn"><i data-lucide="chevron-right"></i></a>
                 {% endif %}
-            </div>
         </div>
-        {% endif %}
-
     </div>
+    {% endif %}
+
 </div>
 
-<!-- Modal de Confirmación Estético -->
-<div id="custom-confirm-modal" class="fixed inset-0 z-[200] hidden">
-    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="confirm-backdrop"></div>
-    
-    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all duration-300 sm:my-8 sm:max-w-sm w-full opacity-0 translate-y-8 sm:scale-95 border border-slate-100" id="confirm-panel">
-            <div class="bg-white px-6 pt-6 pb-6">
-                <div class="flex flex-col items-center text-center">
-                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-full bg-emerald-50 mb-4">
-                        <i data-lucide="check-circle-2" class="h-7 w-7 text-emerald-500"></i>
-                    </div>
-                    <h3 class="text-lg leading-6 font-bold text-brand-900 mb-2" id="confirm-title">
-                        Confirmar Acción
-                    </h3>
-                    <p class="text-sm text-slate-500 font-medium px-2" id="confirm-message">
-                        ¿Estás seguro de continuar?
-                    </p>
+<!-- Modal de Confirmación -->
+<div id="custom-confirm-modal" class="hidden" style="position: fixed; inset: 0; z-index: 200;">
+    <div id="confirm-backdrop"
+        style="position: absolute; inset: 0; background: rgba(15,23,42,0.4); backdrop-filter: blur(4px); transition: opacity 0.3s; opacity: 0;">
+    </div>
+
+    <div
+        style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: var(--space-md);">
+        <div id="confirm-panel" class="card"
+            style="position: relative; max-width: 400px; width: 100%; box-shadow: var(--shadow-xl); transform: translateY(2rem) scale(0.95); opacity: 0; transition: all 0.3s cubic-bezier(0.4,0,0.2,1);">
+            <div class="card-body text-center">
+                <div
+                    style="width: 56px; height: 56px; background: var(--emerald-50); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg);">
+                    <i data-lucide="check-circle-2" style="width: 28px; height: 28px; color: var(--emerald-500);"></i>
                 </div>
+                <h3 id="confirm-title"
+                    style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--brand-900); margin-bottom: var(--space-sm);">
+                    Confirmar Acción</h3>
+                <p id="confirm-message" class="text-sm text-muted">¿Estás seguro de continuar?</p>
             </div>
-            <div class="bg-slate-50 px-6 py-4 flex flex-col sm:flex-row-reverse gap-3 border-t border-slate-100">
-                <button type="button" id="confirm-btn-yes" class="w-full inline-flex justify-center items-center gap-2 rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-emerald-500 text-sm font-bold text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:w-auto transition-all active:scale-95">
-                    <i data-lucide="check" class="w-4 h-4"></i> Confirmar
-                </button>
-                <button type="button" id="confirm-btn-no" class="w-full inline-flex justify-center items-center gap-2 rounded-xl border border-slate-200 shadow-sm px-5 py-2.5 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus:outline-none sm:w-auto transition-all">
-                    Cancelar
+            <div
+                style="background: var(--slate-50); padding: var(--space-md) var(--space-xl); border-top: 1px solid var(--slate-100); display: flex; gap: var(--space-md); justify-content: flex-end;">
+                <button type="button" id="confirm-btn-no" class="btn btn-ghost btn-sm">Cancelar</button>
+                <button type="button" id="confirm-btn-yes" class="btn btn-sm"
+                    style="background: var(--emerald-500); color: #fff;">
+                    <i data-lucide="check"></i> Confirmar
                 </button>
             </div>
         </div>
@@ -308,18 +333,17 @@
         document.getElementById('confirm-title').innerText = title;
         document.getElementById('confirm-message').innerText = message;
         pendingConfirmAction = onConfirm;
-        
+
         const modal = document.getElementById('custom-confirm-modal');
         const backdrop = document.getElementById('confirm-backdrop');
         const panel = document.getElementById('confirm-panel');
-        
+
         modal.classList.remove('hidden');
-        
+
         requestAnimationFrame(() => {
-            backdrop.classList.remove('opacity-0');
-            backdrop.classList.add('opacity-100');
-            panel.classList.remove('opacity-0', 'translate-y-8', 'sm:scale-95');
-            panel.classList.add('opacity-100', 'translate-y-0', 'sm:scale-100');
+            backdrop.style.opacity = '1';
+            panel.style.opacity = '1';
+            panel.style.transform = 'translateY(0) scale(1)';
         });
     }
 
@@ -327,16 +351,15 @@
         const modal = document.getElementById('custom-confirm-modal');
         const backdrop = document.getElementById('confirm-backdrop');
         const panel = document.getElementById('confirm-panel');
-        
-        backdrop.classList.remove('opacity-100');
-        backdrop.classList.add('opacity-0');
-        panel.classList.remove('opacity-100', 'translate-y-0', 'sm:scale-100');
-        panel.classList.add('opacity-0', 'translate-y-8', 'sm:scale-95');
-        
+
+        backdrop.style.opacity = '0';
+        panel.style.opacity = '0';
+        panel.style.transform = 'translateY(2rem) scale(0.95)';
+
         setTimeout(() => {
             modal.classList.add('hidden');
             pendingConfirmAction = null;
-        }, 300); // Coincide con duration-300
+        }, 300);
     }
 
     document.getElementById('confirm-btn-no').addEventListener('click', hideConfirmModal);
@@ -348,31 +371,30 @@
     function updateUI() {
         if (!checkboxes.length) return;
         const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
-        
+
         if (checked > 0) {
             bulkBar.style.transform = 'translate(-50%, 0)';
             bulkCount.innerText = checked;
             selectionCounter.classList.remove('hidden');
-            selectionCounter.classList.add('flex');
+            selectionCounter.style.display = 'flex';
             selectedCount.innerText = checked;
         } else {
             bulkBar.style.transform = 'translate(-50%, 200%)';
             selectionCounter.classList.add('hidden');
-            selectionCounter.classList.remove('flex');
+            selectionCounter.style.display = '';
         }
-        
+
         if (selectAll) {
             selectAll.checked = (checked === checkboxes.length && checkboxes.length > 0);
         }
     }
 
-    // Delegación de Eventos Centralizada
+    // Delegación de Eventos
     if (docsTable) {
         docsTable.addEventListener('click', (e) => {
             const target = e.target.closest('[data-action]');
             const row = e.target.closest('.doc-row');
-            
-            // Si es un clic en la fila (para marcar checkbox)
+
             if (row && !target && !e.target.closest('a') && !e.target.closest('button') && !e.target.closest('input')) {
                 const docId = row.getAttribute('data-doc-id');
                 const cb = document.getElementById('check-' + docId);
@@ -384,7 +406,6 @@
             }
 
             if (!target) return;
-
             const action = target.getAttribute('data-action');
             const docId = target.getAttribute('data-doc-id');
 
@@ -398,7 +419,6 @@
         });
     }
 
-    // Botones globales de selección
     document.addEventListener('click', (e) => {
         const target = e.target.closest('[data-action="clear-selection"]');
         if (target) {
@@ -440,12 +460,10 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = `/documentos/${docId}/aprobar/`;
-                
                 const csrfInput = document.createElement('input');
                 csrfInput.type = 'hidden';
                 csrfInput.name = 'csrfmiddlewaretoken';
                 csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                
                 form.appendChild(csrfInput);
                 document.body.appendChild(form);
                 form.submit();
@@ -459,21 +477,17 @@
             alert('Por favor, indique el motivo del rechazo.');
             return;
         }
-        
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/documentos/${docId}/rechazar/`;
-        
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
         csrfInput.name = 'csrfmiddlewaretoken';
         csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
         const commentInput = document.createElement('input');
         commentInput.type = 'hidden';
         commentInput.name = 'comentario';
         commentInput.value = comment;
-        
         form.appendChild(csrfInput);
         form.appendChild(commentInput);
         document.body.appendChild(form);

@@ -1,7 +1,7 @@
-# Documentación Técnica: Docuflow
+# Documentación Técnica: SIGEA
 
 ## 1. Descripción General del Sistema
-**Nombre:** Docuflow
+**Nombre:** SIGEA
 **Propósito:** Plataforma institucional para la gestión, acreditación y control de documentos universitarios. Permite la centralización de evidencias para procesos de calidad académica (CNA), con flujos estrictos de aprobación y control de acceso granular.
 **Contexto de Uso:** Facultades universitarias que requieren organizar documentación por programas académicos, factores de acreditación y roles de responsabilidad.
 

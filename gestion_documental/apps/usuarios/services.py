@@ -118,12 +118,12 @@ class UsuarioService:
 
         # Enviar email (console backend en desarrollo)
         send_mail(
-            subject='Recuperación de contraseña - Docuflow',
+            subject='Recuperación de contraseña - SIGEA',
             message=(
                 f'Tu código de verificación es: {token}.\n'
                 f'Válido por 3 minutos. Máximo 3 intentos.'
             ),
-            from_email='noreply@docuflow.edu.co',
+            from_email='noreply@SIGEA.edu.co',
             recipient_list=[email],
             fail_silently=False,
         )

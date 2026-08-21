@@ -1,162 +1,150 @@
 {% extends 'base.html' %}
-{% block title %}Auditoría - Docuflow{% endblock %}
+{% block title %}Auditoría - SIGEA{% endblock %}
 {% block page_title %}Auditoría y Trazabilidad{% endblock %}
 
 {% block content %}
-<div class="max-w-[1400px] mx-auto animate-[fadeIn_0.3s_ease-out] pb-10">
 
-    <!-- Banner de Alerta (Administrativo) -->
-    <div class="bg-gradient-to-r from-brand-900 to-brand-800 text-white p-4 rounded-xl flex items-center gap-3 text-sm font-bold mb-8 shadow-sm">
-        <i data-lucide="shield" class="w-5 h-5 text-brand-300"></i>
-        Nivel de Acceso Administrativo - Docuflow Auditoría
+    <!-- Banner Admin -->
+    <div class="dark-panel mb-2xl" style="padding: var(--space-md) var(--space-xl); display: flex; align-items: center; gap: 0.75rem; font-size: 0.867rem; font-weight: 700;">
+        <i data-lucide="shield" style="width: 20px; height: 20px; color: var(--brand-300);"></i>
+        Nivel de Acceso Administrativo - SIGEA Auditoría
     </div>
 
-    <!-- Cabecera -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-            <h1 class="text-2xl font-bold text-brand-900 mb-1 tracking-tight">Trazabilidad de Actividades</h1>
-            <p class="text-sm text-slate-500">Registro centralizado de cada movimiento institucional.</p>
+    <header class="page-header">
+        <div class="page-header-info">
+            <h1>Trazabilidad de Actividades</h1>
+            <p>Registro centralizado de cada movimiento institucional.</p>
         </div>
-        <a href="{% url 'auditoria:exportar' %}?{{ request.GET.urlencode }}" class="shrink-0 bg-brand-900 hover:bg-brand-950 text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all shadow-sm">
-            <i data-lucide="download" class="w-4 h-4"></i>
+        <a href="{% url 'auditoria:exportar' %}?{{ request.GET.urlencode }}" class="btn btn-primary">
+            <i data-lucide="download"></i>
             Exportar Logs
         </a>
-    </div>
+    </header>
 
     <!-- Layout Grid -->
-    <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-8 items-start">
+    <div class="grid-main-aside">
         
         <!-- Columna Principal -->
-        <div class="flex flex-col gap-8">
+        <div class="flex-stack">
             
             <!-- Buscador y Filtros -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
-                    
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Usuario</label>
-                        <div class="relative">
-                            <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input type="text" name="usuario" placeholder="Nombre o ID..." value="{{ request.GET.usuario|default:'' }}" 
-                                   class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 transition-all">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-md); align-items: end;">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Usuario</label>
+                            <div class="select-wrapper">
+                                <input type="text" name="usuario" placeholder="Nombre o ID..." value="{{ request.GET.usuario|default:'' }}" class="form-input" style="padding-left: 2.75rem;">
+                                <i data-lucide="user" style="left: 1rem; right: auto;"></i>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Documento</label>
-                        <div class="relative">
-                            <i data-lucide="file-text" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input type="text" name="documento" placeholder="Título o ID..." value="{{ request.GET.documento|default:'' }}" 
-                                   class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 transition-all">
+                        <div class="form-group">
+                            <label class="form-label">Documento</label>
+                            <div class="select-wrapper">
+                                <input type="text" name="documento" placeholder="Título o ID..." value="{{ request.GET.documento|default:'' }}" class="form-input" style="padding-left: 2.75rem;">
+                                <i data-lucide="file-text" style="left: 1rem; right: auto;"></i>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Acción</label>
-                        <div class="relative">
-                            <select name="accion" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm text-slate-700 focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
-                                <option value="">Todas</option>
-                                <option value="SUBIO" {% if request.GET.accion == 'SUBIO' %}selected{% endif %}>Subida</option>
-                                <option value="APROBO" {% if request.GET.accion == 'APROBO' %}selected{% endif %}>Aprobación</option>
-                                <option value="RECHAZO" {% if request.GET.accion == 'RECHAZO' %}selected{% endif %}>Rechazo</option>
-                                <option value="ELIMINO" {% if request.GET.accion == 'ELIMINO' %}selected{% endif %}>Eliminación</option>
-                            </select>
-                            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                        <div class="form-group">
+                            <label class="form-label">Acción</label>
+                            <div class="select-wrapper">
+                                <select name="accion" class="form-select">
+                                    <option value="">Todas</option>
+                                    <option value="SUBIO" {% if request.GET.accion == 'SUBIO' %}selected{% endif %}>Subida</option>
+                                    <option value="APROBO" {% if request.GET.accion == 'APROBO' %}selected{% endif %}>Aprobación</option>
+                                    <option value="RECHAZO" {% if request.GET.accion == 'RECHAZO' %}selected{% endif %}>Rechazo</option>
+                                    <option value="ELIMINO" {% if request.GET.accion == 'ELIMINO' %}selected{% endif %}>Eliminación</option>
+                                </select>
+                                <i data-lucide="chevron-down"></i>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Desde</label>
-                        <input type="date" name="fecha_inicio" value="{{ request.GET.fecha_inicio|default:'' }}" 
-                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
-                    </div>
-
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Hasta</label>
-                        <div class="flex gap-2 items-center">
-                            <input type="date" name="fecha_fin" value="{{ request.GET.fecha_fin|default:'' }}" 
-                                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
-                            <button type="submit" class="shrink-0 w-[38px] h-[38px] bg-brand-900 hover:bg-brand-950 text-white rounded-xl flex items-center justify-center transition-colors shadow-sm">
-                                <i data-lucide="search" class="w-4 h-4"></i>
-                            </button>
+                        <div class="form-group">
+                            <label class="form-label">Desde</label>
+                            <input type="date" name="fecha_inicio" value="{{ request.GET.fecha_inicio|default:'' }}" class="form-input">
                         </div>
-                    </div>
 
-                </form>
+                        <div class="form-group">
+                            <label class="form-label">Hasta</label>
+                            <div class="flex-row" style="gap: 0.5rem;">
+                                <input type="date" name="fecha_fin" value="{{ request.GET.fecha_fin|default:'' }}" class="form-input">
+                                <button type="submit" class="btn-icon btn-primary" style="width: 38px; height: 38px; border-radius: var(--radius-md); flex-shrink: 0;">
+                                    <i data-lucide="search"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
             </div>
 
             <!-- Tabla de Registros -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+            <div class="table-container">
+                <div class="table-scroll">
+                    <table class="data-table">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200">
-                                <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Fecha y Hora</th>
-                                <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Usuario</th>
-                                <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Acción</th>
-                                <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Documento</th>
-                                <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">IP</th>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Usuario</th>
+                                <th>Acción</th>
+                                <th>Documento</th>
+                                <th>IP</th>
                             </tr>
                         </thead>
-                        <tbody class="text-sm divide-y divide-slate-100">
+                        <tbody>
                             {% for registro in page_obj %}
-                            <tr class="hover:bg-slate-50/80 transition-colors">
-                                <td class="py-4 px-5 whitespace-nowrap">
-                                    <div class="font-bold text-slate-700">{{ registro.fecha_hora|date:"d M, Y" }}</div>
-                                    <div class="text-xs font-mono text-slate-400 mt-0.5">{{ registro.fecha_hora|date:"H:i:s" }}</div>
+                            <tr>
+                                <td style="white-space: nowrap;">
+                                    <div class="font-bold text-sm text-brand">{{ registro.fecha_hora|date:"d M, Y" }}</div>
+                                    <div class="text-xs text-light mt-sm" style="font-family: monospace;">{{ registro.fecha_hora|date:"H:i:s" }}</div>
                                 </td>
-                                <td class="py-4 px-5">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-900 to-brand-700 text-white flex items-center justify-center text-[10px] font-bold shadow-sm shrink-0">
+                                <td>
+                                    <div class="flex-row">
+                                        <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--brand-900), var(--brand-700)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.667rem; font-weight: 700; flex-shrink: 0; box-shadow: var(--shadow-xs);">
                                             {% if registro.usuario %}{{ registro.usuario.first_name|first|upper }}{{ registro.usuario.last_name|first|upper }}{% else %}SYS{% endif %}
                                         </div>
                                         <div>
-                                            <div class="font-bold text-slate-800 text-xs">{{ registro.usuario.get_full_name|default:"Sistema" }}</div>
-                                            <div class="text-[10px] text-slate-400 mt-0.5">{{ registro.usuario.email|default:"automático" }}</div>
+                                            <div class="font-bold text-xs text-brand">{{ registro.usuario.get_full_name|default:"Sistema" }}</div>
+                                            <div class="text-xxs text-light mt-sm">{{ registro.usuario.email|default:"automático" }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="py-4 px-5">
+                                <td>
                                     {% if registro.accion == 'APROBO' %}
-                                        <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">
-                                            <i data-lucide="check" class="w-3 h-3"></i> {{ registro.get_accion_display }}
-                                        </span>
+                                        <span class="badge badge-success"><i data-lucide="check"></i> {{ registro.get_accion_display }}</span>
                                     {% elif registro.accion == 'RECHAZO' or registro.accion == 'ELIMINO' %}
-                                        <span class="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">
-                                            <i data-lucide="x" class="w-3 h-3"></i> {{ registro.get_accion_display }}
-                                        </span>
+                                        <span class="badge badge-danger"><i data-lucide="x"></i> {{ registro.get_accion_display }}</span>
                                     {% elif registro.accion == 'SUBIO' %}
-                                        <span class="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">
-                                            <i data-lucide="upload" class="w-3 h-3"></i> {{ registro.get_accion_display }}
-                                        </span>
+                                        <span class="badge badge-brand"><i data-lucide="upload"></i> {{ registro.get_accion_display }}</span>
                                     {% else %}
-                                        <span class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">
-                                            <i data-lucide="activity" class="w-3 h-3"></i> {{ registro.get_accion_display }}
-                                        </span>
+                                        <span class="badge badge-neutral"><i data-lucide="activity"></i> {{ registro.get_accion_display }}</span>
                                     {% endif %}
                                 </td>
-                                <td class="py-4 px-5">
+                                <td>
                                     {% if registro.documento %}
-                                        <a href="{% url 'documentos:detalle' registro.documento.id %}" class="font-bold text-brand-600 hover:text-brand-800 hover:underline transition-colors text-xs block truncate max-w-[200px]" title="{{ registro.documento.titulo }}">
+                                        <a href="{% url 'documentos:detalle' registro.documento.id %}" class="font-bold text-xs truncate" style="color: var(--brand-600); max-width: 200px; display: block;" title="{{ registro.documento.titulo }}">
                                             {{ registro.documento.titulo }}
                                         </a>
                                         {% if registro.documento.categoria %}
-                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 block">{{ registro.documento.categoria.nombre }}</span>
+                                            <span class="text-xxs font-bold text-light uppercase tracking-wide mt-sm" style="display: block;">{{ registro.documento.categoria.nombre }}</span>
                                         {% endif %}
                                     {% else %}
-                                        <span class="text-xs text-slate-400 italic">{{ registro.detalle|default:"-" }}</span>
+                                        <span class="text-xs text-light" style="font-style: italic;">{{ registro.detalle|default:"-" }}</span>
                                     {% endif %}
                                 </td>
-                                <td class="py-4 px-5 font-mono text-xs text-slate-400">
+                                <td class="text-xs text-light" style="font-family: monospace;">
                                     {{ registro.ip_address|default:"N/A" }}
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5" class="py-16 text-center text-slate-400 font-medium">
-                                    <div class="flex flex-col items-center justify-center gap-3">
-                                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-2">
-                                            <i data-lucide="activity" class="w-8 h-8 text-slate-300"></i>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">
+                                            <i data-lucide="activity"></i>
                                         </div>
                                         <p>No se encontraron registros de auditoría.</p>
                                     </div>
@@ -167,16 +155,15 @@
                     </table>
                 </div>
 
-                <!-- Paginación -->
                 {% if page_obj.has_other_pages %}
-                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center">
-                    <span class="text-xs text-slate-500 font-medium">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-                    <div class="flex gap-2">
+                <div class="pagination" style="border-radius: 0; border-top: 1px solid var(--slate-200); border-bottom: none; border-left: none; border-right: none; box-shadow: none;">
+                    <div class="pagination-info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
+                    <div class="pagination-buttons">
                         {% for num in page_obj.paginator.page_range %}
                             {% if page_obj.number == num %}
-                                <span class="w-8 h-8 flex items-center justify-center bg-brand-900 text-white rounded-lg text-xs font-bold shadow-sm">{{ num }}</span>
+                                <span class="pagination-btn active">{{ num }}</span>
                             {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-                                <a href="?page={{ num }}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.accion %}&accion={{ request.GET.accion }}{% endif %}" class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-500 text-xs font-bold hover:border-brand-500 hover:text-brand-600 transition-colors">{{ num }}</a>
+                                <a href="?page={{ num }}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.accion %}&accion={{ request.GET.accion }}{% endif %}" class="pagination-btn">{{ num }}</a>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -187,46 +174,48 @@
         </div>
 
         <!-- Sidebar / Widget -->
-        <aside class="flex flex-col gap-6">
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                <h3 class="text-sm font-bold text-brand-900 mb-6 flex items-center gap-2">
-                    <i data-lucide="pie-chart" class="w-4 h-4"></i>
-                    Resumen de Actividad
-                </h3>
-                
-                <div class="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Total Registros</span>
-                    <div class="text-3xl font-bold text-brand-900 leading-none">{{ stats.total }}</div>
-                </div>
-
-                <div class="flex flex-col gap-5">
-                    <div>
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-xs font-bold text-slate-600">Subidas</span>
-                            <span class="text-[10px] font-bold text-slate-400">{{ stats.subidas_pct|default:'0' }}%</span>
-                        </div>
-                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-sky-500 rounded-full transition-all duration-1000 ease-out bar-fill" style="width: 0%;" data-width="{{ stats.subidas_pct|default:'0' }}%"></div>
-                        </div>
+        <aside class="flex-stack">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-sm font-bold text-brand mb-xl" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="pie-chart" style="width: 16px; height: 16px;"></i>
+                        Resumen de Actividad
+                    </h3>
+                    
+                    <div style="background: var(--slate-50); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-xl); border: 1px solid var(--slate-100);">
+                        <span class="form-label" style="margin-bottom: 0.25rem;">Total Registros</span>
+                        <div style="font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; color: var(--brand-900);">{{ stats.total }}</div>
                     </div>
 
-                    <div>
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-xs font-bold text-slate-600">Aprobaciones</span>
-                            <span class="text-[10px] font-bold text-slate-400">{{ stats.aprobaciones_pct|default:'0' }}%</span>
+                    <div class="flex-stack" style="gap: var(--space-lg);">
+                        <div>
+                            <div class="flex-between mb-sm">
+                                <span class="text-xs font-bold text-brand">Subidas</span>
+                                <span class="text-xxs font-bold text-light">{{ stats.subidas_pct|default:'0' }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill bar-fill" style="width: 0%; background: var(--sky-500);" data-width="{{ stats.subidas_pct|default:'0' }}%"></div>
+                            </div>
                         </div>
-                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out bar-fill" style="width: 0%;" data-width="{{ stats.aprobaciones_pct|default:'0' }}%"></div>
-                        </div>
-                    </div>
 
-                    <div>
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-xs font-bold text-slate-600">Eliminaciones/Rechazos</span>
-                            <span class="text-[10px] font-bold text-slate-400">{{ stats.eliminaciones_pct|default:'0' }}%</span>
+                        <div>
+                            <div class="flex-between mb-sm">
+                                <span class="text-xs font-bold text-brand">Aprobaciones</span>
+                                <span class="text-xxs font-bold text-light">{{ stats.aprobaciones_pct|default:'0' }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill bar-fill" style="width: 0%; background: var(--emerald-500);" data-width="{{ stats.aprobaciones_pct|default:'0' }}%"></div>
+                            </div>
                         </div>
-                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-rose-500 rounded-full transition-all duration-1000 ease-out bar-fill" style="width: 0%;" data-width="{{ stats.eliminaciones_pct|default:'0' }}%"></div>
+
+                        <div>
+                            <div class="flex-between mb-sm">
+                                <span class="text-xs font-bold text-brand">Eliminaciones/Rechazos</span>
+                                <span class="text-xxs font-bold text-light">{{ stats.eliminaciones_pct|default:'0' }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill bar-fill" style="width: 0%; background: var(--rose-500);" data-width="{{ stats.eliminaciones_pct|default:'0' }}%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -234,13 +223,11 @@
         </aside>
 
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Animación de las barras de progreso en el sidebar
         setTimeout(() => {
             document.querySelectorAll('.bar-fill').forEach(bar => {
                 const targetWidth = bar.getAttribute('data-width');

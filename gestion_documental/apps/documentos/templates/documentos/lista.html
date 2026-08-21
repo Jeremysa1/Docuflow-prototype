@@ -1,143 +1,139 @@
 {% extends 'base.html' %}
-{% block title %}{{ titulo_pagina|default:"Documentos" }} - Docuflow{% endblock %}
+{% block title %}{{ titulo_pagina|default:"Documentos" }} - SIGEA{% endblock %}
 {% block page_title %}{{ titulo_pagina|default:"Documentos" }}{% endblock %}
 
 {% block content %}
-<div class="max-w-[1400px] mx-auto animate-[fadeIn_0.3s_ease-out] pb-10">
-    
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-brand-900 mb-1 tracking-tight">{{ titulo_pagina|default:"Repositorio de Documentos" }}</h1>
-            <p class="text-sm text-slate-500">Explora y filtra los documentos del sistema</p>
+
+    <header class="page-header">
+        <div class="page-header-info">
+            <h1>{{ titulo_pagina|default:"Repositorio de Documentos" }}</h1>
+            <p>Explora y filtra los documentos del sistema</p>
         </div>
-        <a href="{% url 'documentos:subir' %}" class="shrink-0 bg-brand-900 hover:bg-brand-950 text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all shadow-sm">
-            <i data-lucide="plus" class="w-4 h-4"></i>
+        <a href="{% url 'documentos:subir' %}" class="btn btn-primary">
+            <i data-lucide="plus"></i>
             Nuevo Documento
         </a>
-    </div>
+    </header>
 
-    <form method="get" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-wrap gap-4 items-end">
-        <div class="flex-1 min-w-[200px]">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Buscar</label>
-            <div class="relative">
-                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" name="q" placeholder="Título o descripción..." value="{{ filtros.busqueda|default:'' }}" 
-                       class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+    <form method="get" class="filter-bar">
+        <div class="form-group">
+            <label class="form-label">Buscar</label>
+            <div class="select-wrapper">
+                <input type="text" name="q" placeholder="Título o descripción..." value="{{ filtros.busqueda|default:'' }}" class="form-input">
+                <i data-lucide="search"></i>
             </div>
         </div>
         
-        <div class="flex-1 min-w-[150px]">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Programa</label>
-            <div class="relative">
-                <select name="programa" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm text-slate-700 focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
+        <div class="form-group">
+            <label class="form-label">Programa</label>
+            <div class="select-wrapper">
+                <select name="programa" class="form-select">
                     <option value="">Todos</option>
                     {% for p in programas %}
                     <option value="{{ p.id }}" {% if filtros.programa|add:"0" == p.id %}selected{% endif %}>{{ p.nombre }}</option>
                     {% endfor %}
                 </select>
-                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                <i data-lucide="chevron-down"></i>
             </div>
         </div>
         
-        <div class="flex-1 min-w-[150px]">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Categoría</label>
-            <div class="relative">
-                <select name="categoria" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm text-slate-700 focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
+        <div class="form-group">
+            <label class="form-label">Categoría</label>
+            <div class="select-wrapper">
+                <select name="categoria" class="form-select">
                     <option value="">Todas</option>
                     {% for c in categorias %}
                     <option value="{{ c.id }}" {% if filtros.categoria|add:"0" == c.id %}selected{% endif %}>{{ c.nombre }}</option>
                     {% endfor %}
                 </select>
-                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                <i data-lucide="chevron-down"></i>
             </div>
         </div>
         
-        <div class="flex-1 min-w-[150px]">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Estado</label>
-            <div class="relative">
-                <select name="estado" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm text-slate-700 focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
+        <div class="form-group">
+            <label class="form-label">Estado</label>
+            <div class="select-wrapper">
+                <select name="estado" class="form-select">
                     <option value="">Todos</option>
                     <option value="PENDIENTE" {% if filtros.estado == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
                     <option value="APROBADO" {% if filtros.estado == 'APROBADO' %}selected{% endif %}>Aprobado</option>
                     <option value="RECHAZADO" {% if filtros.estado == 'RECHAZADO' %}selected{% endif %}>Rechazado</option>
                 </select>
-                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                <i data-lucide="chevron-down"></i>
             </div>
         </div>
         
-        <button type="submit" class="bg-brand-900 hover:bg-brand-950 text-white px-5 py-2 rounded-xl font-bold text-sm h-[38px] transition-colors shadow-sm flex items-center gap-2">
-            <i data-lucide="filter" class="w-4 h-4"></i>
+        <button type="submit" class="btn btn-primary">
+            <i data-lucide="filter"></i>
             Filtrar
         </button>
     </form>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+    <div class="table-container">
+        <div class="table-scroll">
+            <table class="data-table">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Documento</th>
-                        <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Categoría / Prog.</th>
-                        <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Autor</th>
-                        <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Fecha</th>
-                        <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Estado</th>
+                    <tr>
+                        <th>Documento</th>
+                        <th>Categoría / Prog.</th>
+                        <th>Autor</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
-                <tbody class="text-sm divide-y divide-slate-100">
+                <tbody>
                     {% for doc in documentos %}
-                    <tr class="hover:bg-slate-50/80 transition-colors group">
-                        <td class="py-4 px-5">
-                            <div class="flex items-start gap-3">
-                                <div class="w-8 h-8 flex items-center justify-center shrink-0 mt-0.5">
+                    <tr>
+                        <td>
+                            <div class="flex-row">
+                                <div class="doc-icon">
                                     {% if ".pdf" in doc.archivo.name|lower %}
-                                      <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF" class="w-full h-full object-contain drop-shadow-sm">
+                                      <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
                                     {% elif ".doc" in doc.archivo.name|lower %}
-                                      <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word" class="w-full h-full object-contain drop-shadow-sm">
+                                      <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word">
                                     {% elif ".xls" in doc.archivo.name|lower %}
-                                      <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel" class="w-full h-full object-contain drop-shadow-sm">
+                                      <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel">
                                     {% elif ".ppt" in doc.archivo.name|lower %}
-                                      <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT" class="w-full h-full object-contain drop-shadow-sm">
+                                      <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT">
                                     {% else %}
-                                      <img src="https://img.icons8.com/fluency/48/file.png" alt="File" class="w-full h-full object-contain drop-shadow-sm">
+                                      <img src="https://img.icons8.com/fluency/48/file.png" alt="File">
                                     {% endif %}
                                 </div>
-                                <div>
-                                    <a href="{% url 'documentos:detalle' doc.id %}" class="font-semibold text-brand-900 hover:text-brand-600 hover:underline transition-colors block">
-                                        {{ doc.titulo }}
-                                    </a>
+                                <div class="flex-stack" style="gap: 0.2rem;">
+                                    <a href="{% url 'documentos:detalle' doc.id %}" class="font-semibold text-brand">{{ doc.titulo }}</a>
                                     {% if doc.es_sensible %}
-                                        <span class="inline-flex items-center gap-1 mt-1 bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
-                                            <i data-lucide="lock" class="w-3 h-3"></i> Sensible
+                                        <span class="badge badge-danger" style="width: max-content; padding: 0.2rem 0.5rem;">
+                                            <i data-lucide="lock"></i> Sensible
                                         </span>
                                     {% endif %}
                                 </div>
                             </div>
                         </td>
-                        <td class="py-4 px-5">
-                            <div class="font-semibold text-slate-700">{{ doc.categoria.nombre }}</div>
-                            <div class="text-[11px] text-slate-500 font-medium uppercase tracking-wide mt-0.5">{{ doc.programa.nombre|default:"Institucional" }}</div>
+                        <td>
+                            <div class="font-semibold text-brand">{{ doc.categoria.nombre }}</div>
+                            <div class="text-xxs font-bold text-light uppercase tracking-wide mt-sm">{{ doc.programa.nombre|default:"Institucional" }}</div>
                         </td>
-                        <td class="py-4 px-5 font-medium text-slate-600">{{ doc.autor.get_full_name }}</td>
-                        <td class="py-4 px-5 text-slate-500 font-mono text-xs">{{ doc.fecha_creacion|date:"d/m/Y" }}</td>
-                        <td class="py-4 px-5">
+                        <td class="font-semibold text-muted">{{ doc.autor.get_full_name }}</td>
+                        <td class="text-muted text-xs">{{ doc.fecha_creacion|date:"d/m/Y" }}</td>
+                        <td>
                             {% if doc.estado == 'APROBADO' %}
-                                <span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Aprobado</span>
+                                <span class="badge badge-success">Aprobado</span>
                             {% elif doc.estado == 'RECHAZADO' %}
-                                <span class="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Rechazado</span>
+                                <span class="badge badge-danger">Rechazado</span>
                             {% else %}
-                                <span class="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Pendiente</span>
+                                <span class="badge badge-warning">Pendiente</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="py-16 text-center text-slate-400 font-medium">
-                            <div class="flex flex-col items-center justify-center gap-3">
-                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-2">
-                                    <i data-lucide="search-x" class="w-8 h-8 text-slate-300"></i>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i data-lucide="search-x"></i>
                                 </div>
                                 <p>No se encontraron documentos con los filtros seleccionados.</p>
-                                <a href="{% url 'documentos:lista' %}" class="text-brand-600 hover:text-brand-800 text-sm font-bold mt-2">Limpiar filtros</a>
+                                <a href="{% url 'documentos:lista' %}">Limpiar filtros</a>
                             </div>
                         </td>
                     </tr>
@@ -146,5 +142,5 @@
             </table>
         </div>
     </div>
-</div>
+
 {% endblock %}

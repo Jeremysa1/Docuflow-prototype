@@ -1,11 +1,11 @@
-# 🚀 Docuflow v2.0 - Gestión Documental Universitaria
+# 🚀 SIGEA v2.0 - Gestión Documental Universitaria
 
-Docuflow es una plataforma integral de gestión documental de alto rendimiento, diseñada específicamente para entornos universitarios. El sistema centraliza, asegura y audita la documentación institucional con un enfoque riguroso en la **Acreditación de Calidad (Factores CNA)** y un modelo de seguridad **Zero-Trust**.
+SIGEA es una plataforma integral de gestión documental de alto rendimiento, diseñada específicamente para entornos universitarios. El sistema centraliza, asegura y audita la documentación institucional con un enfoque riguroso en la **Acreditación de Calidad (Factores CNA)** y un modelo de seguridad **Zero-Trust**.
 
 ---
 
 ## 💎 Visión General y Estética
-Docuflow v2.0 no es solo una herramienta administrativa; es una experiencia de usuario **Premium**. El sistema ha sido refinado para ofrecer una interfaz limpia, moderna y altamente funcional que emula la eficiencia de las mejores suites de productividad del mercado.
+SIGEA v2.0 no es solo una herramienta administrativa; es una experiencia de usuario **Premium**. El sistema ha sido refinado para ofrecer una interfaz limpia, moderna y altamente funcional que emula la eficiencia de las mejores suites de productividad del mercado.
 
 - **Diseño Moderno**: Paleta de colores institucional (`#142a59`) con acentos esmeralda y una estética de "90% zoom" para máxima densidad de información sin sacrificar legibilidad.
 - **Iconografía Dinámica**: Integración de **Icons8 Fluency** y **Lucide SVGs** para una identificación visual instantánea de tipos de archivo (PDF, Word, Excel) y estados de documentos.
@@ -71,7 +71,7 @@ Siga estos pasos para desplegar el entorno de desarrollo:
 
 1. **Clonar el repositorio y entrar al directorio**:
    ```bash
-   cd Docuflow2/gestion_documental
+   cd SIGEA2/gestion_documental
    ```
 
 2. **Crear y activar un entorno virtual**:

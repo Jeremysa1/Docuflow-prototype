@@ -1,165 +1,172 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Subir Documento - Docuflow{% endblock %}
+{% block title %}Subir Documento - SIGEA{% endblock %}
 {% block page_title %}Subir Nuevo Documento{% endblock %}
 {% block navbar_search %}{% endblock %}
 
 {% block content %}
-<div class="max-w-[1000px] mx-auto animate-[fadeIn_0.3s_ease-out] pb-10">
-    <div class="mb-4"></div> <!-- Espaciador sutil -->
+
+    <header class="page-header">
+        <div class="page-header-info">
+            <h1>Subir Nuevo Documento</h1>
+            <p>Registra un nuevo documento en el sistema de gestión de calidad.</p>
+        </div>
+    </header>
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         
-        <div class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 items-start">
+        <div class="grid-form-sidebar">
             
             <!-- COLUMNA IZQUIERDA -->
-            <div class="flex flex-col gap-6">
+            <div class="flex-stack">
                 
                 <!-- Zona de Arrastrar y Soltar -->
-                <div id="dropzone-area-subir" class="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center transition-all cursor-pointer hover:bg-slate-50 hover:border-brand-900 group shadow-sm">
-                    <div class="w-20 h-20 bg-brand-50 rounded-full flex justify-center items-center mx-auto mb-5 transition-transform group-hover:scale-105 group-hover:bg-slate-100 shadow-sm border border-brand-100">
-                        <i data-lucide="cloud-upload" class="w-8 h-8 text-brand-900"></i>
+                <div id="dropzone-area-subir" class="upload-zone">
+                    <div class="upload-zone-icon">
+                        <i data-lucide="cloud-upload"></i>
                     </div>
-                    <h3 id="upload-title" class="text-lg font-bold text-brand-900 mb-2">Arrastra y suelta tu archivo aquí</h3>
-                    <p id="upload-subtitle" class="text-sm text-slate-500 mb-6">O si prefieres, selecciona el archivo desde tu dispositivo</p>
+                    <h3 id="upload-title" class="upload-zone-title">Arrastra y suelta tu archivo aquí</h3>
+                    <p id="upload-subtitle" class="upload-zone-subtitle">O si prefieres, selecciona el archivo desde tu dispositivo</p>
                     
-                    <button type="button" class="inline-flex items-center gap-2 bg-brand-900 text-white px-5 py-2.5 rounded-lg text-sm font-semibold pointer-events-none shadow-sm">
-                        <i data-lucide="file-plus" class="w-4 h-4"></i>
+                    <button type="button" class="btn btn-primary" style="pointer-events: none;">
+                        <i data-lucide="file-plus"></i>
                         Seleccionar archivo
                     </button>
                     
                     <div class="hidden">{{ form.archivo }}</div>
-                    {% if form.archivo.errors %}<span class="block text-xs font-bold text-rose-500 mt-2">{{ form.archivo.errors.0 }}</span>{% endif %}
+                    {% if form.archivo.errors %}<span class="form-error">{{ form.archivo.errors.0 }}</span>{% endif %}
                     
-                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-8">Formatos soportados: PDF, DOCX, XLSX, PPTX — Máx 10MB</div>
+                    <div class="upload-zone-formats">Formatos soportados: PDF, DOCX, XLSX, PPTX — Máx 10MB</div>
                 </div>
 
                 <!-- Formulario de Registro -->
-                <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
-                    <div class="flex items-center gap-3 text-base font-bold text-brand-900 mb-6">
-                        <i data-lucide="file-edit" class="w-5 h-5"></i>
-                        Información del Registro
-                    </div>
-
-                    <div class="mb-6">
-                        <div class="flex justify-between items-baseline mb-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nombre del documento*</label>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="section-title mb-xl" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="file-edit" style="width: 20px; height: 20px;"></i>
+                            Información del Registro
                         </div>
-                        {{ form.titulo }}
-                        {% if form.titulo.errors %}<span class="block text-xs font-bold text-rose-500 mt-1.5">{{ form.titulo.errors.0 }}</span>{% endif %}
-                    </div>
 
-                    <div class="mb-6">
-                        <div class="flex justify-between items-baseline mb-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Descripción</label>
-                            <span id="char-count" class="text-[10px] font-bold text-slate-400">0 / 500</span>
+                        <div class="form-group">
+                            <label class="form-label">Nombre del documento*</label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}<span class="form-error">{{ form.titulo.errors.0 }}</span>{% endif %}
                         </div>
-                        {{ form.descripcion }}
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Programa Académico*</label>
-                            <div class="relative">
-                                {{ form.programa }}
-                                <i data-lucide="chevron-down" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                        <div class="form-group">
+                            <div class="flex-between mb-sm">
+                                <label class="form-label" style="margin-bottom: 0;">Descripción</label>
+                                <span id="char-count" class="text-xxs font-bold text-light">0 / 500</span>
                             </div>
-                            {% if form.programa.errors %}<span class="block text-xs font-bold text-rose-500 mt-1.5">{{ form.programa.errors.0 }}</span>{% endif %}
+                            {{ form.descripcion }}
                         </div>
 
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Categoría*</label>
-                            <div class="relative">
-                                {{ form.categoria }}
-                                <i data-lucide="chevron-down" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Programa Académico*</label>
+                                <div class="select-wrapper">
+                                    {{ form.programa }}
+                                    <i data-lucide="chevron-down"></i>
+                                </div>
+                                {% if form.programa.errors %}<span class="form-error">{{ form.programa.errors.0 }}</span>{% endif %}
                             </div>
-                            {% if form.categoria.errors %}<span class="block text-xs font-bold text-rose-500 mt-1.5">{{ form.categoria.errors.0 }}</span>{% endif %}
-                        </div>
 
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Factor CNA (Opcional)</label>
-                            <div class="relative">
-                                {{ form.factor_cna }}
-                                <i data-lucide="chevron-down" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                            <div class="form-group">
+                                <label class="form-label">Categoría*</label>
+                                <div class="select-wrapper">
+                                    {{ form.categoria }}
+                                    <i data-lucide="chevron-down"></i>
+                                </div>
+                                {% if form.categoria.errors %}<span class="form-error">{{ form.categoria.errors.0 }}</span>{% endif %}
                             </div>
-                            {% if form.factor_cna.errors %}<span class="block text-xs font-bold text-rose-500 mt-1.5">{{ form.factor_cna.errors.0 }}</span>{% endif %}
-                        </div>
 
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Fecha de vigencia</label>
-                            <div class="relative">
-                                {{ form.fecha_vigencia }}
-                                <i data-lucide="calendar" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                            <div class="form-group">
+                                <label class="form-label">Factor CNA (Opcional)</label>
+                                <div class="select-wrapper">
+                                    {{ form.factor_cna }}
+                                    <i data-lucide="chevron-down"></i>
+                                </div>
+                                {% if form.factor_cna.errors %}<span class="form-error">{{ form.factor_cna.errors.0 }}</span>{% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Fecha de vigencia</label>
+                                <div class="select-wrapper">
+                                    {{ form.fecha_vigencia }}
+                                    <i data-lucide="calendar"></i>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Visibilidad -->
-                    <div class="mb-6">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Visibilidad del documento</label>
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <label class="flex-1 flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 cursor-pointer hover:border-brand-300 transition-colors">
-                                <input type="radio" name="visibilidad" value="PROGRAMA" {% if form.visibilidad.value == 'PROGRAMA' or not form.visibilidad.value %}checked{% endif %} class="mt-1 w-4 h-4 text-brand-900 border-slate-300 focus:ring-brand-500">
+                        <!-- Visibilidad -->
+                        <div class="form-group">
+                            <label class="form-label">Visibilidad del documento</label>
+                            <div class="grid-2">
+                                <label class="radio-card">
+                                    <input type="radio" name="visibilidad" value="PROGRAMA" {% if form.visibilidad.value == 'PROGRAMA' or not form.visibilidad.value %}checked{% endif %}>
+                                    <div>
+                                        <span class="radio-card-title">Por programa</span>
+                                        <span class="radio-card-desc">Solo visible para usuarios del mismo programa</span>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="visibilidad" value="INSTITUCIONAL" {% if form.visibilidad.value == 'INSTITUCIONAL' %}checked{% endif %}>
+                                    <div>
+                                        <span class="radio-card-title">Institucional</span>
+                                        <span class="radio-card-desc">Visible para todos los usuarios del sistema</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Sensible -->
+                        <div>
+                            <label class="form-label">Opciones de seguridad</label>
+                            <label class="sensitive-card">
+                                <input type="checkbox" name="es_sensible" {% if form.es_sensible.value %}checked{% endif %} style="margin-top: 3px; accent-color: var(--amber-500); width: 16px; height: 16px; cursor: pointer;">
                                 <div>
-                                    <strong class="block text-sm font-bold text-slate-800">Por programa</strong>
-                                    <span class="block text-xs text-slate-500 mt-1 leading-relaxed">Solo visible para usuarios del mismo programa</span>
+                                    <span class="radio-card-title" style="color: var(--amber-900);">Documento Sensible</span>
+                                    <span class="radio-card-desc" style="color: var(--amber-700);">Requiere aprobación de al menos 2 de 3 (autor, coordinador, decana) para dar acceso</span>
                                 </div>
                             </label>
-                            <label class="flex-1 flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 cursor-pointer hover:border-brand-300 transition-colors">
-                                <input type="radio" name="visibilidad" value="INSTITUCIONAL" {% if form.visibilidad.value == 'INSTITUCIONAL' %}checked{% endif %} class="mt-1 w-4 h-4 text-brand-900 border-slate-300 focus:ring-brand-500">
-                                <div>
-                                    <strong class="block text-sm font-bold text-slate-800">Institucional</strong>
-                                    <span class="block text-xs text-slate-500 mt-1 leading-relaxed">Visible para todos los usuarios del sistema</span>
-                                </div>
-                            </label>
                         </div>
-                    </div>
-
-                    <!-- Sensible -->
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Opciones de seguridad</label>
-                        <label class="flex items-start gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 cursor-pointer hover:border-amber-300 transition-colors">
-                            {{ form.es_sensible }}
-                            <div>
-                                <strong class="block text-sm font-bold text-amber-900">Documento Sensible</strong>
-                                <span class="block text-xs text-amber-700/80 mt-1 leading-relaxed">Requiere aprobación de al menos 2 de 3 (autor, coordinador, decana) para dar acceso</span>
-                            </div>
-                        </label>
                     </div>
                 </div>
 
                 <!-- Caja de Aprobación -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-start gap-4">
-                            <div class="w-10 h-10 rounded-full bg-emerald-50 flex justify-center items-center shrink-0">
-                                <i data-lucide="git-merge" class="w-5 h-5 text-emerald-500"></i>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="flex-between">
+                            <div class="flex-row">
+                                <div class="quick-action-icon" style="background: var(--emerald-50);">
+                                    <i data-lucide="git-merge" style="color: var(--emerald-500);"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-brand">¿Requiere aprobación?</h4>
+                                    <p class="text-xs text-muted">Este documento pasará por un flujo de revisión</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-base font-bold text-slate-800 mb-1">¿Requiere aprobación?</h4>
-                                <p class="text-xs text-slate-500">Este documento pasará por un flujo de revisión institucional</p>
-                            </div>
+                            
+                            {% if request.user.rol == 'DOCENTE_PLANTA' %}
+                                <div class="toggle active" style="pointer-events: none;">
+                                    <div class="toggle-circle"></div>
+                                </div>
+                                <input type="hidden" name="requiere_aprobacion" value="on">
+                            {% else %}
+                                <div id="toggle-visual" class="toggle">
+                                    <div class="toggle-circle"></div>
+                                </div>
+                                <input type="checkbox" name="requiere_aprobacion" id="id_requiere_aprobacion" class="hidden">
+                            {% endif %}
                         </div>
-                        
-                        {% if request.user.rol == 'DOCENTE_PLANTA' %}
-                            <div id="toggle-visual" class="w-11 h-6 bg-emerald-500 rounded-full relative cursor-pointer transition-colors shadow-inner shrink-0 toggle-active">
-                                <div class="absolute top-1 left-[22px] w-4 h-4 bg-white rounded-full shadow-sm transition-all"></div>
-                            </div>
-                            <input type="hidden" name="requiere_aprobacion" value="on">
-                        {% else %}
-                            <div id="toggle-visual" class="w-11 h-6 bg-slate-300 rounded-full relative cursor-pointer transition-colors shadow-inner shrink-0">
-                                <div class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all toggle-circle"></div>
-                            </div>
-                            <input type="checkbox" name="requiere_aprobacion" id="id_requiere_aprobacion" class="hidden">
-                        {% endif %}
-                    </div>
 
-                    <div id="revisor-info" class="mt-5 ml-14 bg-slate-50 rounded-lg p-3 flex items-center gap-3 border border-slate-100" {% if request.user.rol != 'DOCENTE_PLANTA' %}style="display:none;"{% endif %}>
-                        <i data-lucide="user-check" class="w-4 h-4 text-slate-400"></i>
-                        <div class="text-xs text-slate-500">
-                            <span class="block text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Enviar para revisión a:</span>
-                            <strong class="text-slate-700 font-bold">{% if request.user.rol == 'DOCENTE_PLANTA' or request.user.rol == 'COORDINADOR' %}Coordinador / Decana{% else %}Revisión institucional{% endif %}</strong> (Asignado automáticamente)
+                        <div id="revisor-info" {% if request.user.rol == 'DOCENTE_PLANTA' %}style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--slate-50); border: 1px solid var(--slate-100); border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;"{% else %}style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--slate-50); border: 1px solid var(--slate-100); border-radius: var(--radius-md); display: none; align-items: center; gap: 0.75rem;"{% endif %}>
+                            <i data-lucide="user-check" style="width: 16px; height: 16px; color: var(--slate-400);"></i>
+                            <div class="text-xs text-muted">
+                                <span class="form-label" style="margin-bottom: 0.2rem;">Enviar para revisión a:</span>
+                                <strong class="text-brand">{% if request.user.rol == 'DOCENTE_PLANTA' or request.user.rol == 'COORDINADOR' %}Coordinador / Decana{% else %}Revisión institucional{% endif %}</strong> (Asignado automáticamente)
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -167,43 +174,44 @@
             </div>
 
             <!-- COLUMNA DERECHA -->
-            <div class="flex flex-col gap-6 h-full">
+            <div class="flex-stack" style="height: 100%;">
                 
-                <div class="bg-brand-900 rounded-2xl p-8 text-white shadow-lg">
-                    <div class="flex items-center gap-2.5 text-base font-bold mb-6">
-                        <i data-lucide="lightbulb" class="w-5 h-5 text-emerald-400"></i>
+                <div class="dark-panel">
+                    <div class="dark-panel-title">
+                        <i data-lucide="lightbulb"></i>
                         Recomendaciones
                     </div>
-                    <ul class="flex flex-col gap-5 mb-8">
-                        <li class="flex items-start gap-3 text-sm text-brand-100 leading-relaxed">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                    <ul class="dark-panel-list">
+                        <li>
+                            <i data-lucide="check"></i>
                             Asegúrate que el nombre sea descriptivo y siga la nomenclatura institucional.
                         </li>
-                        <li class="flex items-start gap-3 text-sm text-brand-100 leading-relaxed">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                        <li>
+                            <i data-lucide="check"></i>
                             Verifica que los metadatos de los Factores CNA sean correctos para los reportes de acreditación.
                         </li>
-                        <li class="flex items-start gap-3 text-sm text-brand-100 leading-relaxed">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                        <li>
+                            <i data-lucide="check"></i>
                             Los documentos sensibles solo serán visibles para usuarios con permisos especiales.
                         </li>
                     </ul>
 
-                    <div class="text-[10px] font-bold uppercase tracking-widest text-brand-300 mb-3 border-t border-brand-800 pt-6">Formatos Aceptados</div>
-                    <div class="flex gap-2 flex-wrap">
-                        <span class="bg-white/10 border border-white/20 text-white px-2 py-1 rounded text-[10px] font-bold tracking-wider">.PDF</span>
-                        <span class="bg-white/10 border border-white/20 text-white px-2 py-1 rounded text-[10px] font-bold tracking-wider">.DOCX</span>
-                        <span class="bg-white/10 border border-white/20 text-white px-2 py-1 rounded text-[10px] font-bold tracking-wider">.XLSX</span>
-                        <span class="bg-white/10 border border-white/20 text-white px-2 py-1 rounded text-[10px] font-bold tracking-wider">.PPTX</span>
+                    <hr class="dark-panel-divider">
+                    <div class="dark-panel-label">Formatos Aceptados</div>
+                    <div class="dark-panel-tags">
+                        <span class="dark-panel-tag">.PDF</span>
+                        <span class="dark-panel-tag">.DOCX</span>
+                        <span class="dark-panel-tag">.XLSX</span>
+                        <span class="dark-panel-tag">.PPTX</span>
                     </div>
                 </div>
 
-                <!-- Botones de Acción (Mismo tamaño) -->
-                <div class="flex items-center gap-4 mt-auto pt-4">
-                    <a href="{% url 'documentos:mis_documentos' %}" class="flex-1 bg-white hover:bg-slate-50 text-brand-900 border-2 border-brand-900 py-3.5 rounded-xl text-sm font-bold text-center transition-all">
+                <!-- Botones de Acción -->
+                <div class="grid-2 mt-auto pt-xl">
+                    <a href="{% url 'documentos:mis_documentos' %}" class="btn btn-secondary w-full" style="padding: 1rem;">
                         Cancelar
                     </a>
-                    <button type="submit" class="flex-1 bg-brand-900 hover:bg-brand-950 text-white border-2 border-brand-900 py-3.5 rounded-xl text-sm font-bold text-center transition-all shadow-md hover:shadow-lg">
+                    <button type="submit" class="btn btn-primary w-full" style="padding: 1rem;">
                         Subir documento
                     </button>
                 </div>
@@ -212,7 +220,6 @@
 
         </div>
     </form>
-</div>
 
 {% endblock %}
 
@@ -220,33 +227,24 @@
 <!-- Agregar estilos dinámicos para los form inputs de Django renderizados -->
 <style>
     /* Estilos globales inyectados para elementos de formulario Django */
-    .form-control, select, input[type="text"], input[type="date"], textarea {
+    input[type="text"], input[type="date"], select, textarea {
         width: 100%;
-        background-color: #f8fafc;
+        background-color: var(--slate-50);
         border: 1px solid transparent;
-        border-radius: 0.75rem; /* rounded-xl */
-        padding: 0.75rem 1rem;
-        font-size: 0.875rem; /* text-sm */
-        color: #1e293b;
+        border-radius: var(--radius-md);
+        padding: 0.85rem 1rem;
+        font-size: 0.867rem;
+        color: var(--slate-800);
         outline: none;
-        transition: all 0.2s;
+        transition: all var(--transition-base);
         font-family: inherit;
     }
-    .form-control:focus, select:focus, input[type="text"]:focus, input[type="date"]:focus, textarea:focus {
-        border-color: #cbd5e1;
-        background-color: #ffffff;
-        box-shadow: 0 0 0 2px rgba(20, 42, 89, 0.05);
+    input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+        border-color: var(--slate-300);
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(20,42,89,0.06);
     }
-    textarea { resize: vertical; min-height: 100px; }
-    
-    /* Input checkbox style override for form.es_sensible */
-    input[type="checkbox"][name="es_sensible"] {
-        width: 1.25rem;
-        height: 1.25rem;
-        margin-top: 0.1rem;
-        cursor: pointer;
-        accent-color: #f59e0b;
-    }
+    textarea { resize: vertical; min-height: 110px; line-height: 1.65; }
     
     select { appearance: none; cursor: pointer; padding-right: 2.5rem; }
     input[type="date"]::-webkit-calendar-picker-indicator {
@@ -271,16 +269,16 @@
             ['dragenter', 'dragover'].forEach(name => {
                 zone.addEventListener(name, (e) => {
                     e.preventDefault();
-                    zone.classList.add('border-brand-900', 'bg-slate-50');
-                    zone.classList.remove('border-slate-300', 'bg-white');
+                    zone.style.borderColor = 'var(--brand-900)';
+                    zone.style.background = 'var(--slate-50)';
                 });
             });
 
             ['dragleave', 'drop'].forEach(name => {
                 zone.addEventListener(name, (e) => {
                     e.preventDefault();
-                    zone.classList.remove('border-brand-900', 'bg-slate-50');
-                    zone.classList.add('border-slate-300', 'bg-white');
+                    zone.style.borderColor = '';
+                    zone.style.background = '';
                 });
             });
 
@@ -300,11 +298,10 @@
 
             function updateFileUI(file) {
                 uploadTitle.textContent = "Archivo seleccionado:";
-                uploadTitle.classList.remove('text-brand-900');
-                uploadTitle.classList.add('text-emerald-600');
-                uploadSubtitle.innerHTML = `<span class="text-base font-bold text-brand-900">📎 ${file.name}</span><br>(${(file.size / 1024).toFixed(1)} KB)`;
-                zone.classList.add('border-emerald-500', 'bg-emerald-50/50');
-                zone.classList.remove('border-slate-300', 'bg-white', 'border-brand-900', 'bg-slate-50');
+                uploadTitle.style.color = 'var(--emerald-600)';
+                uploadSubtitle.innerHTML = `<span style="font-weight:700; color:var(--brand-900);">📎 ${file.name}</span><br>(${(file.size / 1024).toFixed(1)} KB)`;
+                zone.style.borderColor = 'var(--emerald-500)';
+                zone.style.background = 'var(--emerald-50)';
             }
         }
 
@@ -312,23 +309,16 @@
         const toggleVisual = document.getElementById('toggle-visual');
         const realCheckbox = document.getElementById('id_requiere_aprobacion');
         const revisorInfo = document.getElementById('revisor-info');
-        
-        // Find the inner circle if it's the dynamic one
-        const circle = toggleVisual ? toggleVisual.querySelector('.toggle-circle') : null;
 
-        if (toggleVisual && circle) {
+        if (toggleVisual && realCheckbox) {
             toggleVisual.addEventListener('click', () => {
                 const isChecked = !realCheckbox.checked;
                 realCheckbox.checked = isChecked;
                 
                 if (isChecked) {
-                    toggleVisual.classList.remove('bg-slate-300');
-                    toggleVisual.classList.add('bg-emerald-500');
-                    circle.style.left = '22px';
+                    toggleVisual.classList.add('active');
                 } else {
-                    toggleVisual.classList.remove('bg-emerald-500');
-                    toggleVisual.classList.add('bg-slate-300');
-                    circle.style.left = '4px';
+                    toggleVisual.classList.remove('active');
                 }
                 
                 if (revisorInfo) revisorInfo.style.display = isChecked ? 'flex' : 'none';
@@ -341,11 +331,9 @@
                 const length = textarea.value.length;
                 charCount.textContent = `${length} / 500`;
                 if (length > 500) {
-                    charCount.classList.add('text-rose-500');
-                    charCount.classList.remove('text-slate-400');
+                    charCount.style.color = 'var(--rose-500)';
                 } else {
-                    charCount.classList.remove('text-rose-500');
-                    charCount.classList.add('text-slate-400');
+                    charCount.style.color = 'var(--slate-400)';
                 }
             });
         }

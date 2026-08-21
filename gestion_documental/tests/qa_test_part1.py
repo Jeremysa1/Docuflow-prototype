@@ -1,5 +1,7 @@
 """QA Test Part 1: System checks and auth tests."""
 import json, time, os, sys
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 import django; django.setup()
 from django.test import Client

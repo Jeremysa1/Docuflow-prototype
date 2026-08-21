@@ -1,376 +1,374 @@
 {% extends 'base.html' %}
-{% block title %}Gestión de Usuarios - Docuflow{% endblock %}
+{% block title %}Gestión de Usuarios - SIGEA{% endblock %}
 {% block page_title %}Gestión de Usuarios{% endblock %}
 
 {% block content %}
-<div class="max-w-[1400px] mx-auto animate-[fadeIn_0.3s_ease-out] pb-10">
 
-  <!-- Header -->
-  <div class="mb-8">
-    <h1 class="text-2xl font-bold text-brand-900 mb-1 tracking-tight">Gestión de Usuarios</h1>
-    <p class="text-sm text-slate-500">Administra los accesos y roles de los usuarios del sistema</p>
-  </div>
+    <header class="page-header">
+        <div class="page-header-info">
+            <h1>Gestión de Usuarios</h1>
+            <p>Administra los accesos y roles de los usuarios del sistema.</p>
+        </div>
+    </header>
 
-  <!-- Stats Summary -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-    <!-- Total usuarios -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-b-4 border-b-brand-900 hover:-translate-y-1 transition-transform">
-      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Total usuarios</div>
-      <div class="text-4xl font-bold text-brand-900 leading-none">{{ total_usuarios|default:"0"|stringformat:"02d" }}</div>
-    </div>
-    
-    <!-- Docentes activos -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-b-4 border-b-emerald-500 hover:-translate-y-1 transition-transform">
-      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Docentes activos</div>
-      <div class="text-4xl font-bold text-brand-900 leading-none">{{ docentes_activos|default:"0"|stringformat:"02d" }}</div>
-    </div>
-    
-    <!-- Coordinadores -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-b-4 border-b-sky-500 hover:-translate-y-1 transition-transform">
-      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Coordinadores</div>
-      <div class="text-4xl font-bold text-brand-900 leading-none">{{ coordinadores|default:"0"|stringformat:"02d" }}</div>
-    </div>
-    
-    <!-- Pendientes -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-b-4 border-b-amber-500 hover:-translate-y-1 transition-transform">
-      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Pendientes habilitación</div>
-      <div class="text-4xl font-bold text-brand-900 leading-none">{{ pendientes_habilitacion|default:"0"|stringformat:"02d" }}</div>
-    </div>
-  </div>
-
-  <!-- Filter Toolbar -->
-  <form method="get" id="filterForm" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-wrap gap-4 items-center">
-    
-    <div class="flex-1 min-w-[250px] relative">
-      <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-      <input type="text" name="q" placeholder="Filtrar por nombre o email..." value="{{ request.GET.q|default:'' }}" 
-             class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+    <!-- Stats Summary -->
+    <div class="stats-grid">
+        <div class="stat-card" style="border-bottom-color: var(--brand-900);">
+            <div class="stat-card-label">Total usuarios</div>
+            <div class="stat-card-value">{{ total_usuarios|default:"0"|stringformat:"02d" }}</div>
+        </div>
+        <div class="stat-card stat-card--emerald">
+            <div class="stat-card-label">Docentes activos</div>
+            <div class="stat-card-value">{{ docentes_activos|default:"0"|stringformat:"02d" }}</div>
+        </div>
+        <div class="stat-card" style="border-bottom-color: var(--sky-500);">
+            <div class="stat-card-label">Coordinadores</div>
+            <div class="stat-card-value">{{ coordinadores|default:"0"|stringformat:"02d" }}</div>
+        </div>
+        <div class="stat-card stat-card--amber">
+            <div class="stat-card-label">Pendientes habilitación</div>
+            <div class="stat-card-value">{{ pendientes_habilitacion|default:"0"|stringformat:"02d" }}</div>
+        </div>
     </div>
 
-    <div class="relative min-w-[160px]">
-      <select name="rol" onchange="this.form.submit()" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm text-slate-700 font-medium focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
-        <option value="">Rol: Todos</option>
-        <option value="DOCENTE_PLANTA" {% if request.GET.rol == 'DOCENTE_PLANTA' %}selected{% endif %}>Docente de Planta</option>
-        <option value="COORDINADOR" {% if request.GET.rol == 'COORDINADOR' %}selected{% endif %}>Coordinador</option>
-        <option value="DECANA" {% if request.GET.rol == 'DECANA' %}selected{% endif %}>Decana</option>
-      </select>
-      <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-    </div>
+    <!-- Filter Toolbar -->
+    <form method="get" id="filterForm" class="card mb-2xl">
+        <div class="card-body" style="display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: center;">
+            
+            <div style="flex: 1; min-width: 250px;">
+                <div class="select-wrapper">
+                    <input type="text" name="q" placeholder="Filtrar por nombre o email..." value="{{ request.GET.q|default:'' }}" class="form-input" style="padding-left: 2.75rem;">
+                    <i data-lucide="search" style="left: 1rem; right: auto;"></i>
+                </div>
+            </div>
 
-    <div class="relative min-w-[160px]">
-      <select name="habilitado" onchange="this.form.submit()" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm text-slate-700 font-medium focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
-        <option value="">Estado: Todos</option>
-        <option value="1" {% if request.GET.habilitado == '1' %}selected{% endif %}>Habilitado</option>
-        <option value="0" {% if request.GET.habilitado == '0' %}selected{% endif %}>Inhabilitado</option>
-      </select>
-      <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-    </div>
+            <div style="min-width: 160px;">
+                <div class="select-wrapper">
+                    <select name="rol" onchange="this.form.submit()" class="form-select">
+                        <option value="">Rol: Todos</option>
+                        <option value="DOCENTE_PLANTA" {% if request.GET.rol == 'DOCENTE_PLANTA' %}selected{% endif %}>Docente de Planta</option>
+                        <option value="COORDINADOR" {% if request.GET.rol == 'COORDINADOR' %}selected{% endif %}>Coordinador</option>
+                        <option value="DECANA" {% if request.GET.rol == 'DECANA' %}selected{% endif %}>Decana</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+            </div>
 
-    <div class="relative min-w-[160px]">
-      <select name="programa" onchange="this.form.submit()" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm text-slate-700 font-medium focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
-        <option value="">Programa: Todos</option>
-        {% for p in programas %}
-          <option value="{{ p.id }}" {% if request.GET.programa == p.id|stringformat:"d" %}selected{% endif %}>{{ p.nombre }}</option>
-        {% endfor %}
-      </select>
-      <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-    </div>
+            <div style="min-width: 160px;">
+                <div class="select-wrapper">
+                    <select name="habilitado" onchange="this.form.submit()" class="form-select">
+                        <option value="">Estado: Todos</option>
+                        <option value="1" {% if request.GET.habilitado == '1' %}selected{% endif %}>Habilitado</option>
+                        <option value="0" {% if request.GET.habilitado == '0' %}selected{% endif %}>Inhabilitado</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+            </div>
 
-    <div class="hidden lg:block w-[1px] h-8 bg-slate-200 mx-2"></div>
+            <div style="min-width: 160px;">
+                <div class="select-wrapper">
+                    <select name="programa" onchange="this.form.submit()" class="form-select">
+                        <option value="">Programa: Todos</option>
+                        {% for p in programas %}
+                            <option value="{{ p.id }}" {% if request.GET.programa == p.id|stringformat:"d" %}selected{% endif %}>{{ p.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+            </div>
 
-    <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden shadow-sm shrink-0">
-      <button type="button" title="Vista de lista" class="view-toggle-btn active p-2.5 bg-brand-900 text-white transition-colors">
-        <i data-lucide="list" class="w-4 h-4"></i>
-      </button>
-      <button type="button" title="Vista de cuadrícula" class="view-toggle-btn p-2.5 bg-slate-50 text-slate-400 hover:bg-slate-100 transition-colors">
-        <i data-lucide="grid" class="w-4 h-4"></i>
-      </button>
-    </div>
-  </form>
+            <div style="display: flex; border: 1px solid var(--slate-200); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-xs); flex-shrink: 0;">
+                <button type="button" title="Vista de lista" class="view-toggle-btn" style="padding: 0.65rem; background: var(--brand-900); color: #fff; border: none; cursor: pointer; transition: all var(--transition-fast);">
+                    <i data-lucide="list" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button type="button" title="Vista de cuadrícula" class="view-toggle-btn" style="padding: 0.65rem; background: var(--slate-50); color: var(--slate-400); border: none; cursor: pointer; transition: all var(--transition-fast);">
+                    <i data-lucide="grid" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+        </div>
+    </form>
 
-  <!-- Table View -->
-  <div id="listView" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50 border-b border-slate-200">
-                    <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Usuario</th>
-                    <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Rol / Programa</th>
-                    <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Estado de Acceso</th>
-                    <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Registro</th>
-                    <th class="py-4 px-5 text-[11px] font-bold text-brand-900 uppercase tracking-wider text-right">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="text-sm divide-y divide-slate-100">
-                {% for u in page_obj %}
-                <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="py-4 px-5">
-                        <div class="flex items-center gap-3">
-                            <img src="https://ui-avatars.com/api/?name={{ u.get_full_name|urlencode }}&background=0D1B2A&color=fff&size=40" class="w-10 h-10 rounded-full shadow-sm shrink-0" alt="Avatar">
-                            <div>
-                                <div class="font-bold text-slate-800">{{ u.get_full_name }}</div>
-                                <div class="text-[11px] text-slate-500 mt-0.5">{{ u.email }}</div>
+    <!-- Table View -->
+    <div id="listView" class="table-container mb-2xl">
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Rol / Programa</th>
+                        <th>Estado de Acceso</th>
+                        <th>Registro</th>
+                        <th style="text-align: right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="flex-row">
+                                <img src="https://ui-avatars.com/api/?name={{ u.get_full_name|urlencode }}&background=0D1B2A&color=fff&size=40" style="width: 40px; height: 40px; border-radius: var(--radius-full); box-shadow: var(--shadow-xs); flex-shrink: 0;" alt="Avatar">
+                                <div>
+                                    <div class="font-bold text-sm text-brand">{{ u.get_full_name }}</div>
+                                    <div class="text-xxs text-muted mt-sm">{{ u.email }}</div>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td class="py-4 px-5">
-                        <div class="mb-1">
-                            {% if u.rol == 'DECANA' %}
-                                <span class="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">{{ u.get_rol_display }}</span>
-                            {% elif u.rol == 'COORDINADOR' %}
-                                <span class="bg-sky-50 text-sky-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">{{ u.get_rol_display }}</span>
+                        </td>
+                        <td>
+                            <div style="margin-bottom: 0.25rem;">
+                                {% if u.rol == 'DECANA' %}
+                                    <span class="badge badge-purple">{{ u.get_rol_display }}</span>
+                                {% elif u.rol == 'COORDINADOR' %}
+                                    <span class="badge badge-brand">{{ u.get_rol_display }}</span>
+                                {% else %}
+                                    <span class="badge badge-neutral">{{ u.get_rol_display }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-xxs font-semibold text-muted">{{ u.programa_academico.nombre|default:"Institucional" }}</div>
+                        </td>
+                        <td>
+                            {% if u.esta_habilitado %}
+                                <span class="badge badge-success"><span style="width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--emerald-500); display: inline-block;"></span> Habilitado</span>
                             {% else %}
-                                <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">{{ u.get_rol_display }}</span>
+                                <span class="badge badge-danger"><span style="width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--rose-500); display: inline-block;"></span> Inhabilitado</span>
                             {% endif %}
-                        </div>
-                        <div class="text-[11px] font-medium text-slate-500">{{ u.programa_academico.nombre|default:"Institucional" }}</div>
-                    </td>
-                    <td class="py-4 px-5">
-                        {% if u.esta_habilitado %}
-                            <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Habilitado
-                            </span>
-                        {% else %}
-                            <span class="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide">
-                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Inhabilitado
-                            </span>
-                        {% endif %}
-                    </td>
-                    <td class="py-4 px-5 font-mono text-xs text-slate-400">
-                        {{ u.date_joined|date:"d/m/Y" }}
-                    </td>
-                    <td class="py-4 px-5">
-                        <div class="flex items-center justify-end gap-2">
-                            <button onclick="openEditModal('{{ u.id }}', '{{ u.get_full_name|escapejs }}', '{{ u.rol }}', '{{ u.programa_academico.id }}')" 
-                                    class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-brand-50 text-slate-400 hover:text-brand-600 flex items-center justify-center transition-colors" title="Editar">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                            </button>
-
-                            {% if not u.esta_habilitado %}
-                            <form method="post" action="{% url 'usuarios:habilitar_usuario' u.id %}" class="m-0 inline-block">
-                                {% csrf_token %}
-                                <button type="submit" onclick="return confirm('¿Habilitar acceso al sistema para {{ u.get_full_name }}?');" 
-                                        class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-500 hover:text-emerald-600 flex items-center justify-center transition-colors" title="Habilitar">
-                                    <i data-lucide="user-check" class="w-4 h-4"></i>
+                        </td>
+                        <td class="text-xs text-muted" style="font-family: monospace;">{{ u.date_joined|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="flex-row" style="justify-content: flex-end; gap: 0.35rem;">
+                                <button onclick="openEditModal('{{ u.id }}', '{{ u.get_full_name|escapejs }}', '{{ u.rol }}', '{{ u.programa_academico.id }}')" 
+                                        class="btn-icon btn-ghost" title="Editar">
+                                    <i data-lucide="edit-2"></i>
                                 </button>
-                            </form>
-                            {% elif u.rol != 'DECANA' %}
-                            <form method="post" action="{% url 'usuarios:deshabilitar_usuario' u.id %}" class="m-0 inline-block">
-                                {% csrf_token %}
-                                <button type="submit" onclick="return confirm('¿Seguro que deseas inhabilitar a {{ u.get_full_name }}? No podrá iniciar sesión.');" 
-                                        class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-500 hover:text-amber-600 flex items-center justify-center transition-colors" title="Inhabilitar">
-                                    <i data-lucide="user-minus" class="w-4 h-4"></i>
-                                </button>
-                            </form>
-                            {% endif %}
 
-                            {% if u.rol != 'DECANA' %}
-                            <form method="post" action="{% url 'usuarios:eliminar_usuario' u.id %}" class="m-0 inline-block">
-                                {% csrf_token %}
-                                <button type="submit" onclick="return confirm('¿Eliminar a {{ u.get_full_name }} permanentemente?');" 
-                                        class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-500 hover:text-rose-600 flex items-center justify-center transition-colors" title="Eliminar">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </form>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="py-16 text-center text-slate-400 font-medium">No hay usuarios registrados o que coincidan con la búsqueda.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-  </div>
+                                {% if not u.esta_habilitado %}
+                                <form method="post" action="{% url 'usuarios:habilitar_usuario' u.id %}" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('¿Habilitar acceso al sistema para {{ u.get_full_name }}?');" 
+                                            class="btn-icon btn-approve" title="Habilitar">
+                                        <i data-lucide="user-check"></i>
+                                    </button>
+                                </form>
+                                {% elif u.rol != 'DECANA' %}
+                                <form method="post" action="{% url 'usuarios:deshabilitar_usuario' u.id %}" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('¿Seguro que deseas inhabilitar a {{ u.get_full_name }}? No podrá iniciar sesión.');" 
+                                            class="btn-icon" style="background: var(--amber-50); color: var(--amber-500);" title="Inhabilitar">
+                                        <i data-lucide="user-minus"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
 
-  <!-- Grid View (Hidden by default) -->
-  <div id="gridView" class="hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-    {% for u in page_obj %}
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col gap-4 hover:-translate-y-1 hover:shadow-md transition-all">
-      <div class="flex justify-between items-start">
-        <div class="relative">
-          <img src="https://ui-avatars.com/api/?name={{ u.get_full_name|urlencode }}&background=random&size=60" class="w-[60px] h-[60px] rounded-[15px] shadow-sm object-cover" alt="Avatar">
-          <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white {% if u.esta_habilitado %}bg-emerald-500{% else %}bg-slate-300{% endif %}"></div>
+                                {% if u.rol != 'DECANA' %}
+                                <form method="post" action="{% url 'usuarios:eliminar_usuario' u.id %}" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('¿Eliminar a {{ u.get_full_name }} permanentemente?');" 
+                                            class="btn-icon btn-reject" title="Eliminar">
+                                        <i data-lucide="trash-2"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <p>No hay usuarios registrados o que coincidan con la búsqueda.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        <button onclick="openEditModal('{{ u.id }}', '{{ u.get_full_name|escapejs }}', '{{ u.rol }}', '{{ u.programa_academico.id }}')" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-brand-50 text-slate-400 hover:text-brand-600 flex items-center justify-center transition-colors">
-          <i data-lucide="edit-2" class="w-4 h-4"></i>
-        </button>
-      </div>
-      
-      <div class="flex-1">
-        <h3 class="text-base font-bold text-slate-800 m-0">{{ u.get_full_name }}</h3>
-        <p class="text-[11px] text-slate-500 mb-4">{{ u.email }}</p>
-        
-        <div class="flex flex-wrap gap-2">
-            {% if u.rol == 'DECANA' %}
-                <span class="bg-purple-50 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">{{ u.get_rol_display }}</span>
-            {% elif u.rol == 'COORDINADOR' %}
-                <span class="bg-sky-50 text-sky-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">{{ u.get_rol_display }}</span>
-            {% else %}
-                <span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">{{ u.get_rol_display }}</span>
+    </div>
+
+    <!-- Grid View -->
+    <div id="gridView" class="hidden grid-4 mb-2xl">
+        {% for u in page_obj %}
+        <div class="card" style="display: flex; flex-direction: column; gap: var(--space-md); transition: all var(--transition-base);">
+            <div class="card-body">
+                <div class="flex-between" style="margin-bottom: var(--space-md);">
+                    <div style="position: relative;">
+                        <img src="https://ui-avatars.com/api/?name={{ u.get_full_name|urlencode }}&background=random&size=60" style="width: 60px; height: 60px; border-radius: 15px; box-shadow: var(--shadow-xs); object-fit: cover;" alt="Avatar">
+                        <div {% if u.esta_habilitado %}style="position: absolute; bottom: -4px; right: -4px; width: 16px; height: 16px; border-radius: var(--radius-full); border: 2px solid #fff; background: var(--emerald-500);"{% else %}style="position: absolute; bottom: -4px; right: -4px; width: 16px; height: 16px; border-radius: var(--radius-full); border: 2px solid #fff; background: var(--slate-300);"{% endif %}></div>
+                    </div>
+                    <button onclick="openEditModal('{{ u.id }}', '{{ u.get_full_name|escapejs }}', '{{ u.rol }}', '{{ u.programa_academico.id }}')" class="btn-icon btn-ghost">
+                        <i data-lucide="edit-2"></i>
+                    </button>
+                </div>
+                
+                <h3 class="text-sm font-bold text-brand" style="margin: 0;">{{ u.get_full_name }}</h3>
+                <p class="text-xxs text-muted mb-md">{{ u.email }}</p>
+                
+                <div class="flex-row" style="gap: 0.35rem; flex-wrap: wrap;">
+                    {% if u.rol == 'DECANA' %}
+                        <span class="badge badge-purple">{{ u.get_rol_display }}</span>
+                    {% elif u.rol == 'COORDINADOR' %}
+                        <span class="badge badge-brand">{{ u.get_rol_display }}</span>
+                    {% else %}
+                        <span class="badge badge-neutral">{{ u.get_rol_display }}</span>
+                    {% endif %}
+                    <span class="badge badge-neutral" style="border: 1px solid var(--slate-100);">{{ u.programa_academico.nombre|default:"Institucional" }}</span>
+                </div>
+            </div>
+            
+            <div style="padding: var(--space-md) var(--space-xl); border-top: 1px solid var(--slate-100); display: flex; justify-content: space-between; align-items: center;">
+                <span class="text-xxs text-muted">Unido: {{ u.date_joined|date:"M Y" }}</span>
+                <div class="flex-row" style="gap: 0.35rem;">
+                    {% if not u.esta_habilitado %}
+                    <form method="post" action="{% url 'usuarios:habilitar_usuario' u.id %}" style="margin: 0;">{% csrf_token %}
+                        <button type="submit" class="btn btn-xs" style="background: var(--emerald-50); color: var(--emerald-600); font-size: 0.667rem;">Habilitar</button>
+                    </form>
+                    {% elif u.rol != 'DECANA' %}
+                    <form method="post" action="{% url 'usuarios:deshabilitar_usuario' u.id %}" style="margin: 0;">{% csrf_token %}
+                        <button type="submit" class="btn btn-xs" style="background: var(--amber-50); color: var(--amber-600); font-size: 0.667rem;">Bloquear</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        <div class="pagination-info">Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</div>
+        <div class="pagination-buttons">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="pagination-btn"><i data-lucide="chevron-left"></i></a>
             {% endif %}
-            <span class="bg-slate-50 border border-slate-100 text-slate-500 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">{{ u.programa_academico.nombre|default:"Institucional" }}</span>
-        </div>
-      </div>
-      
-      <div class="flex justify-between items-center pt-4 border-t border-slate-100">
-        <div class="text-[11px] text-slate-400 font-medium">Unido: {{ u.date_joined|date:"M Y" }}</div>
-        <div class="flex gap-2">
-            {% if not u.esta_habilitado %}
-            <form method="post" action="{% url 'usuarios:habilitar_usuario' u.id %}" class="m-0">{% csrf_token %}
-              <button type="submit" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors">Habilitar</button>
-            </form>
-            {% elif u.rol != 'DECANA' %}
-            <form method="post" action="{% url 'usuarios:deshabilitar_usuario' u.id %}" class="m-0">{% csrf_token %}
-              <button type="submit" class="bg-amber-50 hover:bg-amber-100 text-amber-600 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors">Bloquear</button>
-            </form>
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="pagination-btn active">{{ num }}</span>
+                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                    <a href="?page={{ num }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="pagination-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="pagination-btn"><i data-lucide="chevron-right"></i></a>
             {% endif %}
         </div>
-      </div>
     </div>
-    {% endfor %}
-  </div>
-
-  <!-- Pagination -->
-  {% if page_obj.has_other_pages %}
-  <div class="bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
-    <span class="text-xs text-slate-500 font-medium">Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</span>
-    <div class="flex gap-2">
-      {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500 hover:border-brand-500 hover:text-brand-600 transition-colors"><i data-lucide="chevron-left" class="w-4 h-4"></i></a>
-      {% endif %}
-      
-      {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-          <span class="w-8 h-8 flex items-center justify-center bg-brand-900 text-white rounded-lg text-xs font-bold shadow-sm">{{ num }}</span>
-        {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-          <a href="?page={{ num }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500 text-xs font-bold hover:border-brand-500 hover:text-brand-600 transition-colors">{{ num }}</a>
-        {% endif %}
-      {% endfor %}
-      
-      {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500 hover:border-brand-500 hover:text-brand-600 transition-colors"><i data-lucide="chevron-right" class="w-4 h-4"></i></a>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
-</div>
+    {% endif %}
 
 <!-- Modal para Editar Usuario -->
-<div id="editModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 animate-[fadeIn_0.2s_ease-out]">
-  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out]">
-    <div class="p-6 border-b border-slate-100">
-      <h2 class="text-xl font-bold text-brand-900 m-0">Asignar Rol y Programa</h2>
-      <p class="text-xs text-slate-500 mt-1 font-medium" id="editUserName"></p>
+<div id="editModal" class="hidden" style="position: fixed; inset: 0; background: rgba(15,23,42,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 50; animation: fadeIn 0.2s ease-out;">
+    <div class="card" style="width: 100%; max-width: 420px; box-shadow: var(--shadow-xl);">
+        <div style="padding: var(--space-xl); border-bottom: 1px solid var(--slate-100);">
+            <h2 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--brand-900); margin: 0;">Asignar Rol y Programa</h2>
+            <p id="editUserName" class="text-xs text-muted mt-sm"></p>
+        </div>
+        <form id="editForm" method="post" action="" onsubmit="return confirm('¿Estás seguro de que deseas aplicar estos cambios al usuario?');">
+            {% csrf_token %}
+            <div class="card-body" style="display: flex; flex-direction: column; gap: var(--space-lg);">
+                <div class="form-group">
+                    <label class="form-label">Rol Institucional</label>
+                    <div class="select-wrapper">
+                        <select name="rol" id="editRol" class="form-select" required>
+                            <option value="DOCENTE_PLANTA">Docente de Planta</option>
+                            <option value="COORDINADOR">Coordinador</option>
+                            <option value="DECANA">Decana</option>
+                        </select>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Programa Académico</label>
+                    <div class="select-wrapper">
+                        <select name="programa_id" id="editPrograma" class="form-select">
+                            <option value="">-- Sin Programa (Institucional) --</option>
+                            {% for p in programas %}
+                                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+            <div style="padding: var(--space-md) var(--space-xl); background: var(--slate-50); display: flex; justify-content: flex-end; gap: var(--space-md); border-top: 1px solid var(--slate-100);">
+                <button type="button" onclick="closeEditModal()" class="btn btn-ghost btn-sm">Cancelar</button>
+                <button type="submit" class="btn btn-primary btn-sm">Confirmar</button>
+            </div>
+        </form>
     </div>
-    <form id="editForm" method="post" action="" onsubmit="return confirm('¿Estás seguro de que deseas aplicar estos cambios al usuario?');">
-      {% csrf_token %}
-      <div class="p-6 flex flex-col gap-5">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Rol Institucional</label>
-            <div class="relative">
-                <select name="rol" id="editRol" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 pr-8 text-sm text-slate-700 focus:outline-none focus:border-brand-500 transition-all cursor-pointer" required>
-                <option value="DOCENTE_PLANTA">Docente de Planta</option>
-                <option value="COORDINADOR">Coordinador</option>
-                <option value="DECANA">Decana</option>
-                </select>
-                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-            </div>
-          </div>
-          
-          <div>
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Programa Académico</label>
-            <div class="relative">
-                <select name="programa_id" id="editPrograma" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 pr-8 text-sm text-slate-700 focus:outline-none focus:border-brand-500 transition-all cursor-pointer">
-                <option value="">-- Sin Programa (Institucional) --</option>
-                {% for p in programas %}
-                    <option value="{{ p.id }}">{{ p.nombre }}</option>
-                {% endfor %}
-                </select>
-                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-            </div>
-          </div>
-      </div>
-      <div class="p-6 bg-slate-50 flex justify-end gap-3 border-t border-slate-100">
-        <button type="button" onclick="closeEditModal()" class="px-5 py-2 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-200 transition-colors">Cancelar</button>
-        <button type="submit" class="bg-brand-900 hover:bg-brand-950 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-sm transition-colors">Confirmar</button>
-      </div>
-    </form>
-  </div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  // --- View Toggle Logic ---
-  const btnList = document.querySelectorAll('.view-toggle-btn')[0];
-  const btnGrid = document.querySelectorAll('.view-toggle-btn')[1];
-  const listView = document.getElementById('listView');
-  const gridView = document.getElementById('gridView');
+    // --- View Toggle Logic ---
+    const toggleBtns = document.querySelectorAll('.view-toggle-btn');
+    const btnList = toggleBtns[0];
+    const btnGrid = toggleBtns[1];
+    const listView = document.getElementById('listView');
+    const gridView = document.getElementById('gridView');
 
-  btnList.addEventListener('click', () => {
-    btnList.classList.add('bg-brand-900', 'text-white');
-    btnList.classList.remove('bg-slate-50', 'text-slate-400', 'hover:bg-slate-100');
-    
-    btnGrid.classList.remove('bg-brand-900', 'text-white');
-    btnGrid.classList.add('bg-slate-50', 'text-slate-400', 'hover:bg-slate-100');
-    
-    listView.style.display = 'block';
-    gridView.style.display = 'none';
-    localStorage.setItem('userViewPref', 'list');
-  });
+    if (btnList && btnGrid) {
+        btnList.addEventListener('click', () => {
+            btnList.style.background = 'var(--brand-900)';
+            btnList.style.color = '#fff';
+            btnGrid.style.background = 'var(--slate-50)';
+            btnGrid.style.color = 'var(--slate-400)';
+            listView.style.display = 'block';
+            gridView.style.display = 'none';
+            gridView.classList.add('hidden');
+            localStorage.setItem('userViewPref', 'list');
+        });
 
-  btnGrid.addEventListener('click', () => {
-    btnGrid.classList.add('bg-brand-900', 'text-white');
-    btnGrid.classList.remove('bg-slate-50', 'text-slate-400', 'hover:bg-slate-100');
-    
-    btnList.classList.remove('bg-brand-900', 'text-white');
-    btnList.classList.add('bg-slate-50', 'text-slate-400', 'hover:bg-slate-100');
-    
-    listView.style.display = 'none';
-    gridView.style.display = 'grid';
-    localStorage.setItem('userViewPref', 'grid');
-  });
+        btnGrid.addEventListener('click', () => {
+            btnGrid.style.background = 'var(--brand-900)';
+            btnGrid.style.color = '#fff';
+            btnList.style.background = 'var(--slate-50)';
+            btnList.style.color = 'var(--slate-400)';
+            listView.style.display = 'none';
+            gridView.style.display = 'grid';
+            gridView.classList.remove('hidden');
+            localStorage.setItem('userViewPref', 'grid');
+        });
 
-  // Restore preference
-  const pref = localStorage.getItem('userViewPref');
-  if (pref === 'grid') btnGrid.click();
+        // Restore preference
+        const pref = localStorage.getItem('userViewPref');
+        if (pref === 'grid') btnGrid.click();
+    }
 
-  function openEditModal(userId, fullName, rol, programaId) {
-    const modal = document.getElementById('editModal');
-    const form = document.getElementById('editForm');
-    const userNameLabel = document.getElementById('editUserName');
-    
-    userNameLabel.textContent = `Editando a: ${fullName}`;
-    form.action = `/usuarios/gestion/${userId}/editar/`;
-    
-    document.getElementById('editRol').value = rol;
-    document.getElementById('editPrograma').value = programaId;
-    
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  }
+    function openEditModal(userId, fullName, rol, programaId) {
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editForm');
+        const userNameLabel = document.getElementById('editUserName');
+        
+        userNameLabel.textContent = `Editando a: ${fullName}`;
+        form.action = `/usuarios/gestion/${userId}/editar/`;
+        
+        document.getElementById('editRol').value = rol;
+        document.getElementById('editPrograma').value = programaId;
+        
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
 
-  function closeEditModal() {
-    const modal = document.getElementById('editModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
+    function closeEditModal() {
+        const modal = document.getElementById('editModal');
+        modal.classList.add('hidden');
+        modal.style.display = '';
+    }
 
-  window.onclick = function(event) {
-    const modal = document.getElementById('editModal');
-    if (event.target == modal) closeEditModal();
-  }
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target == modal) closeEditModal();
+    }
 
-  const searchInput = document.querySelector('input[name="q"]');
-  if (searchInput) {
-      searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') document.getElementById('filterForm').submit();
-      });
-  }
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('filterForm').submit();
+        });
+    }
 </script>
 {% endblock %}

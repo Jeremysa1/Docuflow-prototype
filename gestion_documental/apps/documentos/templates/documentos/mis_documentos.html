@@ -1,142 +1,139 @@
 {% extends 'base.html' %}
-{% block title %}Mis documentos - Docuflow{% endblock %}
+{% block title %}Mis documentos - SIGEA{% endblock %}
 {% block page_title %}Mis Documentos{% endblock %}
 {% block navbar_search %}{% endblock %}
 
 {% block content %}
-<div class="max-w-[1200px] mx-auto text-slate-800 animate-[fadeIn_0.3s_ease-out]">
-    <!-- === CABECERA === -->
-    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8 gap-4">
-        <a href="{% url 'documentos:subir' %}" class="shrink-0 bg-brand-900 hover:bg-brand-950 text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all shadow-sm">
-            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+
+    <header class="page-header">
+        <div class="page-header-info">
+            <h1>Mis Documentos</h1>
+            <p>Gestiona los documentos que has subido al sistema.</p>
+        </div>
+        <a href="{% url 'documentos:subir' %}" class="btn btn-primary">
+            <i data-lucide="upload-cloud"></i>
             Subir documento
         </a>
-    </div>
+    </header>
 
-    <!-- Formulario Global de Filtros -->
-    <form id="filter-form" method="get" class="mb-8">
+    <form id="filter-form" method="get" class="filter-bar">
         <input type="hidden" name="estado" id="id_estado" value="{{ request.GET.estado|default:'' }}">
-
-        <!-- === PÍLDORAS DE ESTADO (Filtros) === -->
-        <div class="flex flex-wrap gap-2 mb-6">
-            <button type="button" onclick="setEstado('')" 
-                    class="px-4 py-1.5 rounded-full text-xs font-bold transition-colors {% if not request.GET.estado %}bg-brand-900 text-white shadow-sm{% else %}bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-brand-900{% endif %}">
-                Todos
-            </button>
-            <button type="button" onclick="setEstado('APROBADO')" 
-                    class="px-4 py-1.5 rounded-full text-xs font-bold transition-colors {% if request.GET.estado == 'APROBADO' %}bg-brand-900 text-white shadow-sm{% else %}bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-brand-900{% endif %}">
-                Aprobados
-            </button>
-            <button type="button" onclick="setEstado('PENDIENTE')" 
-                    class="px-4 py-1.5 rounded-full text-xs font-bold transition-colors {% if request.GET.estado == 'PENDIENTE' %}bg-brand-900 text-white shadow-sm{% else %}bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-brand-900{% endif %}">
-                Pendientes
-            </button>
-            <button type="button" onclick="setEstado('RECHAZADO')" 
-                    class="px-4 py-1.5 rounded-full text-xs font-bold transition-colors {% if request.GET.estado == 'RECHAZADO' %}bg-brand-900 text-white shadow-sm{% else %}bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-brand-900{% endif %}">
-                Rechazados
-            </button>
+        
+        <div style="flex: 1 1 100%; display: flex; gap: 0.5rem; margin-bottom: var(--space-md);">
+            <button type="button" onclick="setEstado('')" class="filter-chip {% if not request.GET.estado %}active{% endif %}">Todos</button>
+            <button type="button" onclick="setEstado('APROBADO')" class="filter-chip {% if request.GET.estado == 'APROBADO' %}active{% endif %}">Aprobados</button>
+            <button type="button" onclick="setEstado('PENDIENTE')" class="filter-chip {% if request.GET.estado == 'PENDIENTE' %}active{% endif %}">Pendientes</button>
+            <button type="button" onclick="setEstado('RECHAZADO')" class="filter-chip {% if request.GET.estado == 'RECHAZADO' %}active{% endif %}">Rechazados</button>
         </div>
 
-        <!-- === BARRA DE BÚSQUEDA Y SELECTS === -->
-        <div class="flex flex-col lg:flex-row gap-4">
-            
-            <div class="relative flex-grow">
-                <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" name="q" placeholder="Filtrar por nombre o ID..." value="{{ request.GET.q|default:'' }}" 
-                       class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-sm">
+        <div class="form-group" style="flex: 2;">
+            <label class="form-label">Buscar</label>
+            <div class="select-wrapper">
+                <input type="text" name="q" placeholder="Filtrar por nombre o ID..." value="{{ request.GET.q|default:'' }}" class="form-input">
+                <i data-lucide="search"></i>
             </div>
-            
-            <div class="relative min-w-[200px]">
-                <select name="categoria" onchange="this.form.submit()" class="w-full appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2.5 pr-10 text-sm text-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-sm cursor-pointer">
-                    <option value="">Categoría: Todas</option>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Categoría</label>
+            <div class="select-wrapper">
+                <select name="categoria" onchange="this.form.submit()" class="form-select">
+                    <option value="">Todas</option>
                     {% for cat in categorias %}
                         <option value="{{ cat.id }}" {% if request.GET.categoria == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.nombre }}</option>
                     {% endfor %}
                 </select>
-                <i data-lucide="chevron-down" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                <i data-lucide="chevron-down"></i>
             </div>
+        </div>
 
-            <div class="relative min-w-[200px]">
-                <select name="factor" onchange="this.form.submit()" class="w-full appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2.5 pr-10 text-sm text-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-sm cursor-pointer">
-                    <option value="">Factor CNA: Todos</option>
+        <div class="form-group">
+            <label class="form-label">Factor CNA</label>
+            <div class="select-wrapper">
+                <select name="factor" onchange="this.form.submit()" class="form-select">
+                    <option value="">Todos</option>
                     {% for code, label in factores_cna %}
                         <option value="{{ code }}" {% if request.GET.factor == code %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                <i data-lucide="chevron-down" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                <i data-lucide="chevron-down"></i>
             </div>
+        </div>
 
-            <div class="relative min-w-[180px]">
-                <select name="orden" onchange="this.form.submit()" class="w-full appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2.5 pr-10 text-sm text-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-sm cursor-pointer">
-                    <option value="-fecha_creacion" {% if request.GET.orden == '-fecha_creacion' %}selected{% endif %}>Ordenar: Reciente</option>
+        <div class="form-group">
+            <label class="form-label">Ordenar por</label>
+            <div class="select-wrapper">
+                <select name="orden" onchange="this.form.submit()" class="form-select">
+                    <option value="-fecha_creacion" {% if request.GET.orden == '-fecha_creacion' %}selected{% endif %}>Recientes primero</option>
                     <option value="antiguo" {% if request.GET.orden == 'antiguo' %}selected{% endif %}>Antiguos primero</option>
-                    <option value="nombre" {% if request.GET.orden == 'nombre' %}selected{% endif %}>A-Z</option>
+                    <option value="nombre" {% if request.GET.orden == 'nombre' %}selected{% endif %}>Nombre (A-Z)</option>
                 </select>
-                <i data-lucide="chevron-down" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                <i data-lucide="chevron-down"></i>
             </div>
         </div>
     </form>
 
-    <!-- === TABLA DE DOCUMENTOS === -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+    <div class="table-container">
+        <div class="table-scroll">
+            <table class="data-table">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="py-3 px-4 text-center w-12">
-                            <input type="checkbox" id="check-all" class="w-4 h-4 rounded border-slate-300 text-brand-900 focus:ring-brand-500 cursor-pointer">
+                    <tr>
+                        <th style="width: 40px; text-align: center;">
+                            <input type="checkbox" id="check-all" style="cursor:pointer; accent-color: var(--brand-900);">
                         </th>
-                        <th class="py-3 px-4 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Documento</th>
-                        <th class="py-3 px-4 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Categoría</th>
-                        <th class="py-3 px-4 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Factor CNA</th>
-                        <th class="py-3 px-4 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Fecha</th>
-                        <th class="py-3 px-4 text-[11px] font-bold text-brand-900 uppercase tracking-wider">Estado</th>
+                        <th>Documento</th>
+                        <th>Categoría</th>
+                        <th>Factor CNA</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
-                <tbody class="text-sm divide-y divide-slate-100">
+                <tbody>
                     {% for doc in page_obj %}
-                    <tr class="hover:bg-slate-50/50 transition-colors group">
-                        <td class="py-4 px-4 text-center">
-                            <input type="checkbox" class="doc-check w-4 h-4 rounded border-slate-300 text-brand-900 focus:ring-brand-500 cursor-pointer">
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="doc-check" style="cursor:pointer; accent-color: var(--brand-900);">
                         </td>
-                        <td class="py-4 px-4">
-                            <a href="{% url 'documentos:detalle' doc.id %}" class="flex items-center gap-3 font-semibold text-brand-900 hover:text-brand-600 transition-colors">
-                                {% with filename=doc.archivo.name|lower %}
-                                    <div class="w-8 h-8 flex items-center justify-center shrink-0">
+                        <td>
+                            <div class="flex-row">
+                                <div class="doc-icon">
+                                    {% with filename=doc.archivo.name|lower %}
                                         {% if '.pdf' in filename %}
-                                            <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF" class="w-full h-full object-contain drop-shadow-sm">
+                                            <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
                                         {% elif '.doc' in filename %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word" class="w-full h-full object-contain drop-shadow-sm">
+                                            <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word">
                                         {% elif '.xls' in filename %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel" class="w-full h-full object-contain drop-shadow-sm">
+                                            <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel">
                                         {% elif '.ppt' in filename %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT" class="w-full h-full object-contain drop-shadow-sm">
+                                            <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT">
                                         {% else %}
-                                            <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc" class="w-full h-full object-contain drop-shadow-sm">
+                                            <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc">
                                         {% endif %}
-                                    </div>
-                                {% endwith %}
-                                {{ doc.titulo|truncatechars:45 }}
-                            </a>
+                                    {% endwith %}
+                                </div>
+                                <a href="{% url 'documentos:detalle' doc.id %}" class="font-semibold text-brand">{{ doc.titulo|truncatechars:45 }}</a>
+                            </div>
                         </td>
-                        <td class="py-4 px-4 text-slate-500 font-medium">{{ doc.categoria.nombre }}</td>
-                        <td class="py-4 px-4 text-slate-400 font-bold text-xs">{{ doc.get_factor_cna_display|default:"-" }}</td>
-                        <td class="py-4 px-4 text-slate-500">{{ doc.fecha_creacion|date:"d/m/Y" }}</td>
-                        <td class="py-4 px-4">
+                        <td class="font-semibold text-muted">{{ doc.categoria.nombre }}</td>
+                        <td class="text-xs font-bold text-light">{{ doc.get_factor_cna_display|default:"-" }}</td>
+                        <td class="text-muted text-xs">{{ doc.fecha_creacion|date:"d/m/Y" }}</td>
+                        <td>
                             {% if doc.estado == 'APROBADO' %}
-                                <span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Aprobado</span>
+                                <span class="badge badge-success">Aprobado</span>
                             {% elif doc.estado == 'RECHAZADO' %}
-                                <span class="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Rechazado</span>
+                                <span class="badge badge-danger">Rechazado</span>
                             {% else %}
-                                <span class="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide">Pendiente</span>
+                                <span class="badge badge-warning">Pendiente</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center py-12 text-slate-400 font-medium">
-                            <div class="flex flex-col items-center justify-center gap-3">
-                                <i data-lucide="folder-search" class="w-8 h-8 text-slate-300"></i>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i data-lucide="folder-search"></i>
+                                </div>
                                 <p>No se encontraron documentos en su repositorio.</p>
                             </div>
                         </td>
@@ -147,35 +144,34 @@
         </div>
     </div>
 
-    <!-- === PAGINACIÓN === -->
     {% if page_obj.has_other_pages %}
-    <div class="flex justify-center items-center gap-2 mt-8 mb-4">
-        {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-           class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-brand-900 transition-colors">
-            <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        </a>
-        {% endif %}
-
-        {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-                <span class="w-9 h-9 flex items-center justify-center rounded-lg bg-brand-900 text-white font-bold text-sm shadow-sm">{{ num }}</span>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                   class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-brand-900 transition-colors">{{ num }}</a>
+    <div class="pagination">
+        <div class="pagination-info">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </div>
+        <div class="pagination-buttons">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-btn">
+                <i data-lucide="chevron-left"></i>
+            </a>
             {% endif %}
-        {% endfor %}
 
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-           class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-brand-900 transition-colors">
-            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        </a>
-        {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="pagination-btn active">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-btn">
+                <i data-lucide="chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
-
-</div>
 
 <script>
     function setEstado(estado) {

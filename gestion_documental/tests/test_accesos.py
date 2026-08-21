@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 """
 Test completo - ejecutar con: py manage.py shell -c "exec(open('test_accesos.py').read())"
 """

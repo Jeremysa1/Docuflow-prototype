@@ -1,5 +1,5 @@
 /**
- * Docuflow — JavaScript Principal
+ * SIGEA — JavaScript Principal
  */
 document.addEventListener('DOMContentLoaded', function() {
 

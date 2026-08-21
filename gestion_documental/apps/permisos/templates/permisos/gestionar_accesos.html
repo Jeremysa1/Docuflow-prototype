@@ -3,281 +3,283 @@
 {% block page_title %}Gestión de Accesos{% endblock %}
 
 {% block content %}
-<div class="max-w-[1100px] mx-auto animate-[fadeIn_0.3s_ease-out] pb-10">
-  
-  <!-- HEADER -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-    <div>
-      <h1 class="text-2xl font-bold text-brand-900 mb-1 flex flex-wrap items-center gap-3 tracking-tight">
-        Gestión de Accesos — {{ documento.titulo|truncatechars:40 }}
-        {% if es_sensible %}
-          <span class="bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">Sensible</span>
-        {% endif %}
-      </h1>
-      <p class="text-sm text-slate-500 m-0">Asigna y gestiona quién puede acceder a este documento.</p>
-    </div>
-    <a href="{% url 'documentos:detalle' documento.id %}" class="shrink-0 bg-white border border-slate-200 text-brand-900 hover:bg-slate-50 px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm">
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-      Volver al documento
-    </a>
-  </div>
 
-  <!-- SECCIÓN 1: Solicitudes Pendientes -->
-  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8">
-    <div class="flex items-center gap-2 text-base font-bold text-brand-900 mb-6">
-      <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-        <i data-lucide="clock" class="w-4 h-4"></i>
-      </div>
-      Solicitudes Pendientes
-    </div>
-
-    {% if solicitudes_pendientes %}
-      <div class="flex flex-col gap-4">
-      {% for sol in solicitudes_pendientes %}
-        <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
-          <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-            <div class="flex items-center gap-3">
-              <img src="https://ui-avatars.com/api/?name={{ sol.solicitante.get_full_name|urlencode }}&background=random" class="w-10 h-10 rounded-full shadow-sm" alt="Avatar">
-              <div>
-                <div class="font-bold text-brand-900 text-sm">{{ sol.solicitante.get_full_name }}</div>
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{{ sol.solicitante.get_rol_display }} &middot; {{ sol.solicitante.programa_academico.nombre|default:"Institucional" }}</div>
-              </div>
-            </div>
-            <div class="text-[11px] font-mono font-bold text-slate-400 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm">{{ sol.fecha_solicitud|date:"d/m/Y H:i" }}</div>
-          </div>
-
-          <div class="bg-white p-4 rounded-lg border-l-4 border-l-brand-900 text-sm text-slate-600 shadow-sm mb-4 leading-relaxed">
-            <strong class="text-brand-900 block mb-1">Motivo de solicitud:</strong> 
-            {{ sol.motivo }}
-          </div>
-
-          {% if es_sensible %}
-            {# Documento sensible: mostrar votos #}
-            <div class="bg-white border border-slate-200 rounded-lg p-4 mb-4 shadow-sm">
-              <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">
-                Aprobaciones: <span class="text-brand-900">{{ sol.aprobaciones_count|default:0 }} / 2</span> (Mínimo 2 requeridas)
-              </div>
-
-              {# Mostrar votos existentes #}
-              <div class="flex flex-col gap-2">
-                {% for voto in sol.votos.all %}
-                  <div class="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-2 rounded-md">
-                    {% if voto.voto == 'APROBADO' %}
-                      <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i>
-                    {% else %}
-                      <i data-lucide="x-circle" class="w-4 h-4 text-rose-500"></i>
-                    {% endif %}
-                    <span class="font-bold text-brand-900">{{ voto.votante.get_full_name }}</span> &mdash; {{ voto.get_voto_display }}
-                  </div>
-                {% empty %}
-                  <div class="flex items-center gap-2 text-xs font-medium text-slate-400 italic">
-                    <i data-lucide="hourglass" class="w-4 h-4"></i> Aún no hay votos registrados.
-                  </div>
-                {% endfor %}
-              </div>
-            </div>
-
-            {# Botones de voto si el usuario no ha votado #}
-            {% if sol.ya_voto %}
-              <div class="bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-2.5 rounded-lg text-xs font-bold text-center">
-                Ya emitiste tu voto para esta solicitud.
-              </div>
-            {% else %}
-              <div class="flex flex-wrap gap-2">
-                <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="m-0">
-                  {% csrf_token %}
-                  <input type="hidden" name="decision" value="APROBADO">
-                  <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-2">
-                    <i data-lucide="check" class="w-4 h-4"></i> Aprobar
-                  </button>
-                </form>
-                <button type="button" class="btn-reject-toggle bg-rose-100 hover:bg-rose-200 text-rose-700 px-5 py-2.5 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-2" data-sol-id="{{ sol.id }}">
-                  <i data-lucide="x" class="w-4 h-4"></i> Rechazar
-                </button>
-              </div>
-              <div id="reject-form-{{ sol.id }}" class="hidden mt-3 animate-[fadeIn_0.2s_ease-out]">
-                <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="m-0 bg-white p-4 rounded-xl border border-rose-200 shadow-sm flex flex-col gap-3">
-                  {% csrf_token %}
-                  <input type="hidden" name="decision" value="RECHAZADO">
-                  <textarea name="motivo_rechazo" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 min-h-[80px]" placeholder="Indica el motivo del rechazo..." required></textarea>
-                  <div class="flex justify-end">
-                    <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm">Confirmar Rechazo</button>
-                  </div>
-                </form>
-              </div>
-            {% endif %}
-
-          {% else %}
-            {# Documento normal: botones directos (solo autor) #}
-            {% if puede_revocar %}
-              <div class="flex flex-wrap gap-2">
-                <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="m-0">
-                  {% csrf_token %}
-                  <input type="hidden" name="decision" value="APROBADA">
-                  <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-2">
-                    <i data-lucide="check" class="w-4 h-4"></i> Aprobar
-                  </button>
-                </form>
-                <button type="button" class="btn-reject-toggle bg-rose-100 hover:bg-rose-200 text-rose-700 px-5 py-2.5 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-2" data-sol-id="{{ sol.id }}">
-                  <i data-lucide="x" class="w-4 h-4"></i> Rechazar
-                </button>
-              </div>
-              <div id="reject-form-{{ sol.id }}" class="hidden mt-3 animate-[fadeIn_0.2s_ease-out]">
-                <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="m-0 bg-white p-4 rounded-xl border border-rose-200 shadow-sm flex flex-col gap-3">
-                  {% csrf_token %}
-                  <input type="hidden" name="decision" value="RECHAZADA">
-                  <textarea name="motivo_rechazo" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 min-h-[80px]" placeholder="Indica el motivo del rechazo..." required></textarea>
-                  <div class="flex justify-end">
-                    <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm">Confirmar Rechazo</button>
-                  </div>
-                </form>
-              </div>
-            {% endif %}
-          {% endif %}
+    <!-- HEADER -->
+    <header class="page-header">
+        <div class="page-header-info">
+            <h1 style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;">
+                Gestión de Accesos — {{ documento.titulo|truncatechars:40 }}
+                {% if es_sensible %}
+                    <span class="badge badge-danger badge-pill">Sensible</span>
+                {% endif %}
+            </h1>
+            <p>Asigna y gestiona quién puede acceder a este documento.</p>
         </div>
-      {% endfor %}
-      </div>
-    {% else %}
-      <div class="bg-slate-50 rounded-xl p-10 text-center border border-dashed border-slate-300">
-        <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mx-auto mb-3"></i>
-        <p class="text-sm font-medium text-slate-500 m-0">No hay solicitudes pendientes para este documento.</p>
-      </div>
-    {% endif %}
-  </div>
+        <a href="{% url 'documentos:detalle' documento.id %}" class="btn btn-ghost">
+            <i data-lucide="arrow-left"></i>
+            Volver al documento
+        </a>
+    </header>
 
-  <!-- SECCIÓN 2: Usuarios con acceso actual -->
-  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8">
-    <div class="flex items-center gap-2 text-base font-bold text-brand-900 mb-6">
-      <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
-        <i data-lucide="users" class="w-4 h-4"></i>
-      </div>
-      Usuarios con Acceso Explícito
-    </div>
-
-    {% if usuarios_con_acceso %}
-      <div class="overflow-x-auto bg-white border border-slate-200 rounded-xl">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-200">
-              <th class="py-3 px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Usuario</th>
-              <th class="py-3 px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Puede Ver</th>
-              <th class="py-3 px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Puede Descargar</th>
-              <th class="py-3 px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Desde</th>
-              {% if puede_revocar %}<th class="py-3 px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Acción</th>{% endif %}
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 text-sm">
-            {% for permiso in usuarios_con_acceso %}
-            <tr class="hover:bg-slate-50/50 transition-colors">
-              <td class="py-3 px-5">
-                <div class="flex items-center gap-3">
-                  <img src="https://ui-avatars.com/api/?name={{ permiso.usuario.get_full_name|urlencode }}&background=random" class="w-8 h-8 rounded-full shadow-sm" alt="Avatar">
-                  <div>
-                    <div class="font-bold text-brand-900 text-sm">{{ permiso.usuario.get_full_name }}</div>
-                    <div class="text-[11px] text-slate-500">{{ permiso.usuario.email }}</div>
-                  </div>
+    <!-- SECCIÓN 1: Solicitudes Pendientes -->
+    <div class="card mb-2xl">
+        <div class="card-body">
+            <div class="section-title mb-xl" style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="quick-action-icon" style="background: var(--amber-50); color: var(--amber-600);">
+                    <i data-lucide="clock"></i>
                 </div>
-              </td>
-              <td class="py-3 px-5 text-center">
-                {% if permiso.puede_ver %}
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-50 text-emerald-600"><i data-lucide="check" class="w-3.5 h-3.5"></i></span>
-                {% else %}
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-50 text-rose-600"><i data-lucide="x" class="w-3.5 h-3.5"></i></span>
-                {% endif %}
-              </td>
-              <td class="py-3 px-5 text-center">
-                {% if permiso.puede_descargar %}
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-50 text-emerald-600"><i data-lucide="check" class="w-3.5 h-3.5"></i></span>
-                {% else %}
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-50 text-rose-600"><i data-lucide="x" class="w-3.5 h-3.5"></i></span>
-                {% endif %}
-              </td>
-              <td class="py-3 px-5 text-center text-xs font-mono text-slate-500">{{ permiso.otorgado_en|date:"d/m/Y" }}</td>
-              {% if puede_revocar %}
-              <td class="py-3 px-5 text-right">
-                <form method="post" action="{% url 'permisos:revocar_acceso' documento.id permiso.usuario.id %}" class="m-0 inline-block"
-                  onsubmit="return confirm('¿Quitar acceso a {{ permiso.usuario.get_full_name|escapejs }}?');">
-                  {% csrf_token %}
-                  <button type="submit" class="bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm">
-                    Revocar
-                  </button>
-                </form>
-              </td>
-              {% endif %}
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="bg-slate-50 rounded-xl p-10 text-center border border-dashed border-slate-300">
-        <i data-lucide="users" class="w-8 h-8 text-slate-300 mx-auto mb-3"></i>
-        <p class="text-sm font-medium text-slate-500 m-0">No hay usuarios con acceso explícito asignado.</p>
-      </div>
+                Solicitudes Pendientes
+            </div>
+
+            {% if solicitudes_pendientes %}
+            <div class="flex-stack" style="gap: var(--space-md);">
+                {% for sol in solicitudes_pendientes %}
+                <div style="background: var(--slate-50); border-radius: var(--radius-md); padding: var(--space-xl); border: 1px solid var(--slate-200); box-shadow: var(--shadow-xs); transition: all var(--transition-base);">
+                    <div class="flex-between mb-lg" style="flex-wrap: wrap; gap: var(--space-md);">
+                        <div class="flex-row">
+                            <img src="https://ui-avatars.com/api/?name={{ sol.solicitante.get_full_name|urlencode }}&background=random" style="width: 40px; height: 40px; border-radius: var(--radius-full); box-shadow: var(--shadow-xs);" alt="Avatar">
+                            <div>
+                                <div class="font-bold text-sm text-brand">{{ sol.solicitante.get_full_name }}</div>
+                                <div class="text-xxs font-bold text-light uppercase tracking-wide mt-sm">{{ sol.solicitante.get_rol_display }} &middot; {{ sol.solicitante.programa_academico.nombre|default:"Institucional" }}</div>
+                            </div>
+                        </div>
+                        <span class="text-xxs font-bold text-light" style="font-family: monospace; background: #fff; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); box-shadow: var(--shadow-xs);">{{ sol.fecha_solicitud|date:"d/m/Y H:i" }}</span>
+                    </div>
+
+                    <div style="background: #fff; padding: var(--space-md); border-radius: var(--radius-sm); border-left: 4px solid var(--brand-900); box-shadow: var(--shadow-xs); margin-bottom: var(--space-lg); line-height: 1.65;">
+                        <strong class="text-brand text-sm" style="display: block; margin-bottom: 0.25rem;">Motivo de solicitud:</strong>
+                        <span class="text-sm text-muted">{{ sol.motivo }}</span>
+                    </div>
+
+                    {% if es_sensible %}
+                        <!-- Documento sensible: votos -->
+                        <div style="background: #fff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: var(--space-md); margin-bottom: var(--space-lg); box-shadow: var(--shadow-xs);">
+                            <div class="form-label" style="border-bottom: 1px solid var(--slate-100); padding-bottom: var(--space-sm); margin-bottom: var(--space-md);">
+                                Aprobaciones: <span class="text-brand">{{ sol.aprobaciones_count|default:0 }} / 2</span> (Mínimo 2 requeridas)
+                            </div>
+
+                            <div class="flex-stack" style="gap: var(--space-sm);">
+                                {% for voto in sol.votos.all %}
+                                <div class="flex-row text-sm text-muted" style="background: var(--slate-50); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm);">
+                                    {% if voto.voto == 'APROBADO' %}
+                                        <i data-lucide="check-circle-2" style="width: 16px; height: 16px; color: var(--emerald-500);"></i>
+                                    {% else %}
+                                        <i data-lucide="x-circle" style="width: 16px; height: 16px; color: var(--rose-500);"></i>
+                                    {% endif %}
+                                    <span class="font-bold text-brand">{{ voto.votante.get_full_name }}</span> &mdash; {{ voto.get_voto_display }}
+                                </div>
+                                {% empty %}
+                                <div class="flex-row text-xs text-muted" style="font-style: italic;">
+                                    <i data-lucide="hourglass" style="width: 16px; height: 16px;"></i> Aún no hay votos registrados.
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if sol.ya_voto %}
+                        <div class="alert alert-success" style="text-align: center; font-size: 0.75rem; font-weight: 700;">
+                            Ya emitiste tu voto para esta solicitud.
+                        </div>
+                        {% else %}
+                        <div class="flex-row" style="gap: 0.5rem; flex-wrap: wrap;">
+                            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="decision" value="APROBADO">
+                                <button type="submit" class="btn btn-sm" style="background: var(--emerald-500); color: #fff;"><i data-lucide="check"></i> Aprobar</button>
+                            </form>
+                            <button type="button" class="btn btn-sm btn-reject-toggle" style="background: var(--rose-100); color: var(--rose-700);" data-sol-id="{{ sol.id }}">
+                                <i data-lucide="x"></i> Rechazar
+                            </button>
+                        </div>
+                        <div id="reject-form-{{ sol.id }}" class="hidden" style="margin-top: var(--space-md); animation: fadeIn 0.2s ease-out;">
+                            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" style="margin: 0; background: #fff; padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--rose-200); box-shadow: var(--shadow-xs);">
+                                {% csrf_token %}
+                                <input type="hidden" name="decision" value="RECHAZADO">
+                                <textarea name="motivo_rechazo" class="form-textarea" style="min-height: 80px; border-color: var(--rose-200); margin-bottom: var(--space-md);" placeholder="Indica el motivo del rechazo..." required></textarea>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <button type="submit" class="btn btn-sm" style="background: var(--rose-600); color: #fff;">Confirmar Rechazo</button>
+                                </div>
+                            </form>
+                        </div>
+                        {% endif %}
+
+                    {% else %}
+                        <!-- Documento normal -->
+                        {% if puede_revocar %}
+                        <div class="flex-row" style="gap: 0.5rem; flex-wrap: wrap;">
+                            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="decision" value="APROBADA">
+                                <button type="submit" class="btn btn-sm" style="background: var(--emerald-500); color: #fff;"><i data-lucide="check"></i> Aprobar</button>
+                            </form>
+                            <button type="button" class="btn btn-sm btn-reject-toggle" style="background: var(--rose-100); color: var(--rose-700);" data-sol-id="{{ sol.id }}">
+                                <i data-lucide="x"></i> Rechazar
+                            </button>
+                        </div>
+                        <div id="reject-form-{{ sol.id }}" class="hidden" style="margin-top: var(--space-md); animation: fadeIn 0.2s ease-out;">
+                            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" style="margin: 0; background: #fff; padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--rose-200); box-shadow: var(--shadow-xs);">
+                                {% csrf_token %}
+                                <input type="hidden" name="decision" value="RECHAZADA">
+                                <textarea name="motivo_rechazo" class="form-textarea" style="min-height: 80px; border-color: var(--rose-200); margin-bottom: var(--space-md);" placeholder="Indica el motivo del rechazo..." required></textarea>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <button type="submit" class="btn btn-sm" style="background: var(--rose-600); color: #fff;">Confirmar Rechazo</button>
+                                </div>
+                            </form>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state" style="border: 2px dashed var(--slate-300); border-radius: var(--radius-md);">
+                <div class="empty-state-icon"><i data-lucide="inbox"></i></div>
+                <p class="text-sm text-muted">No hay solicitudes pendientes para este documento.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: Usuarios con acceso actual -->
+    <div class="card mb-2xl">
+        <div class="card-body">
+            <div class="section-title mb-xl" style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="quick-action-icon" style="background: var(--sky-50); color: var(--sky-600);">
+                    <i data-lucide="users"></i>
+                </div>
+                Usuarios con Acceso Explícito
+            </div>
+
+            {% if usuarios_con_acceso %}
+            <div class="table-container" style="box-shadow: none; margin-bottom: var(--space-xl);">
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th style="text-align: center;">Puede Ver</th>
+                                <th style="text-align: center;">Puede Descargar</th>
+                                <th style="text-align: center;">Desde</th>
+                                {% if puede_revocar %}<th style="text-align: right;">Acción</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for permiso in usuarios_con_acceso %}
+                            <tr>
+                                <td>
+                                    <div class="flex-row">
+                                        <img src="https://ui-avatars.com/api/?name={{ permiso.usuario.get_full_name|urlencode }}&background=random" style="width: 32px; height: 32px; border-radius: var(--radius-full); box-shadow: var(--shadow-xs);" alt="Avatar">
+                                        <div>
+                                            <div class="font-bold text-sm text-brand">{{ permiso.usuario.get_full_name }}</div>
+                                            <div class="text-xxs text-muted">{{ permiso.usuario.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    {% if permiso.puede_ver %}
+                                        <span style="display: inline-flex; width: 24px; height: 24px; border-radius: var(--radius-full); background: var(--emerald-50); color: var(--emerald-600); align-items: center; justify-content: center;"><i data-lucide="check" style="width: 14px; height: 14px;"></i></span>
+                                    {% else %}
+                                        <span style="display: inline-flex; width: 24px; height: 24px; border-radius: var(--radius-full); background: var(--rose-50); color: var(--rose-600); align-items: center; justify-content: center;"><i data-lucide="x" style="width: 14px; height: 14px;"></i></span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: center;">
+                                    {% if permiso.puede_descargar %}
+                                        <span style="display: inline-flex; width: 24px; height: 24px; border-radius: var(--radius-full); background: var(--emerald-50); color: var(--emerald-600); align-items: center; justify-content: center;"><i data-lucide="check" style="width: 14px; height: 14px;"></i></span>
+                                    {% else %}
+                                        <span style="display: inline-flex; width: 24px; height: 24px; border-radius: var(--radius-full); background: var(--rose-50); color: var(--rose-600); align-items: center; justify-content: center;"><i data-lucide="x" style="width: 14px; height: 14px;"></i></span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: center; font-family: monospace;" class="text-xs text-muted">{{ permiso.otorgado_en|date:"d/m/Y" }}</td>
+                                {% if puede_revocar %}
+                                <td style="text-align: right;">
+                                    <form method="post" action="{% url 'permisos:revocar_acceso' documento.id permiso.usuario.id %}" style="margin: 0; display: inline-block;"
+                                        onsubmit="return confirm('¿Quitar acceso a {{ permiso.usuario.get_full_name|escapejs }}?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-ghost btn-xs" style="color: var(--rose-600); border-color: var(--rose-200);">
+                                            Revocar
+                                        </button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state" style="border: 2px dashed var(--slate-300); border-radius: var(--radius-md); margin-bottom: var(--space-xl);">
+                <div class="empty-state-icon"><i data-lucide="users"></i></div>
+                <p class="text-sm text-muted">No hay usuarios con acceso explícito asignado.</p>
+            </div>
+            {% endif %}
+
+            <div class="alert alert-info">
+                <i data-lucide="info" style="width: 20px; height: 20px; flex-shrink: 0; color: var(--sky-600);"></i>
+                <p class="text-sm" style="margin: 0;"><strong>Nota:</strong> La Decana y el Coordinador tienen acceso administrativo por defecto. El autor siempre tiene acceso completo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 3: Historial rechazadas -->
+    {% if solicitudes_rechazadas %}
+    <div class="card">
+        <div class="card-body">
+            <div class="section-title mb-xl" style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="quick-action-icon" style="background: var(--rose-50); color: var(--rose-600);">
+                    <i data-lucide="archive-x"></i>
+                </div>
+                Historial de Solicitudes Rechazadas
+            </div>
+
+            <div class="table-container" style="box-shadow: none;">
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Fecha</th>
+                                <th>Motivo de Rechazo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sol in solicitudes_rechazadas %}
+                            <tr>
+                                <td class="font-bold text-sm text-brand">{{ sol.solicitante.get_full_name }}</td>
+                                <td class="text-xs text-muted" style="font-family: monospace;">{{ sol.fecha_respuesta|date:"d/m/Y"|default:sol.fecha_solicitud|date:"d/m/Y" }}</td>
+                                <td class="text-sm text-muted" style="font-style: italic;">"{{ sol.motivo_rechazo|default:"Sin motivo registrado." }}"</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
     {% endif %}
 
-    <div class="mt-6 bg-sky-50 border border-sky-100 rounded-xl p-4 flex gap-3 text-sm text-sky-800">
-      <i data-lucide="info" class="w-5 h-5 shrink-0 text-sky-600"></i>
-      <p class="m-0 font-medium"><strong>Nota:</strong> La Decana y el Coordinador tienen acceso administrativo por defecto. El autor siempre tiene acceso completo.</p>
-    </div>
-  </div>
-
-  <!-- SECCIÓN 3: Historial de solicitudes rechazadas -->
-  {% if solicitudes_rechazadas %}
-  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-    <div class="flex items-center gap-2 text-base font-bold text-brand-900 mb-6">
-      <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-        <i data-lucide="archive-x" class="w-4 h-4"></i>
-      </div>
-      Historial de Solicitudes Rechazadas
-    </div>
-
-    <div class="overflow-x-auto bg-white border border-slate-200 rounded-xl">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-slate-50 border-b border-slate-200">
-            <th class="py-3 px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Usuario</th>
-            <th class="py-3 px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fecha</th>
-            <th class="py-3 px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Motivo de Rechazo</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 text-sm">
-          {% for sol in solicitudes_rechazadas %}
-          <tr class="hover:bg-slate-50/50 transition-colors">
-            <td class="py-3 px-5 font-bold text-slate-800">{{ sol.solicitante.get_full_name }}</td>
-            <td class="py-3 px-5 text-xs font-mono text-slate-500">{{ sol.fecha_respuesta|date:"d/m/Y"|default:sol.fecha_solicitud|date:"d/m/Y" }}</td>
-            <td class="py-3 px-5 text-slate-600 italic">"{{ sol.motivo_rechazo|default:"Sin motivo registrado." }}"</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
-
-</div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const rejectButtons = document.querySelectorAll('.btn-reject-toggle');
-    rejectButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const solId = this.getAttribute('data-sol-id');
-        const form = document.getElementById('reject-form-' + solId);
-        if (form) {
-          const isHidden = form.classList.contains('hidden');
-          if (isHidden) {
-            form.classList.remove('hidden');
-            const textarea = form.querySelector('textarea');
-            if (textarea) textarea.focus();
-          } else {
-            form.classList.add('hidden');
-          }
-        }
-      });
+    document.addEventListener('DOMContentLoaded', function() {
+        const rejectButtons = document.querySelectorAll('.btn-reject-toggle');
+        rejectButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const solId = this.getAttribute('data-sol-id');
+                const form = document.getElementById('reject-form-' + solId);
+                if (form) {
+                    const isHidden = form.classList.contains('hidden');
+                    if (isHidden) {
+                        form.classList.remove('hidden');
+                        const textarea = form.querySelector('textarea');
+                        if (textarea) textarea.focus();
+                    } else {
+                        form.classList.add('hidden');
+                    }
+                }
+            });
+        });
     });
-  });
 </script>
-{% endblock %}
 {% endblock %}
