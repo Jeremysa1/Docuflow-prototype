@@ -71,7 +71,7 @@
 
     <div class="table-container">
         <div class="table-scroll">
-            <table class="data-table">
+            <div class="table-responsive"> <table class="data-table">
                 <thead>
                     <tr>
                         <th>Documento</th>
@@ -99,10 +99,10 @@
                                       <img src="https://img.icons8.com/fluency/48/file.png" alt="File">
                                     {% endif %}
                                 </div>
-                                <div class="flex-stack" style="gap: 0.2rem;">
+                                <div class="flex-stack gap-2xs">
                                     <a href="{% url 'documentos:detalle' doc.id %}" class="font-semibold text-brand">{{ doc.titulo }}</a>
                                     {% if doc.es_sensible %}
-                                        <span class="badge badge-danger" style="width: max-content; padding: 0.2rem 0.5rem;">
+                                        <span class="badge badge-danger badge-sm w-max">
                                             <i data-lucide="lock"></i> Sensible
                                         </span>
                                     {% endif %}
@@ -139,8 +139,10 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </table> </div>
         </div>
     </div>
 
 {% endblock %}
+
+

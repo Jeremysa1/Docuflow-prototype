@@ -33,14 +33,14 @@
                     </div>
                 </form>
 
-                <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--brand-900); margin-bottom: 0.25rem;">{{ usuario.get_full_name }}</h2>
+                <h2 class="profile-name">{{ usuario.get_full_name }}</h2>
                 <p class="text-sm text-muted mb-lg">{{ usuario.email }}</p>
                 
-                <div style="display: flex; justify-content: center;">
+                <div class="role-badge-wrapper">
                     {% if usuario.rol == 'DECANA' %}
                         <span class="badge badge-purple badge-pill">{{ usuario.get_rol_display }}</span>
                     {% elif usuario.rol == 'COORDINADOR' %}
-                        <span class="badge badge-brand badge-pill" style="border: 1px solid var(--brand-100);">{{ usuario.get_rol_display }}</span>
+                        <span class="badge badge-brand badge-pill badge-brand-bordered">{{ usuario.get_rol_display }}</span>
                     {% else %}
                         <span class="badge badge-neutral badge-pill">{{ usuario.get_rol_display }}</span>
                     {% endif %}
@@ -49,7 +49,7 @@
         </div>
 
         <!-- LADO DERECHO: DETALLES -->
-        <div class="card" style="overflow: hidden;">
+        <div class="card profile-details-card">
             <div class="tab-bar">
                 <div class="tab-item active">
                     Datos Administrativos
@@ -57,7 +57,7 @@
             </div>
             
             <div class="card-body">
-                <div class="grid-2 mb-3xl" style="gap: var(--space-2xl);">
+                <div class="grid-2 mb-3xl profile-info-grid">
                     <div class="info-field">
                         <span class="info-label">Nombre de usuario</span>
                         <span class="info-value">{{ usuario.username }}</span>
@@ -86,19 +86,19 @@
                     </div>
                 </div>
 
-                <hr style="border: none; border-top: 1px solid var(--slate-100); margin-bottom: var(--space-2xl);">
+                <hr class="profile-divider">
 
                 <div class="info-field mb-2xl">
                     <span class="info-label">Último acceso al sistema</span>
                     <span class="text-sm font-semibold text-muted">{{ usuario.last_login|date:"l, d de F de Y - H:i"|default:"Primera sesión en curso" }}</span>
                 </div>
 
-                <div style="background: var(--slate-50); border-radius: var(--radius-md); padding: var(--space-xl); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-md); border: 1px solid var(--slate-200);">
+                <div class="security-section">
                     <div>
                         <h4 class="text-sm font-bold text-brand mb-sm">Seguridad de la Cuenta</h4>
                         <p class="text-xs text-muted">Para cambiar tu contraseña, utiliza el flujo de recuperación institucional.</p>
                     </div>
-                    <form method="post" action="{% url 'auth:logout' %}" style="margin: 0; flex-shrink: 0;">
+                    <form method="post" action="{% url 'auth:logout' %}" class="logout-form">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-ghost btn-sm">
                             <i data-lucide="log-out"></i>

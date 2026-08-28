@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Dashboard - SIGEA{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
@@ -6,38 +7,35 @@
 
   {# === DECANA: BANNER VENCIDOS === #}
   {% if user.rol == 'DECANA' and hay_docs_vencidos %}
-  <div class="alert-banner" style="background: var(--amber-50); border: 1px solid var(--amber-200);">
+  <div class="alert-banner alert-banner-warning">
     <div class="alert-banner-content">
-      <div class="alert-banner-icon" style="background: var(--amber-100); color: var(--amber-600);">
+      <div class="alert-banner-icon alert-banner-icon-warning">
         <i data-lucide="alert-triangle"></i>
       </div>
       <div>
-        <strong style="display: block; font-size: 0.933rem; color: var(--amber-900); margin-bottom: 0.2rem;">Atención: Documentos Vencidos</strong>
-        <span style="font-size: 0.8rem; color: var(--amber-700);">Hay documentos de auditoría que requieren su revisión inmediata antes del cierre trimestral.</span>
+        <strong class="alert-banner-title">Atención: Documentos Vencidos</strong>
+        <span class="alert-banner-desc">Hay documentos de auditoría que requieren su revisión inmediata antes del cierre trimestral.</span>
       </div>
     </div>
-    <a href="{% url 'documentos:lista' %}?estado=PENDIENTE" class="btn btn-sm" style="background: var(--amber-900); color: #fff;">
+    <a href="{% url 'documentos:lista' %}?estado=PENDIENTE" class="btn btn-sm btn-amber-dark">
       Revisar ahora
     </a>
   </div>
   {% endif %}
 
-  {# === CABECERA === #}
-  <header class="page-header">
-    <div class="page-header-info">
+    {# === CABECERA HERO BANNER === #}
+  <header class="dashboard-hero" style="background-image: url('{% static 'img/sas1.png' %}');">
+    <div class="dashboard-hero-content">
       <h1>Bienvenido de nuevo, {{ user.first_name|default:user.username }}.</h1>
       <p>
         {% if user.rol == 'DECANA' %}
-        Resumen ejecutivo del sistema de gestión de calidad. Monitoreo de la integridad documental.
+        Gestión integral de calidad y monitoreo documental.
         {% else %}
-        Tu espacio de trabajo y estado de documentación.
+        Gestión y estado de tu documentación.
         {% endif %}
       </p>
+            <a href="{% url 'documentos:subir' %}" class="btn-banner-upload">         <i data-lucide="upload-cloud" class="icon-banner-upload"></i>         <span>Subir nuevo documento</span>       </a>
     </div>
-    <a href="{% url 'documentos:subir' %}" class="btn btn-primary">
-      <i data-lucide="upload-cloud"></i>
-      Subir nuevo documento
-    </a>
   </header>
 
 
@@ -80,7 +78,7 @@
         </div>
         
         <div class="table-scroll">
-          <table class="data-table">
+          <div class="table-responsive"> <table class="data-table">
             <thead>
               <tr>
                 <th>Documento</th>
@@ -128,7 +126,7 @@
               <tr><td colspan="5" class="text-center text-light mt-xl mb-xl">Sin actividad reciente</td></tr>
               {% endfor %}
             </tbody>
-          </table>
+          </table> </div>
         </div>
       </div>
     </div>
@@ -220,11 +218,11 @@
       <div class="card-body">
         <div class="section-header">
           <h2 class="section-title">Documentos pendientes de aprobación</h2>
-          <a href="{% url 'documentos:aprobar' %}" class="section-link" style="color: var(--brand-600);">Ir al módulo &rarr;</a>
+          <a href="{% url 'documentos:aprobar' %}" class="section-link text-brand-600">Ir al módulo &rarr;</a>
         </div>
         
         <div class="table-scroll">
-          <table class="data-table">
+          <div class="table-responsive"> <table class="data-table">
             <thead>
               <tr>
                 <th>Documento</th>
@@ -250,15 +248,15 @@
                         <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc">
                       {% endif %}
                     </div>
-                    <a href="{% url 'documentos:detalle' doc.id %}" style="text-decoration: none; color: inherit;">{{ doc.titulo|truncatechars:40 }}</a>
+                    <a href="{% url 'documentos:detalle' doc.id %}" class="link-inherit">{{ doc.titulo|truncatechars:40 }}</a>
                   </div>
                 </td>
                 <td>
                   <div class="font-bold text-xs text-brand">{{ doc.autor.get_full_name }}</div>
-                  <div style="font-size: 0.667rem; text-transform: uppercase; font-weight: 700; color: var(--slate-400); margin-top: 0.2rem;">{{ doc.categoria.nombre }}</div>
+                  <div class="meta-text-sm">{{ doc.categoria.nombre }}</div>
                 </td>
                 <td class="text-center">
-                  <div class="flex-row show-on-group-hover" style="justify-content: center; gap: 0.5rem;">
+                  <div class="flex-row show-on-group-hover flex-center-gap">
                     <form method="post" action="{% url 'documentos:aprobar_doc' doc.id %}" onsubmit="return confirm('¿Aprobar rápidamente este documento?');">
                       {% csrf_token %}
                       <button type="submit" title="Aprobar" class="btn-icon btn-approve">
@@ -278,7 +276,7 @@
               <tr><td colspan="3" class="text-center text-light mt-xl mb-xl">No hay documentos en cola de aprobación</td></tr>
               {% endfor %}
             </tbody>
-          </table>
+          </table> </div>
         </div>
       </div>
     </div>
@@ -349,14 +347,14 @@
         
         <div class="flex-stack">
           {% for cat in categorias_conteo %}
-          <a href="{% url 'documentos:lista' %}?categoria={{ cat.id }}" style="text-decoration: none; display: block;">
+          <a href="{% url 'documentos:lista' %}?categoria={{ cat.id }}" class="link-block">
               <div class="flex-between mb-sm">
                   <span class="font-bold text-sm text-brand">{{ cat.nombre }}</span>
                   <span class="text-xs text-muted font-bold">{{ cat.cantidad }} docs</span>
               </div>
               <div class="progress-bar">
                   {% with total_safe=total_docs_count|default:1 %}
-                  <div class="progress-fill bar-fill" style="width: 0%;" data-width="{% widthratio cat.cantidad total_safe 100 %}%"></div>
+                  <div class="progress-fill bar-fill progress-initial" data-width="{% widthratio cat.cantidad total_safe 100 %}%"></div>
                   {% endwith %}
               </div>
           </a>
@@ -414,3 +412,9 @@
     });
 </script>
 {% endblock %}
+
+
+
+
+
+

@@ -3,32 +3,23 @@
 {% block page_title %}Aprobar documentos{% endblock %}
 
 {% block content %}
-<style>
-    tr.doc-row[data-status="PENDIENTE"] {
-        cursor: pointer;
-    }
-    .filter-chip-active {
-        background: #fff !important;
-        color: var(--brand-900) !important;
-        box-shadow: var(--shadow-xs) !important;
-    }
-</style>
+
 
 <!-- Banner de Alerta -->
 {% if hay_urgentes %}
 <div class="alert-banner"
-    style="background: var(--rose-50); border: 1px solid var(--rose-200); border-left: 4px solid var(--rose-600);">
+    class="alert-banner-danger">
     <div class="alert-banner-content">
-        <div class="alert-banner-icon" style="background: var(--rose-100); color: var(--rose-600);">
+        <div class="alert-banner-icon alert-banner-icon-danger">
             <i data-lucide="alert-triangle"></i>
         </div>
         <div>
-            <strong class="text-sm font-bold" style="color: var(--rose-800);">Atención: {{ docs_urgentes_count }}
+            <strong class="text-sm font-bold text-rose-800">Atención: {{ docs_urgentes_count }}
                 documento{{ docs_urgentes_count|pluralize:"s" }} lleva{{ docs_urgentes_count|pluralize:"n" }} más de 3
                 días sin revisión</strong>
         </div>
     </div>
-    <a href="?urgente=1" class="btn btn-sm" style="background: var(--rose-600); color: #fff;">
+    <a href="?urgente=1" class="btn btn-sm btn-rose-600">
         Priorizar urgentes
     </a>
 </div>
@@ -55,40 +46,36 @@
     </div>
 
     {% if hay_urgentes %}
-    <div class="stat-card" style="border-bottom-color: var(--rose-700); background: var(--rose-50);">
-        <div class="stat-card-icon" style="color: var(--rose-700); background: var(--rose-100);"><i
+    <div class="stat-card stat-card-danger-urgent">
+        <div class="stat-card-icon stat-icon-danger-urgent"><i
                 data-lucide="flame"></i></div>
-        <div class="stat-card-label" style="color: var(--rose-700);">Urgentes</div>
-        <div class="stat-card-value" style="color: var(--rose-800);">{{ docs_urgentes_count }}</div>
+        <div class="stat-card-label text-rose-700">Urgentes</div>
+        <div class="stat-card-value text-rose-800">{{ docs_urgentes_count }}</div>
     </div>
     {% endif %}
 </div>
 
 <!-- Contenedor Principal (Tabla) -->
-<div class="table-container" style="position: relative;">
+<div class="table-container pos-relative">
 
     <!-- Toolbar (Tabs) -->
     <div
-        style="background: var(--slate-50); padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--slate-200); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md);">
+        class="toolbar-tabs">
         <div class="flex-row"
-            style="gap: 0.35rem; background: rgba(226,232,240,0.5); padding: 4px; border-radius: var(--radius-md);">
-            <a href="?estado=" class="filter-chip {% if not estado_actual and not es_urgente %}filter-chip-active{% endif %}"
-                style="padding: 0.4rem 1rem; font-size: 0.75rem;">Todos</a>
-            <a href="?estado=PENDIENTE" class="filter-chip {% if estado_actual == 'PENDIENTE' and not es_urgente %}filter-chip-active{% endif %}"
-                style="padding: 0.4rem 1rem; font-size: 0.75rem;">Pendientes</a>
-            <a href="?estado=APROBADO" class="filter-chip {% if estado_actual == 'APROBADO' %}filter-chip-active{% endif %}"
-                style="padding: 0.4rem 1rem; font-size: 0.75rem;">Aprobados</a>
-            <a href="?urgente=1" class="filter-chip {% if es_urgente %}filter-chip-active{% endif %}"
-                style="padding: 0.4rem 1rem; font-size: 0.75rem;">Urgentes</a>
+            class="filter-chip-group">
+            <a href="?estado=" class="filter-chip filter-chip-sm {% if not estado_actual and not es_urgente %}filter-chip-active{% endif %}">Todos</a>
+            <a href="?estado=PENDIENTE" class="filter-chip filter-chip-sm {% if estado_actual == 'PENDIENTE' and not es_urgente %}filter-chip-active{% endif %}">Pendientes</a>
+            <a href="?estado=APROBADO" class="filter-chip filter-chip-sm {% if estado_actual == 'APROBADO' %}filter-chip-active{% endif %}">Aprobados</a>
+            <a href="?urgente=1" class="filter-chip filter-chip-sm {% if es_urgente %}filter-chip-active{% endif %}">Urgentes</a>
         </div>
 
         <div id="selection-counter" class="hidden flex-row"
-            style="background: var(--brand-900); color: #fff; padding: 0.4rem 1rem; border-radius: var(--radius-md); animation: fadeIn 0.3s ease-out;">
+            class="selection-counter-panel">
             <span class="text-xxs font-bold uppercase tracking-wide"
-                style="border-right: 1px solid rgba(255,255,255,0.2); padding-right: 0.75rem; margin-right: 0.75rem;"><span
+                class="selection-counter-divider"><span
                     id="selected-count">0</span> Seleccionados</span>
             <button type="button" data-action="clear-selection" class="text-xxs font-bold"
-                style="background: none; border: none; color: rgba(255,255,255,0.5);">Limpiar</button>
+                class="btn-clear-selection">Limpiar</button>
         </div>
     </div>
 
@@ -96,27 +83,27 @@
     <form id="bulk-action-form" method="post" action="{% url 'documentos:aprobar_lote' %}">
         {% csrf_token %}
         <div class="table-scroll">
-            <table class="data-table" id="docs-table">
+            <div class="table-responsive"> <table class="data-table" id="docs-table">
                 <thead>
                     <tr>
-                        <th style="width: 50px; text-align: center;">
+                        <th class="w-50px text-center">
                             <input type="checkbox" id="select-all"
-                                style="cursor: pointer; accent-color: var(--brand-900);">
+                                class="checkbox-brand">
                         </th>
                         <th>Documento</th>
                         <th>Cargado por</th>
                         <th>Categoría / Factor</th>
                         <th>Fecha</th>
                         <th>Estado</th>
-                        <th style="text-align: right;">Acciones</th>
+                        <th class="text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for doc in page_obj %}
                     <tr class="doc-row" data-doc-id="{{ doc.id }}" data-status="{{ doc.estado }}">
-                        <td style="text-align: center;">
+                        <td class="text-center">
                             <input type="checkbox" name="documento_ids" value="{{ doc.id }}" id="check-{{ doc.id }}"
-                                class="doc-checkbox" style="cursor: pointer; accent-color: var(--brand-900);" {% if doc.estado != 'PENDIENTE' %}disabled{% endif %}>
+                                class="doc-checkbox checkbox-brand" {% if doc.estado != 'PENDIENTE' %}disabled{% endif %}>
                         </td>
                         <td>
                             <div class="flex-row">
@@ -140,7 +127,7 @@
                         <td>
                             <div class="flex-row">
                                 <img src="https://ui-avatars.com/api/?name={{ doc.autor.get_full_name|urlencode }}&background=0D1B2A&color=fff&size=32"
-                                    style="width: 32px; height: 32px; border-radius: var(--radius-full); box-shadow: var(--shadow-xs);"
+                                    class="avatar-sm"
                                     alt="Avatar">
                                 <div>
                                     <div class="font-bold text-xs text-brand">{{ doc.autor.get_full_name }}</div>
@@ -153,13 +140,13 @@
                             </div>
                             <div class="text-xxs font-bold uppercase tracking-wide mt-sm">
                                 {% if doc.factor_cna %}
-                                <span style="color: var(--brand-600);">{{ doc.get_factor_cna_display|truncatechars:25 }}</span>
+                                <span class="text-brand-600">{{ doc.get_factor_cna_display|truncatechars:25 }}</span>
                                 {% else %}
-                                <span style="color: var(--rose-500);">No asignado</span>
+                                <span class="text-rose-500">No asignado</span>
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="text-muted text-xs" style="font-family: monospace;">{{ doc.fecha_modificacion|date:"d/m/Y" }}</td>
+                        <td class="text-muted text-xs font-mono">{{ doc.fecha_modificacion|date:"d/m/Y" }}</td>
                         <td>
                             {% if doc.estado == 'APROBADO' %}
                             <span class="badge badge-success">Aprobado</span>
@@ -170,7 +157,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <div class="flex-row" style="justify-content: flex-end; gap: 0.5rem;">
+                            <div class="flex-row flex-end-gap">
                                 {% if doc.estado == 'PENDIENTE' %}
                                 <button type="button" data-action="approve" data-doc-id="{{ doc.id }}"
                                     class="btn-icon btn-approve" title="Aprobar">
@@ -187,20 +174,19 @@
 
                     <!-- Panel de Rechazo (Oculto por defecto) -->
                     {% if doc.estado == 'PENDIENTE' %}
-                    <tr id="reject-{{ doc.id }}" class="hidden"
-                        style="background: var(--rose-50); border-bottom: 1px solid var(--rose-100);">
-                        <td colspan="7" style="padding: var(--space-xl);">
-                            <div class="flex-stack" style="gap: var(--space-md);">
-                                <label class="form-label" style="color: var(--rose-800);">Motivo del rechazo para: <span
-                                        style="color: var(--rose-600);">{{ doc.titulo }}</span></label>
+                    <tr id="reject-{{ doc.id }}" class="hidden reject-panel-row">
+                        <td colspan="7" class="pad-xl">
+                            <div class="flex-stack gap-md">
+                                <label class="form-label text-rose-800">Motivo del rechazo para: <span
+                                        class="text-rose-600">{{ doc.titulo }}</span></label>
                                 <textarea id="comment-{{ doc.id }}" class="form-textarea"
-                                    style="min-height: 80px; border-color: var(--rose-200);"
+                                    class="textarea-reject-sm"
                                     placeholder="Explique por qué se rechaza el documento..."></textarea>
-                                <div class="flex-row" style="justify-content: flex-end; gap: var(--space-md);">
+                                <div class="flex-row flex-end-gap-md">
                                     <button type="button" data-action="cancel-reject" data-doc-id="{{ doc.id }}"
                                         class="btn btn-ghost btn-sm">Cancelar</button>
                                     <button type="button" data-action="confirm-reject" data-doc-id="{{ doc.id }}"
-                                        class="btn btn-sm" style="background: var(--rose-600); color: #fff;">Confirmar
+                                        class="btn btn-sm btn-rose-600">Confirmar
                                         Rechazo</button>
                                 </div>
                             </div>
@@ -221,29 +207,29 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </table> </div>
         </div>
 
         <!-- Floating Action Bar (Bulk Actions) -->
         <div id="bulk-action-bar"
-            style="position: fixed; bottom: 2.5rem; left: 50%; transform: translate(-50%, 200%); background: var(--brand-900); color: #fff; padding: var(--space-lg) var(--space-2xl); border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); display: flex; align-items: center; gap: var(--space-3xl); z-index: 100; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); border: 1px solid rgba(255,255,255,0.1);">
+            class="bulk-action-bar">
             <div>
                 <span class="text-xxs font-bold uppercase tracking-wide"
-                    style="color: var(--emerald-400); display: block; margin-bottom: 0.2rem;">Acción en Lote</span>
+                    class="bulk-action-label">Acción en Lote</span>
                 <span class="text-sm font-bold"><span id="bulk-count">0</span> Documentos Seleccionados</span>
             </div>
 
-            <div style="height: 40px; width: 1px; background: rgba(255,255,255,0.1);"></div>
+            <div class="bulk-action-divider"></div>
 
-            <div class="flex-row" style="gap: var(--space-md);">
+            <div class="flex-row gap-md">
                 <button type="button" id="btn-bulk-approve" class="btn"
-                    style="background: var(--emerald-500); color: #fff; box-shadow: var(--shadow-lg);">
+                    class="btn-emerald-shadow">
                     <i data-lucide="check-circle"></i>
                     Aprobar Seleccionados
                 </button>
 
                 <button type="button" data-action="clear-selection" class="text-xs font-bold"
-                    style="background: none; border: none; color: rgba(255,255,255,0.5);">
+                    class="btn-clear-selection">
                     Cancelar
                 </button>
             </div>
@@ -253,7 +239,7 @@
     <!-- Paginación -->
     {% if page_obj.has_other_pages %}
     <div class="pagination"
-        style="border-radius: 0; border-top: 1px solid var(--slate-200); border-bottom: none; border-left: none; border-right: none; box-shadow: none;">
+        class="pagination-flat">
         <div class="pagination-info">
             Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} documentos
         </div>
@@ -283,30 +269,30 @@
 </div>
 
 <!-- Modal de Confirmación -->
-<div id="custom-confirm-modal" class="hidden" style="position: fixed; inset: 0; z-index: 200;">
+<div id="custom-confirm-modal" class="hidden modal-fixed">
     <div id="confirm-backdrop"
-        style="position: absolute; inset: 0; background: rgba(15,23,42,0.4); backdrop-filter: blur(4px); transition: opacity 0.3s; opacity: 0;">
+        class="modal-backdrop-blur">
     </div>
 
     <div
-        style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: var(--space-md);">
+        class="modal-center-container">
         <div id="confirm-panel" class="card"
-            style="position: relative; max-width: 400px; width: 100%; box-shadow: var(--shadow-xl); transform: translateY(2rem) scale(0.95); opacity: 0; transition: all 0.3s cubic-bezier(0.4,0,0.2,1);">
+            class="modal-panel-anim">
             <div class="card-body text-center">
                 <div
-                    style="width: 56px; height: 56px; background: var(--emerald-50); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg);">
-                    <i data-lucide="check-circle-2" style="width: 28px; height: 28px; color: var(--emerald-500);"></i>
+                    class="modal-icon-container-emerald">
+                    <i data-lucide="check-circle-2" class="icon-emerald-lg"></i>
                 </div>
                 <h3 id="confirm-title"
-                    style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--brand-900); margin-bottom: var(--space-sm);">
+                    class="modal-title-md">
                     Confirmar Acción</h3>
                 <p id="confirm-message" class="text-sm text-muted">¿Estás seguro de continuar?</p>
             </div>
             <div
-                style="background: var(--slate-50); padding: var(--space-md) var(--space-xl); border-top: 1px solid var(--slate-100); display: flex; gap: var(--space-md); justify-content: flex-end;">
+                class="modal-footer-actions">
                 <button type="button" id="confirm-btn-no" class="btn btn-ghost btn-sm">Cancelar</button>
                 <button type="button" id="confirm-btn-yes" class="btn btn-sm"
-                    style="background: var(--emerald-500); color: #fff;">
+                    class="btn-emerald">
                     <i data-lucide="check"></i> Confirmar
                 </button>
             </div>
@@ -341,9 +327,9 @@
         modal.classList.remove('hidden');
 
         requestAnimationFrame(() => {
-            backdrop.style.opacity = '1';
-            panel.style.opacity = '1';
-            panel.style.transform = 'translateY(0) scale(1)';
+            backdrop.classList.add('modal-visible');
+            panel.classList.add('modal-visible');
+            panel.classList.add('modal-visible-transform');
         });
     }
 
@@ -352,9 +338,9 @@
         const backdrop = document.getElementById('confirm-backdrop');
         const panel = document.getElementById('confirm-panel');
 
-        backdrop.style.opacity = '0';
-        panel.style.opacity = '0';
-        panel.style.transform = 'translateY(2rem) scale(0.95)';
+        backdrop.classList.remove('modal-visible');
+        panel.classList.remove('modal-visible');
+        panel.classList.remove('modal-visible-transform');
 
         setTimeout(() => {
             modal.classList.add('hidden');
@@ -373,15 +359,15 @@
         const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
 
         if (checked > 0) {
-            bulkBar.style.transform = 'translate(-50%, 0)';
+            bulkBar.classList.add('bulk-bar-visible');
             bulkCount.innerText = checked;
             selectionCounter.classList.remove('hidden');
-            selectionCounter.style.display = 'flex';
+            selectionCounter.classList.add('flex-display');
             selectedCount.innerText = checked;
         } else {
-            bulkBar.style.transform = 'translate(-50%, 200%)';
+            bulkBar.classList.remove('bulk-bar-visible');
             selectionCounter.classList.add('hidden');
-            selectionCounter.style.display = '';
+            selectionCounter.classList.remove('flex-display');
         }
 
         if (selectAll) {
@@ -444,8 +430,7 @@
         if (el) {
             if (el.classList.contains('hidden')) {
                 el.classList.remove('hidden');
-                el.style.opacity = '0';
-                setTimeout(() => el.style.opacity = '1', 10);
+                el.classList.add('fade-in-anim-fast'); setTimeout(()=> el.classList.remove('fade-in-anim-fast'), 300);
             } else {
                 el.classList.add('hidden');
             }
@@ -509,3 +494,4 @@
     }
 </script>
 {% endblock %}
+

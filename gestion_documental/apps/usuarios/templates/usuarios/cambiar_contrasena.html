@@ -5,247 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cambiar Contraseña - SIGEA</title>
+    <link rel="stylesheet" href="{% static 'css/ui-ux-pro.css' %}">
     <!-- Importar fuente de Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <style>
-        /* Reseteo básico y tipografía */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Fondo de la pantalla */
-        body {
-            background-color: #f4f7fc; /* Color azul claro del fondo */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* Contenedor principal (La Tarjeta) */
-        .login-card {
-            background-color: #ffffff;
-            width: 100%;
-            max-width: 460px;
-            padding: 45px 50px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-            border-top: 4px solid #1e3a63;
-            text-align: center;
-        }
-
-        /* Título de la marca DENTRO de la tarjeta */
-        .brand-title {
-            color: #1e3a63;
-            font-size: 18px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            letter-spacing: -0.5px;
-            text-transform: uppercase;
-        }
-
-        /* Textos de cabecera */
-        h1 {
-            color: #1a202c;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .subtitle {
-            color: #718096;
-            font-size: 13px;
-            line-height: 1.6;
-            margin-bottom: 35px;
-        }
-
-        /* Grupos de Input */
-        .form-group {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 12px;
-            color: #1e3a63;
-            font-weight: 600;
-            margin-bottom: 8px;
-            padding-left: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Contenedor del Input con fondo sólido */
-        .input-wrapper {
-            background-color: #f3f6fb; /* Fondo azul/gris muy claro */
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            border: 1px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .input-wrapper:focus-within {
-            border-color: #cbd5e1;
-            background-color: #ffffff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-        }
-
-        input {
-            border: none;
-            outline: none;
-            background: transparent;
-            width: 100%;
-            font-size: 20px; /* Tamaño grande para los puntos de contraseña */
-            color: #2d3748;
-            letter-spacing: 4px; /* Separación de los puntos tal cual la imagen */
-        }
-
-        input::placeholder {
-            font-size: 14px;
-            letter-spacing: normal;
-            color: #a0aec0;
-        }
-
-        /* Botón para ver contraseña */
-        .toggle-password {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #718096;
-            transition: color 0.3s;
-        }
-
-        .toggle-password:hover {
-            color: #1e3a63;
-        }
-
-        /* Caja de Requisitos de Seguridad */
-        .requirements-box {
-            background-color: #f7fafc; /* Mismo tono que los inputs */
-            border-radius: 10px;
-            padding: 18px;
-            text-align: left;
-            margin-top: 25px;
-            margin-bottom: 30px;
-            border: 1px solid #edf2f7;
-        }
-
-        .req-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #059669; /* Verde esmeralda */
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
-
-        .req-header svg {
-            width: 16px;
-            height: 16px;
-            fill: #059669;
-        }
-
-        /* Lista de requisitos (Fuente monoespaciada) */
-        .req-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .req-list li {
-            font-family: 'Consolas', 'Courier New', monospace; /* Tipo de letra de la imagen */
-            color: #718096;
-            font-size: 11px;
-            margin-bottom: 8px;
-            line-height: 1.4;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .req-list li::before {
-            content: '○';
-            color: #cbd5e1;
-        }
-
-        .req-list li.valid {
-            color: #059669;
-            font-weight: 600;
-        }
-
-        .req-list li.valid::before {
-            content: '●';
-            color: #059669;
-        }
-
-        .req-list li:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Botón de enviar */
-        .btn-submit {
-            background-color: #1e3a63;
-            color: #ffffff;
-            border: none;
-            width: 100%;
-            padding: 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            transition: background-color 0.3s;
-        }
-
-        .btn-submit:hover {
-            background-color: #152b4a;
-        }
-
-        .btn-submit svg {
-            width: 18px;
-            height: 18px;
-            fill: none;
-            stroke: #ffffff;
-            stroke-width: 2.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* Errores de Django */
-        .auth-error {
-            color: #c53030;
-            background-color: #fff5f5;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 25px;
-            border: 1px solid #fed7d7;
-            text-align: center;
-        }
-
-    </style>
+    
 </head>
-<body>
+<body class="auth-change-body">
 
     <div class="login-card">
         
@@ -272,7 +40,7 @@
                     <input type="password" name="nueva_contrasena" id="new-password" placeholder="••••••••" required>
                     <!-- Botón de ver contraseña -->
                     <button type="button" class="toggle-password">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
@@ -286,7 +54,7 @@
                 <div class="input-wrapper">
                     <input type="password" name="confirmar_contrasena" id="confirm-password" placeholder="••••••••" required>
                     <button type="button" class="toggle-password">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>

@@ -19,10 +19,10 @@
                 <input type="hidden" name="orden" id="ordenInput" value="{{ orden_actual|default:'recientes' }}">
                 
                 <!-- Buscador principal -->
-                <div class="flex-row mb-2xl" style="gap: var(--space-md);">
-                    <div class="select-wrapper" style="flex: 1;">
-                        <input type="text" name="q" class="form-input" style="padding-left: 2.75rem;" placeholder="Escribe para buscar (título, palabras clave)..." value="{{ request.GET.q|default:'' }}">
-                        <i data-lucide="search" style="left: 1rem; right: auto;"></i>
+                <div class="flex-row mb-2xl gap-md">
+                    <div class="select-wrapper flex-1">
+                        <input type="text" name="q" class="form-input search-advanced-input" placeholder="Escribe para buscar (título, palabras clave)..." value="{{ request.GET.q|default:'' }}">
+                        <i data-lucide="search" class="icon-search-advanced"></i>
                     </div>
                     <button type="submit" class="btn btn-primary shrink-0">
                         <i data-lucide="filter"></i>
@@ -30,10 +30,10 @@
                     </button>
                 </div>
 
-                <div class="grid-2 mb-2xl" style="gap: var(--space-3xl);">
+                <div class="grid-2 mb-2xl gap-3xl">
                     <!-- Columna 1: Categorización -->
-                    <div class="flex-stack" style="gap: var(--space-lg);">
-                        <div class="section-subtitle" style="border-bottom: 1px solid var(--slate-100); padding-bottom: var(--space-sm);">Categorización</div>
+                    <div class="flex-stack gap-lg">
+                        <div class="section-subtitle section-subtitle-underline">Categorización</div>
                         
                         <div class="form-group">
                             <label class="form-label">Categoría</label>
@@ -77,10 +77,10 @@
                     </div>
 
                     <!-- Columna 2: Temporalidad & Autoría -->
-                    <div class="flex-stack" style="gap: var(--space-lg);">
-                        <div class="section-subtitle" style="border-bottom: 1px solid var(--slate-100); padding-bottom: var(--space-sm);">Temporalidad & Autoría</div>
+                    <div class="flex-stack gap-lg">
+                        <div class="section-subtitle section-subtitle-underline">Temporalidad & Autoría</div>
                         
-                        <div class="grid-2" style="gap: var(--space-md);">
+                        <div class="grid-2 gap-md">
                             <div class="form-group">
                                 <label class="form-label">Desde</label>
                                 <input type="date" name="desde" class="form-input" value="{{ request.GET.desde|default:'' }}">
@@ -94,33 +94,33 @@
                         <div class="form-group">
                             <label class="form-label">Cargado por</label>
                             <div class="select-wrapper">
-                                <input type="text" name="autor" class="form-input" style="padding-left: 2.75rem;" placeholder="Nombre o correo del docente" value="{{ request.GET.autor|default:'' }}">
-                                <i data-lucide="user" style="left: 1rem; right: auto;"></i>
+                                <input type="text" name="autor" class="form-input search-advanced-input" placeholder="Nombre o correo del docente" value="{{ request.GET.autor|default:'' }}">
+                                <i data-lucide="user" class="icon-search-advanced"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Chips de Filtros Activos & Limpiar -->
-                <div class="flex-between" style="padding-top: var(--space-lg); border-top: 1px solid var(--slate-100); flex-wrap: wrap; gap: var(--space-md);">
-                    <div class="flex-row" style="gap: 0.5rem; flex-wrap: wrap;" id="chipArea">
+                <div class="flex-between filter-chips-container">
+                    <div class="flex-row flex-wrap-gap" id="chipArea">
                         {% if request.GET.q %}
-                            <span class="badge badge-brand badge-pill">"{{ request.GET.q }}" <button type="button" onclick="clearParam('q')" style="background:none;border:none;cursor:pointer;margin-left:4px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></span>
+                            <span class="badge badge-brand badge-pill">"{{ request.GET.q }}" <button type="button" onclick="clearParam('q')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
                         {% endif %}
                         {% if request.GET.categoria %}
-                            <span class="badge badge-neutral badge-pill">Categoría <button type="button" onclick="clearParam('categoria')" style="background:none;border:none;cursor:pointer;margin-left:4px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></span>
+                            <span class="badge badge-neutral badge-pill">Categoría <button type="button" onclick="clearParam('categoria')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
                         {% endif %}
                         {% if request.GET.factor %}
-                            <span class="badge badge-neutral badge-pill">Factor CNA <button type="button" onclick="clearParam('factor')" style="background:none;border:none;cursor:pointer;margin-left:4px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></span>
+                            <span class="badge badge-neutral badge-pill">Factor CNA <button type="button" onclick="clearParam('factor')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
                         {% endif %}
                         {% if request.GET.desde %}
-                            <span class="badge badge-neutral badge-pill">Desde: {{ request.GET.desde }} <button type="button" onclick="clearParam('desde')" style="background:none;border:none;cursor:pointer;margin-left:4px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></span>
+                            <span class="badge badge-neutral badge-pill">Desde: {{ request.GET.desde }} <button type="button" onclick="clearParam('desde')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
                         {% endif %}
                         {% if request.GET.hasta %}
-                            <span class="badge badge-neutral badge-pill">Hasta: {{ request.GET.hasta }} <button type="button" onclick="clearParam('hasta')" style="background:none;border:none;cursor:pointer;margin-left:4px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></span>
+                            <span class="badge badge-neutral badge-pill">Hasta: {{ request.GET.hasta }} <button type="button" onclick="clearParam('hasta')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
                         {% endif %}
                         {% if request.GET.autor %}
-                            <span class="badge badge-neutral badge-pill">Autor: {{ request.GET.autor }} <button type="button" onclick="clearParam('autor')" style="background:none;border:none;cursor:pointer;margin-left:4px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></span>
+                            <span class="badge badge-neutral badge-pill">Autor: {{ request.GET.autor }} <button type="button" onclick="clearParam('autor')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
                         {% endif %}
                     </div>
                     
@@ -136,13 +136,13 @@
     <!-- Resultados -->
     {% if hay_busqueda %}
         {% if total_resultados > 0 %}
-        <div class="flex-between mb-lg" style="flex-wrap: wrap; gap: var(--space-md);">
-            <div class="flex-row" style="gap: 0.5rem; align-items: baseline;">
+        <div class="flex-between mb-lg flex-wrap-gap-md">
+            <div class="flex-row flex-row-baseline-gap">
                 <h2 class="section-title">{{ total_resultados }} resultado{{ total_resultados|pluralize:"s" }}</h2>
                 {% if request.GET.q %}<span class="text-sm text-muted">para "{{ request.GET.q }}"</span>{% endif %}
             </div>
-            <div class="select-wrapper" style="min-width: 180px;">
-                <select class="form-select" style="padding: 0.5rem 2.5rem 0.5rem 1rem; font-size: 0.75rem; font-weight: 700;" onchange="changeOrder(this.value)">
+            <div class="select-wrapper w-min-180">
+                <select class="form-select select-sort" onchange="changeOrder(this.value)">
                     <option value="recientes" {% if orden_actual == 'recientes' %}selected{% endif %}>Más recientes</option>
                     <option value="antiguos" {% if orden_actual == 'antiguos' %}selected{% endif %}>Más antiguos</option>
                     <option value="az" {% if orden_actual == 'az' %}selected{% endif %}>Nombre A-Z</option>
@@ -163,17 +163,17 @@
                             <th>Factor CNA</th>
                             <th>Fecha</th>
                             <th>Estado</th>
-                            <th style="text-align: right;">Acciones</th>
+                            <th class="text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for doc in page_obj %}
                         <tr>
-                            <td style="min-width: 250px;">
+                            <td class="w-min-250">
                                 <div class="flex-row">
                                     <div class="doc-icon">
                                         {% if not doc.tiene_acceso %}
-                                            <i data-lucide="lock" style="width: 24px; height: 24px; color: var(--slate-400);"></i>
+                                            <i data-lucide="lock" class="icon-lock-muted"></i>
                                         {% elif ".pdf" in doc.archivo.name|lower %}
                                             <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
                                         {% elif ".doc" in doc.archivo.name|lower %}
@@ -196,7 +196,7 @@
                             </td>
                             <td>
                                 <div class="flex-row">
-                                    <div style="width: 32px; height: 32px; border-radius: var(--radius-full); background: var(--brand-900); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.667rem; font-weight: 700; flex-shrink: 0; box-shadow: var(--shadow-xs);">{{ doc.autor.get_iniciales }}</div>
+                                    <div class="avatar-initials-brand">{{ doc.autor.get_iniciales }}</div>
                                     <div>
                                         <div class="font-bold text-xs text-brand">{{ doc.autor.get_full_name }}</div>
                                         <div class="text-xxs font-bold text-light uppercase tracking-wide mt-sm">{{ doc.autor.get_rol_display }}</div>
@@ -208,10 +208,10 @@
                                 {% if doc.factor_cna %}
                                     <span class="font-bold text-brand text-xs">{{ doc.get_factor_cna_display }}</span>
                                 {% else %}
-                                    <span class="text-xs" style="color: var(--rose-500);">No asignado</span>
+                                    <span class="text-xs text-rose-500">No asignado</span>
                                 {% endif %}
                             </td>
-                            <td class="text-muted text-xs" style="font-family: monospace;">{{ doc.fecha_creacion|date:"d/m/Y" }}</td>
+                            <td class="text-muted text-xs font-mono">{{ doc.fecha_creacion|date:"d/m/Y" }}</td>
                             <td>
                                 {% if not doc.tiene_acceso %}
                                     <span class="badge badge-neutral"><i data-lucide="lock"></i> Sin acceso</span>
@@ -225,7 +225,7 @@
                                     {% endif %}
                                 {% endif %}
                             </td>
-                            <td style="text-align: right;">
+                            <td class="text-right">
                                 {% if doc.tiene_acceso %}
                                     <a href="{% url 'documentos:detalle' doc.id %}" class="btn btn-primary btn-xs">Ver detalle</a>
                                 {% elif doc.solicitud_pendiente %}
@@ -233,10 +233,10 @@
                                 {% else %}
                                     <button type="button" class="btn btn-ghost btn-xs" onclick="toggleSolicitar('{{ doc.id }}')">Solicitar acceso</button>
                                     
-                                    <form id="solicitar-form-{{ doc.id }}" class="hidden" method="post" action="{% url 'permisos:solicitar_acceso' doc.id %}" style="margin-top: var(--space-sm); text-align: left; background: var(--slate-50); padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--slate-200); animation: fadeIn 0.2s ease-out;">
+                                    <form id="solicitar-form-{{ doc.id }}" class="hidden request-access-form" method="post" action="{% url 'permisos:solicitar_acceso' doc.id %}">
                                         {% csrf_token %}
-                                        <textarea name="motivo" class="form-textarea" style="min-height: 60px; font-size: 0.75rem; margin-bottom: var(--space-sm);" placeholder="Motivo de la solicitud..." required></textarea>
-                                        <button type="submit" class="btn btn-sm w-full" style="background: var(--emerald-500); color: #fff;">Enviar solicitud</button>
+                                        <textarea name="motivo" class="form-textarea textarea-request-sm" placeholder="Motivo de la solicitud..." required></textarea>
+                                        <button type="submit" class="btn btn-sm w-full btn-emerald">Enviar solicitud</button>
                                     </form>
                                 {% endif %}
                             </td>
@@ -247,7 +247,7 @@
             </div>
             
             {% if page_obj.has_other_pages %}
-            <div class="pagination" style="border-radius: 0; border-top: 1px solid var(--slate-200); border-bottom: none; border-left: none; border-right: none; box-shadow: none;">
+            <div class="pagination pagination-flat">
                 <div class="pagination-info">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }} documentos</div>
                 <div class="pagination-buttons">
                     {% if page_obj.has_previous %}
@@ -271,24 +271,24 @@
         </div>
 
         {% else %}
-        <div class="card" style="border: 2px dashed var(--slate-300); text-align: center;">
+        <div class="card card-dashed-empty">
             <div class="empty-state">
                 <div class="empty-state-icon">
                     <i data-lucide="search-x"></i>
                 </div>
                 <h3 class="section-title">Sin resultados</h3>
-                <p class="text-sm text-muted" style="max-width: 400px;">No se encontraron documentos que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda.</p>
+                <p class="text-sm text-muted max-w-400">No se encontraron documentos que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda.</p>
             </div>
         </div>
         {% endif %}
     {% else %}
-    <div class="card" style="text-align: center;">
+    <div class="card text-center">
         <div class="empty-state">
-            <div class="empty-state-icon" style="background: var(--brand-50); border: 1px solid var(--brand-100);">
-                <i data-lucide="search" style="color: var(--brand-600);"></i>
+            <div class="empty-state-icon empty-state-icon-brand">
+                <i data-lucide="search" class="text-brand-600"></i>
             </div>
             <h3 class="section-title">Realiza una búsqueda</h3>
-            <p class="text-sm text-muted" style="max-width: 400px;">Utiliza la barra de búsqueda o los filtros avanzados para localizar documentos específicos dentro del sistema.</p>
+            <p class="text-sm text-muted max-w-400">Utiliza la barra de búsqueda o los filtros avanzados para localizar documentos específicos dentro del sistema.</p>
         </div>
     </div>
     {% endif %}
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = el.textContent;
         words.forEach(word => {
             const regex = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-            html = html.replace(regex, '<span style="background: var(--amber-100); color: var(--amber-900); padding: 0 3px; border-radius: 3px; font-weight: 700;">$1</span>');
+            html = html.replace(regex, '<span class="highlight-amber">$1</span>');
         });
         el.innerHTML = html;
     });

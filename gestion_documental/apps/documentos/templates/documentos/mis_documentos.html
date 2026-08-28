@@ -19,14 +19,14 @@
     <form id="filter-form" method="get" class="filter-bar">
         <input type="hidden" name="estado" id="id_estado" value="{{ request.GET.estado|default:'' }}">
         
-        <div style="flex: 1 1 100%; display: flex; gap: 0.5rem; margin-bottom: var(--space-md);">
+        <div class="filter-tabs-wrapper">
             <button type="button" onclick="setEstado('')" class="filter-chip {% if not request.GET.estado %}active{% endif %}">Todos</button>
             <button type="button" onclick="setEstado('APROBADO')" class="filter-chip {% if request.GET.estado == 'APROBADO' %}active{% endif %}">Aprobados</button>
             <button type="button" onclick="setEstado('PENDIENTE')" class="filter-chip {% if request.GET.estado == 'PENDIENTE' %}active{% endif %}">Pendientes</button>
             <button type="button" onclick="setEstado('RECHAZADO')" class="filter-chip {% if request.GET.estado == 'RECHAZADO' %}active{% endif %}">Rechazados</button>
         </div>
 
-        <div class="form-group" style="flex: 2;">
+        <div class="form-group flex-2">
             <label class="form-label">Buscar</label>
             <div class="select-wrapper">
                 <input type="text" name="q" placeholder="Filtrar por nombre o ID..." value="{{ request.GET.q|default:'' }}" class="form-input">
@@ -75,11 +75,11 @@
 
     <div class="table-container">
         <div class="table-scroll">
-            <table class="data-table">
+            <div class="table-responsive"> <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width: 40px; text-align: center;">
-                            <input type="checkbox" id="check-all" style="cursor:pointer; accent-color: var(--brand-900);">
+                        <th class="w-40-center">
+                            <input type="checkbox" id="check-all" class="checkbox-brand">
                         </th>
                         <th>Documento</th>
                         <th>Categoría</th>
@@ -91,8 +91,8 @@
                 <tbody>
                     {% for doc in page_obj %}
                     <tr>
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="doc-check" style="cursor:pointer; accent-color: var(--brand-900);">
+                        <td class="text-center">
+                            <input type="checkbox" class="doc-check checkbox-brand">
                         </td>
                         <td>
                             <div class="flex-row">
@@ -140,7 +140,7 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </table> </div>
         </div>
     </div>
 
@@ -186,3 +186,4 @@
 </script>
 
 {% endblock %}
+

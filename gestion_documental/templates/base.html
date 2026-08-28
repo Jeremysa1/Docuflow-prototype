@@ -25,9 +25,14 @@
       {# -- Fila superior: Logo + Búsqueda + Acciones -- #}
       <div class="header-top">
         
-        <a href="{% url 'documentos:dashboard' %}" class="header-brand">
-          <span class="header-brand-name">SIGEA</span>
-        </a>
+                <div class="header-brand-container">
+          <button id="openSidebarBtn" class="header-icon-btn hidden-desktop" style="border: none; background: transparent; cursor: pointer; color: var(--brand-900); padding: 0;">
+            <i data-lucide="menu" style="width: 28px; height: 28px;"></i>
+          </button>
+          <a href="{% url 'documentos:dashboard' %}" class="header-brand hidden-mobile">
+            <span class="header-brand-name">SIGEA</span>
+          </a>
+        </div>
 
         {% block navbar_search %}
         <div class="header-search">
@@ -40,6 +45,9 @@
         {% endblock %}
 
         <div class="header-actions">
+                    <a href="{% url 'usuarios:perfil' %}" class="header-icon-btn" title="Configuracion">
+            <i data-lucide="settings"></i>
+          </a>
           <a href="{% url 'notificaciones:lista' %}" class="header-icon-btn" title="Notificaciones">
             <i data-lucide="bell"></i>
             {% if notificaciones_no_leidas_count > 0 %}
@@ -70,8 +78,15 @@
         </div>
       </div>
 
-      {# -- Fila inferior: Navegación por tabs -- #}
-      <nav class="header-nav">
+            {# -- Fila inferior: Navegacin por tabs -- #}
+      <nav class="header-nav" id="mobileSidebar">
+        <!-- HEADER DEL SIDEBAR (Solo Movil) -->
+        <div class="sidebar-header hidden-desktop">
+          <span class="header-brand-name" style="color: white; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.05em;">SIGEA</span>
+          <button id="closeSidebarBtn" class="header-icon-btn" style="border: none; background: transparent; cursor: pointer; color: white; padding: 0;">
+            <i data-lucide="x" style="width: 28px; height: 28px;"></i>
+          </button>
+        </div>
         
         <a href="{% url 'documentos:dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
           <i data-lucide="layout-grid"></i>
@@ -123,12 +138,20 @@
           Papelera
         </a>
 
-        <a href="{% url 'usuarios:perfil' %}" class="nav-tab {% if request.resolver_match.url_name == 'perfil' %}active{% endif %}">
-          <i data-lucide="settings"></i>
-          Configuración
-        </a>
+        
 
+        <!-- LOGOUT (Solo Movil) -->
+        <div class="sidebar-logout hidden-desktop" style="margin-top: auto; padding: 1rem; width: 100%;">
+          <form method="post" action="{% url 'auth:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="nav-tab" style="width: 100%; text-align: left; background: rgba(255,255,255,0.1); border-radius: 8px; justify-content: flex-start; color: white; border: none; cursor: pointer; padding: 1rem;">
+              <i data-lucide="log-out"></i>
+              Cerrar Sesión
+            </button>
+          </form>
+        </div>
       </nav>
+      <div id="sidebarOverlay" class="sidebar-overlay hidden-desktop"></div>
     </header>
 
     {# === CONTENT === #}
@@ -172,5 +195,35 @@
     lucide.createIcons();
   </script>
   {% block extra_js %}{% endblock %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const openBtn = document.getElementById('openSidebarBtn');
+        const closeBtn = document.getElementById('closeSidebarBtn');
+        const sidebar = document.getElementById('mobileSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        if(openBtn && closeBtn && sidebar && overlay) {
+            openBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+            });
+            const closeMenu = (e) => {
+                e.preventDefault();
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+            closeBtn.addEventListener('click', closeMenu);
+            overlay.addEventListener('click', closeMenu);
+        }
+    });
+  </script>
 </body>
 </html>
+
+
+
+
+

@@ -5,225 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirmar Token - SIGEA</title>
+    <link rel="stylesheet" href="{% static 'css/ui-ux-pro.css' %}">
     <!-- Importar fuente de Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <style>
-        /* Reseteo básico y tipografía */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Fondo de la pantalla y contenedor principal */
-        body {
-            background-color: #f4f7fc; /* Color azul claro del fondo */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* Título de la marca fuera de la tarjeta */
-        .brand-title {
-            color: #1e3a63;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 25px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        /* Contenedor principal (La Tarjeta) */
-        .login-card {
-            background-color: #ffffff;
-            width: 100%;
-            max-width: 420px;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-            border-top: 4px solid #1e3a63; /* Línea superior azul oscuro */
-            text-align: center;
-        }
-
-        /* Textos de cabecera */
-        h1 {
-            color: #1a202c;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .subtitle {
-            color: #718096;
-            font-size: 13px;
-            line-height: 1.5;
-            margin-bottom: 25px;
-            padding: 0 10px;
-        }
-
-        /* Alerta roja de intentos */
-        .alert-box {
-            background-color: #fff5f5; /* Rojo muy claro */
-            color: #c53030; /* Rojo oscuro */
-            padding: 12px 15px;
-            border-radius: 50px; /* Forma de píldora */
-            font-size: 12px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 30px;
-            line-height: 1.4;
-            border: 1px solid #fed7d7;
-        }
-
-        .alert-box svg {
-            width: 16px;
-            height: 16px;
-            stroke: #c53030;
-            flex-shrink: 0;
-        }
-
-        /* Contenedor del cronómetro */
-        .timer-circle {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            border: 2px solid #edf2f7;
-            margin: 0 auto 30px auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #fafbfc;
-        }
-
-        .timer-circle svg {
-            width: 20px;
-            height: 20px;
-            stroke: #059669; /* Verde esmeralda */
-            margin-bottom: 4px;
-        }
-
-        .timer-time {
-            color: #059669; /* Verde esmeralda */
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        /* Contenedor de los inputs del Token */
-        .token-inputs {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .token-inputs input {
-            width: 45px;
-            height: 45px;
-            border: none;
-            border-bottom: 2px solid #cbd5e1; /* Línea gris inferior */
-            background: transparent;
-            font-size: 24px;
-            font-weight: 600;
-            text-align: center;
-            color: #1e3a63;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        /* Cambia el color de la línea al enfocar o escribir */
-        .token-inputs input:focus {
-            border-bottom-color: #1e3a63;
-        }
-
-        /* Botón de validar */
-        .btn-submit {
-            background-color: #1e3a63;
-            color: #ffffff;
-            border: none;
-            width: 100%;
-            padding: 14px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .btn-submit:disabled {
-            background-color: #e2e8f0;
-            color: #94a3b8;
-            cursor: not-allowed;
-        }
-
-        /* Enlace Reenviar Código */
-        .resend-form {
-            display: inline-block;
-        }
-
-        .resend-btn {
-            background: none;
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            color: #1e3a63;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-
-        .resend-btn:hover {
-            text-decoration: underline;
-            opacity: 0.8;
-        }
-
-        .resend-btn svg {
-            width: 16px;
-            height: 16px;
-            stroke: #1e3a63;
-            stroke-width: 2.5;
-            fill: none;
-        }
-
-        /* Pie de tarjeta (Soporte) */
-        .card-footer {
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 12px;
-            color: #718096;
-        }
-
-        /* Errores de Django */
-        .auth-error {
-            color: #c53030;
-            background-color: #fff5f5;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            margin-bottom: 20px;
-            border: 1px solid #fed7d7;
-        }
-
-    </style>
+    
 </head>
-<body>
+<body class="auth-token-body">
 
     <!-- Texto de marca superior -->
     <div class="brand-title">SIGEA</div>
@@ -242,7 +32,7 @@
 
         {% if messages %}
         {% for message in messages %}
-        <div class="auth-error" style="background-color: #f0fff4; color: #2f855a; border-color: #c6f6d5;">
+        <div class="auth-error" class="alert-success-auth">
             {{ message }}
         </div>
         {% endfor %}

@@ -29,7 +29,7 @@
                     <h3 id="upload-title" class="upload-zone-title">Arrastra y suelta tu archivo aquí</h3>
                     <p id="upload-subtitle" class="upload-zone-subtitle">O si prefieres, selecciona el archivo desde tu dispositivo</p>
                     
-                    <button type="button" class="btn btn-primary" style="pointer-events: none;">
+                    <button type="button" class="btn btn-primary pointer-none">
                         <i data-lucide="file-plus"></i>
                         Seleccionar archivo
                     </button>
@@ -43,8 +43,8 @@
                 <!-- Formulario de Registro -->
                 <div class="card">
                     <div class="card-body">
-                        <div class="section-title mb-xl" style="display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="file-edit" style="width: 20px; height: 20px;"></i>
+                        <div class="section-title mb-xl section-title-icon">
+                            <i data-lucide="file-edit" class="icon-md"></i>
                             Información del Registro
                         </div>
 
@@ -56,7 +56,7 @@
 
                         <div class="form-group">
                             <div class="flex-between mb-sm">
-                                <label class="form-label" style="margin-bottom: 0;">Descripción</label>
+                                <label class="form-label mb-0">Descripción</label>
                                 <span id="char-count" class="text-xxs font-bold text-light">0 / 500</span>
                             </div>
                             {{ form.descripcion }}
@@ -124,10 +124,10 @@
                         <div>
                             <label class="form-label">Opciones de seguridad</label>
                             <label class="sensitive-card">
-                                <input type="checkbox" name="es_sensible" {% if form.es_sensible.value %}checked{% endif %} style="margin-top: 3px; accent-color: var(--amber-500); width: 16px; height: 16px; cursor: pointer;">
+                                <input type="checkbox" name="es_sensible" {% if form.es_sensible.value %}checked{% endif %} class="checkbox-amber">
                                 <div>
-                                    <span class="radio-card-title" style="color: var(--amber-900);">Documento Sensible</span>
-                                    <span class="radio-card-desc" style="color: var(--amber-700);">Requiere aprobación de al menos 2 de 3 (autor, coordinador, decana) para dar acceso</span>
+                                    <span class="radio-card-title text-amber-900">Documento Sensible</span>
+                                    <span class="radio-card-desc text-amber-700">Requiere aprobación de al menos 2 de 3 (autor, coordinador, decana) para dar acceso</span>
                                 </div>
                             </label>
                         </div>
@@ -139,8 +139,8 @@
                     <div class="card-body">
                         <div class="flex-between">
                             <div class="flex-row">
-                                <div class="quick-action-icon" style="background: var(--emerald-50);">
-                                    <i data-lucide="git-merge" style="color: var(--emerald-500);"></i>
+                                <div class="quick-action-icon bg-emerald-50">
+                                    <i data-lucide="git-merge" class="text-emerald-500"></i>
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-sm text-brand">¿Requiere aprobación?</h4>
@@ -149,7 +149,7 @@
                             </div>
                             
                             {% if request.user.rol == 'DOCENTE_PLANTA' %}
-                                <div class="toggle active" style="pointer-events: none;">
+                                <div class="toggle active pointer-none">
                                     <div class="toggle-circle"></div>
                                 </div>
                                 <input type="hidden" name="requiere_aprobacion" value="on">
@@ -161,10 +161,10 @@
                             {% endif %}
                         </div>
 
-                        <div id="revisor-info" {% if request.user.rol == 'DOCENTE_PLANTA' %}style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--slate-50); border: 1px solid var(--slate-100); border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;"{% else %}style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--slate-50); border: 1px solid var(--slate-100); border-radius: var(--radius-md); display: none; align-items: center; gap: 0.75rem;"{% endif %}>
-                            <i data-lucide="user-check" style="width: 16px; height: 16px; color: var(--slate-400);"></i>
+                        <div id="revisor-info" {% if request.user.rol == 'DOCENTE_PLANTA' %}class="revisor-info-panel"{% else %}class="revisor-info-panel hidden"{% endif %}>
+                            <i data-lucide="user-check" class="icon-sm-muted"></i>
                             <div class="text-xs text-muted">
-                                <span class="form-label" style="margin-bottom: 0.2rem;">Enviar para revisión a:</span>
+                                <span class="form-label mb-xs">Enviar para revisión a:</span>
                                 <strong class="text-brand">{% if request.user.rol == 'DOCENTE_PLANTA' or request.user.rol == 'COORDINADOR' %}Coordinador / Decana{% else %}Revisión institucional{% endif %}</strong> (Asignado automáticamente)
                             </div>
                         </div>
@@ -174,7 +174,7 @@
             </div>
 
             <!-- COLUMNA DERECHA -->
-            <div class="flex-stack" style="height: 100%;">
+            <div class="flex-stack h-full">
                 
                 <div class="dark-panel">
                     <div class="dark-panel-title">
@@ -208,10 +208,10 @@
 
                 <!-- Botones de Acción -->
                 <div class="grid-2 mt-auto pt-xl">
-                    <a href="{% url 'documentos:mis_documentos' %}" class="btn btn-secondary w-full" style="padding: 1rem;">
+                    <a href="{% url 'documentos:mis_documentos' %}" class="btn btn-secondary w-full btn-lg-pad">
                         Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary w-full" style="padding: 1rem;">
+                    <button type="submit" class="btn btn-primary w-full btn-lg-pad">
                         Subir documento
                     </button>
                 </div>
@@ -225,32 +225,7 @@
 
 {% block extra_js %}
 <!-- Agregar estilos dinámicos para los form inputs de Django renderizados -->
-<style>
-    /* Estilos globales inyectados para elementos de formulario Django */
-    input[type="text"], input[type="date"], select, textarea {
-        width: 100%;
-        background-color: var(--slate-50);
-        border: 1px solid transparent;
-        border-radius: var(--radius-md);
-        padding: 0.85rem 1rem;
-        font-size: 0.867rem;
-        color: var(--slate-800);
-        outline: none;
-        transition: all var(--transition-base);
-        font-family: inherit;
-    }
-    input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
-        border-color: var(--slate-300);
-        background-color: #fff;
-        box-shadow: 0 0 0 3px rgba(20,42,89,0.06);
-    }
-    textarea { resize: vertical; min-height: 110px; line-height: 1.65; }
-    
-    select { appearance: none; cursor: pointer; padding-right: 2.5rem; }
-    input[type="date"]::-webkit-calendar-picker-indicator {
-        opacity: 0; cursor: pointer; width: 100%; height: 100%; position: absolute; top: 0; left: 0;
-    }
-</style>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -269,16 +244,16 @@
             ['dragenter', 'dragover'].forEach(name => {
                 zone.addEventListener(name, (e) => {
                     e.preventDefault();
-                    zone.style.borderColor = 'var(--brand-900)';
-                    zone.style.background = 'var(--slate-50)';
+                    zone.classList.add('dropzone-dragover');
+                    
                 });
             });
 
             ['dragleave', 'drop'].forEach(name => {
                 zone.addEventListener(name, (e) => {
                     e.preventDefault();
-                    zone.style.borderColor = '';
-                    zone.style.background = '';
+                    zone.classList.remove('dropzone-dragover');
+                    
                 });
             });
 
@@ -298,10 +273,10 @@
 
             function updateFileUI(file) {
                 uploadTitle.textContent = "Archivo seleccionado:";
-                uploadTitle.style.color = 'var(--emerald-600)';
-                uploadSubtitle.innerHTML = `<span style="font-weight:700; color:var(--brand-900);">📎 ${file.name}</span><br>(${(file.size / 1024).toFixed(1)} KB)`;
-                zone.style.borderColor = 'var(--emerald-500)';
-                zone.style.background = 'var(--emerald-50)';
+                uploadTitle.classList.add('text-emerald-600');
+                uploadSubtitle.innerHTML = `<span class="font-bold text-brand">📎 ${file.name}</span><br>(${(file.size / 1024).toFixed(1)} KB)`;
+                zone.classList.add('dropzone-success'); zone.classList.remove('dropzone-dragover');
+                
             }
         }
 
@@ -321,7 +296,7 @@
                     toggleVisual.classList.remove('active');
                 }
                 
-                if (revisorInfo) revisorInfo.style.display = isChecked ? 'flex' : 'none';
+                if (revisorInfo) { if(isChecked) revisorInfo.classList.remove('hidden'); else revisorInfo.classList.add('hidden'); }
             });
         }
 
@@ -331,9 +306,9 @@
                 const length = textarea.value.length;
                 charCount.textContent = `${length} / 500`;
                 if (length > 500) {
-                    charCount.style.color = 'var(--rose-500)';
+                    charCount.classList.add('text-rose-500'); charCount.classList.remove('text-slate-400');
                 } else {
-                    charCount.style.color = 'var(--slate-400)';
+                    charCount.classList.add('text-slate-400'); charCount.classList.remove('text-rose-500');
                 }
             });
         }

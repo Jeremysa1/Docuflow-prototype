@@ -5,34 +5,34 @@
 {% block content %}
 
     <!-- Breadcrumbs -->
-    <div class="flex-row mb-xl" style="gap: 0.5rem;">
-        <a href="{% url 'documentos:mis_documentos' %}" class="text-xxs font-bold text-light uppercase tracking-wide" style="transition: color var(--transition-fast);">MIS DOCUMENTOS</a>
+    <div class="flex-row mb-xl gap-sm">
+        <a href="{% url 'documentos:mis_documentos' %}" class="text-xxs font-bold text-light uppercase tracking-wide transition-color">MIS DOCUMENTOS</a>
         <span class="text-xxs text-light">&gt;</span>
         <span class="text-xxs font-bold text-brand uppercase tracking-wide">{{ documento.titulo|truncatechars:50|upper }}</span>
     </div>
 
     <!-- Banner Hero -->
-    <div class="dark-panel mb-2xl" style="padding: var(--space-3xl); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-xl);">
-        <div class="flex-row" style="gap: var(--space-xl);">
+    <div class="dark-panel mb-2xl hero-banner">
+        <div class="flex-row gap-xl">
             <!-- Icono Dinámico según extensión -->
-            <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0.75rem;">
+            <div class="hero-icon-container">
                 {% with filename=documento.archivo.name|lower %}
                     {% if ".pdf" in filename %}
-                        <img src="https://img.icons8.com/papercut/96/pdf.png" alt="PDF" style="width:100%; height:100%; object-fit: contain;">
+                        <img src="https://img.icons8.com/papercut/96/pdf.png" alt="PDF" class="icon-fluid">
                     {% elif ".doc" in filename %}
-                        <img src="https://img.icons8.com/fluency/96/microsoft-word-2019.png" alt="Word" style="width:100%; height:100%; object-fit: contain;">
+                        <img src="https://img.icons8.com/fluency/96/microsoft-word-2019.png" alt="Word" class="icon-fluid">
                     {% elif ".xls" in filename %}
-                        <img src="https://img.icons8.com/fluency/96/microsoft-excel-2019.png" alt="Excel" style="width:100%; height:100%; object-fit: contain;">
+                        <img src="https://img.icons8.com/fluency/96/microsoft-excel-2019.png" alt="Excel" class="icon-fluid">
                     {% elif ".ppt" in filename %}
-                        <img src="https://img.icons8.com/fluency/96/microsoft-powerpoint-2019.png" alt="PPT" style="width:100%; height:100%; object-fit: contain;">
+                        <img src="https://img.icons8.com/fluency/96/microsoft-powerpoint-2019.png" alt="PPT" class="icon-fluid">
                     {% else %}
-                        <img src="https://img.icons8.com/fluency/96/file.png" alt="File" style="width:100%; height:100%; object-fit: contain;">
+                        <img src="https://img.icons8.com/fluency/96/file.png" alt="File" class="icon-fluid">
                     {% endif %}
                 {% endwith %}
             </div>
             
-            <div class="flex-stack" style="gap: 0.5rem;">
-                <div class="flex-row" style="gap: 0.75rem;">
+            <div class="flex-stack gap-sm">
+                <div class="flex-row gap-md">
                     {% if documento.estado == 'APROBADO' %}
                         <span class="badge badge-success badge-pill">Aprobado</span>
                     {% elif documento.estado == 'RECHAZADO' %}
@@ -40,24 +40,24 @@
                     {% else %}
                         <span class="badge badge-warning badge-pill">Pendiente</span>
                     {% endif %}
-                    <span style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-family: monospace;">v{{ versiones.count|default:"1.0" }}</span>
+                    <span class="version-badge">v{{ versiones.count|default:"1.0" }}</span>
                 </div>
                 
-                <h1 style="font-family: var(--font-display); font-size: 1.75rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.25;">{{ documento.titulo }}</h1>
+                <h1 class="hero-title">{{ documento.titulo }}</h1>
                 
-                <div class="flex-row" style="gap: var(--space-xl); color: rgba(255,255,255,0.7); font-size: 0.867rem;">
-                    <div class="flex-row" style="gap: 0.4rem;">
-                        <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                <div class="flex-row hero-meta">
+                    <div class="flex-row hero-meta-item">
+                        <i data-lucide="calendar" class="icon-sm"></i>
                         {{ documento.fecha_creacion|date:"d M Y" }}
                     </div>
                     {% if documento.archivo %}
-                    <div class="flex-row" style="gap: 0.4rem;">
-                        <i data-lucide="hard-drive" style="width: 16px; height: 16px;"></i>
+                    <div class="flex-row hero-meta-item">
+                        <i data-lucide="hard-drive" class="icon-sm"></i>
                         {{ documento.archivo.size|filesizeformat }}
                     </div>
                     {% endif %}
-                    <div class="flex-row" style="gap: 0.4rem;">
-                        <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                    <div class="flex-row hero-meta-item">
+                        <i data-lucide="user" class="icon-sm"></i>
                         {{ documento.autor.get_full_name }}
                     </div>
                 </div>
@@ -65,8 +65,8 @@
         </div>
 
         {% if puede_descargar and documento.archivo %}
-        <a href="{% url 'documentos:descargar_doc' documento.id %}" class="btn" style="background: var(--emerald-500); color: #fff; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">
-            <i data-lucide="download"></i>
+        <a href="{% url 'documentos:descargar_doc' documento.id %}" class="btn btn-emerald-glow">
+            <i data-lucide="download" style="width: 20px !important; height: 20px !important; flex-shrink: 0; display: inline-block;"></i>
             Descargar Documento
         </a>
         {% endif %}
@@ -75,26 +75,26 @@
     <!-- Layout Dividido -->
     <div class="grid-main-aside">
         {% if acceso_denegado %}
-        <div style="grid-column: 1 / -1;">
-            <div class="card" style="border: 2px dashed var(--slate-300); text-align: center; padding: var(--space-4xl);">
-                <div class="empty-state-icon" style="width: 80px; height: 80px; margin: 0 auto var(--space-xl);">
-                    <i data-lucide="lock" style="width: 32px; height: 32px; color: var(--brand-900);"></i>
+        <div class="col-span-full">
+            <div class="card card-dashed">
+                <div class="empty-state-icon empty-icon-wrapper">
+                    <i data-lucide="lock" class="icon-xl-brand"></i>
                 </div>
-                <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--brand-900); margin-bottom: var(--space-md);">Acceso Restringido</h2>
-                <p class="text-muted" style="max-width: 520px; margin: 0 auto var(--space-2xl); line-height: 1.65;">
+                <h2 class="empty-title">Acceso Restringido</h2>
+                <p class="text-muted empty-desc">
                     Este documento es de carácter restringido (sensible o de otra unidad académica). 
                     Para visualizar su contenido y descargar archivos, debe contar con la aprobación del autor o la decanatura.
                 </p>
 
                 {% if solicitud_pendiente %}
-                    <div class="alert alert-warning" style="max-width: 520px; margin: 0 auto; justify-content: center;">
+                    <div class="alert alert-warning alert-center-520">
                         <div class="alert-icon">
                             <i data-lucide="clock"></i>
                             Ya tienes una solicitud de acceso pendiente de revisión.
                         </div>
                     </div>
                 {% else %}
-                    <div class="card" style="max-width: 520px; margin: 0 auto; text-align: left;">
+                    <div class="card card-center-520">
                         <div class="card-body">
                             <form method="post" action="{% url 'permisos:solicitar_acceso' documento.id %}">
                                 {% csrf_token %}
@@ -119,39 +119,49 @@
             <!-- Tarjeta 1: Información del Registro -->
             <div class="card">
                 <div class="card-body">
-                    <div class="section-title mb-2xl" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                    <div class="section-title mb-2xl section-title-icon">
+                        <i data-lucide="info" class="icon-md"></i>
                         Información del Registro
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2xl) var(--space-md);">
+                    <div class="info-grid">
                         <div class="info-field">
                             <span class="info-label">Categoría</span>
-                            <span class="info-value" style="font-size: 0.867rem;">{{ documento.categoria.nombre }}</span>
+                            <span class="info-value text-md-meta">{{ documento.categoria.nombre }}</span>
                         </div>
                         <div class="info-field">
                             <span class="info-label">Programa / Factor</span>
-                            <span class="info-value" style="font-size: 0.867rem;">{{ documento.get_factor_cna_display|default:documento.programa.nombre }}</span>
+                            <span class="info-value text-md-meta" style="display:flex; flex-direction:column; gap:0.25rem;">
+    {% if documento.programa %}
+        <strong>{{ documento.programa.nombre }}</strong>
+    {% endif %}
+    {% if documento.factor_cna %}
+        <span>{{ documento.get_factor_cna_display }}</span>
+    {% endif %}
+    {% if not documento.programa and not documento.factor_cna %}
+        --
+    {% endif %}
+</span>
                         </div>
                         <div class="info-field">
                             <span class="info-label">Estado Actual</span>
-                            <span class="info-value" style="font-size: 0.867rem;">{{ documento.get_estado_display }}</span>
+                            <span class="info-value text-md-meta">{{ documento.get_estado_display }}</span>
                         </div>
                         <div class="info-field">
                             <span class="info-label">Fecha Carga</span>
-                            <span class="info-value" style="font-size: 0.867rem;">{{ documento.fecha_creacion|date:"d M Y, H:i A" }}</span>
+                            <span class="info-value text-md-meta">{{ documento.fecha_creacion|date:"d M Y, H:i A" }}</span>
                         </div>
                         <div class="info-field">
                             <span class="info-label">Última Modificación</span>
-                            <span class="info-value" style="font-size: 0.867rem;">{{ documento.fecha_modificacion|date:"d M Y, H:i A" }}</span>
+                            <span class="info-value text-md-meta">{{ documento.fecha_modificacion|date:"d M Y, H:i A" }}</span>
                         </div>
                         <div class="info-field">
                             <span class="info-label">Visibilidad</span>
-                            <span class="info-value" style="font-size: 0.867rem;">{{ documento.get_visibilidad_display }}{% if documento.es_sensible %} · Sensible{% endif %}</span>
+                            <span class="info-value text-md-meta">{{ documento.get_visibilidad_display }}{% if documento.es_sensible %} · Sensible{% endif %}</span>
                         </div>
                     </div>
 
-                    <hr style="border: none; border-top: 1px solid var(--slate-100); margin: var(--space-2xl) 0;">
+                    <hr class="divider-lg">
 
                     <div class="info-field">
                         <span class="info-label">Descripción Institucional</span>
@@ -160,35 +170,33 @@
                         </p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Tarjeta 2: Historial de Versiones -->
+            </div><!-- Tarjeta 2: Historial de Versiones -->
             <div class="card">
                 <div class="card-body">
-                    <div class="section-title mb-2xl" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i data-lucide="history" style="width: 20px; height: 20px;"></i>
+                    <div class="section-title mb-2xl section-title-icon">
+                        <i data-lucide="history" class="icon-md"></i>
                         Historial de Versiones
                     </div>
 
                     <div class="timeline">
                         {% for version in versiones %}
                         <div class="timeline-item">
-                            <div class="timeline-dot {% if forloop.first %}timeline-dot--brand{% else %}timeline-dot--amber{% endif %}" {% if forloop.first %}style="box-shadow: 0 0 0 4px var(--brand-50);"{% endif %}></div> 
-                            <div {% if forloop.first %}style="background: var(--slate-50); border: 1px solid var(--slate-100); border-radius: var(--radius-md); padding: var(--space-lg);"{% endif %}>
+                            <div class="timeline-dot {% if forloop.first %}timeline-dot--brand{% else %}timeline-dot--amber{% endif %}" {% if forloop.first %}class="timeline-dot-current"{% endif %}></div> 
+                            <div {% if forloop.first %}class="timeline-panel-current"{% endif %}>
                                 <div class="flex-between mb-sm">
-                                    <div class="flex-row" style="gap: 0.5rem;">
-                                        <span style="font-family: monospace; font-weight: 700; font-size: 0.867rem; color: var(--brand-900);">v{{ version.numero_version }}</span>
+                                    <div class="flex-row gap-sm">
+                                        <span class="version-text-brand">v{{ version.numero_version }}</span>
                                         {% if forloop.first %}
                                             <span class="badge badge-neutral">Actual</span>
                                         {% endif %}
                                     </div>
-                                    <span style="font-family: monospace; font-size: 0.75rem; color: var(--slate-400); text-transform: uppercase;">{{ version.fecha_creacion|date:"d M Y" }}</span>
+                                    <span class="version-date">{{ version.fecha_creacion|date:"d M Y" }}</span>
                                 </div>
                                 <p class="text-sm text-muted leading-relaxed mb-md">{{ version.comentario|default:"Actualización de contenidos del documento." }}</p>
                                 
                                 {% if puede_descargar and version.archivo %}
-                                <a href="{% url 'documentos:descargar_version' version.id %}" class="flex-row text-xs font-bold" style="color: var(--brand-600); gap: 0.4rem;">
-                                    <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                                <a href="{% url 'documentos:descargar_version' version.id %}" class="flex-row text-xs font-bold btn-link-brand">
+                                    <i data-lucide="download" style="width: 20px !important; height: 20px !important; flex-shrink: 0; display: inline-block;"></i>
                                     Descargar versión
                                 </a>
                                 {% endif %}
@@ -196,14 +204,14 @@
                         </div>
                         {% empty %}
                         <div class="timeline-item">
-                            <div class="timeline-dot timeline-dot--brand" style="box-shadow: 0 0 0 4px var(--brand-50);"></div>
-                            <div style="background: var(--slate-50); border: 1px solid var(--slate-100); border-radius: var(--radius-md); padding: var(--space-lg);">
+                            <div class="timeline-dot timeline-dot--brand timeline-dot-current"></div>
+                            <div class="timeline-panel-current">
                                 <div class="flex-between mb-sm">
-                                    <div class="flex-row" style="gap: 0.5rem;">
-                                        <span style="font-family: monospace; font-weight: 700; font-size: 0.867rem; color: var(--brand-900);">v1.0</span>
+                                    <div class="flex-row gap-sm">
+                                        <span class="version-text-brand">v1.0</span>
                                         <span class="badge badge-neutral">Actual</span>
                                     </div>
-                                    <span style="font-family: monospace; font-size: 0.75rem; color: var(--slate-400); text-transform: uppercase;">{{ documento.fecha_creacion|date:"d M Y" }}</span>
+                                    <span class="version-date">{{ documento.fecha_creacion|date:"d M Y" }}</span>
                                 </div>
                                 <p class="text-sm text-muted leading-relaxed">Versión inicial cargada por el autor.</p>
                             </div>
@@ -212,46 +220,34 @@
                     </div>
                 </div>
             </div>
-
-            {% if request.user == documento.autor or request.user.rol == 'DECANA' %}
-            <div style="text-align: right;">
-                <form method="post" action="{% url 'documentos:eliminar' documento.id %}" onsubmit="return confirm('¿Seguro que deseas eliminar este documento permanentemente? Esta acción es irreversible.');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-ghost" style="color: var(--rose-500); border-color: var(--rose-100);">
-                        <i data-lucide="trash-2"></i>
-                        Eliminar Documento Permanentemente
-                    </button>
-                </form>
-            </div>
-            {% endif %}
-        </div>
+</div>
 
         <!-- COLUMNA SIDEBAR (DERECHA) -->
         <div class="flex-stack">
             <!-- Acciones de Aprobación -->
             {% if puede_aprobar %}
-            <div class="card" style="border: 2px solid var(--amber-500); position: relative; overflow: hidden;">
+            <div class="card card-warning-outline">
                 <div class="card-body">
-                    <div class="form-label" style="color: var(--amber-600); margin-bottom: var(--space-md);">Acción Requerida</div>
+                    <div class="form-label form-label-warning">Acción Requerida</div>
                     <p class="text-sm text-muted mb-xl">Este documento requiere tu revisión para ser aprobado en el sistema.</p>
                     
-                    <form method="post" action="{% url 'documentos:aprobar_doc' documento.id %}" style="margin-bottom: var(--space-md);">
+                    <form method="post" action="{% url 'documentos:aprobar_doc' documento.id %}" class="mb-md">
                         {% csrf_token %}
-                        <button type="submit" class="btn w-full" style="background: var(--emerald-500); color: #fff;">
+                        <button type="submit" class="btn w-full btn-emerald">
                             <i data-lucide="check-circle"></i>
                             Aprobar Documento
                         </button>
                     </form>
 
-                    <button type="button" id="show-reject-btn" onclick="document.getElementById('reject-form').style.display='block'; this.style.display='none';" class="btn btn-reject w-full">
+                    <button type="button" id="show-reject-btn" onclick="document.getElementById('reject-form').classList.remove('hidden'); this.classList.add('hidden');" class="btn btn-reject w-full">
                         <i data-lucide="x-circle"></i>
                         Rechazar
                     </button>
                     
-                    <form id="reject-form" method="post" action="{% url 'documentos:rechazar_doc' documento.id %}" style="display: none; margin-top: var(--space-lg); animation: fadeIn 0.2s ease-out;">
+                    <form id="reject-form" method="post" action="{% url 'documentos:rechazar_doc' documento.id %}" class="reject-form-anim hidden">
                         {% csrf_token %}
-                        <textarea name="comentario" class="form-textarea" style="min-height: 80px; margin-bottom: var(--space-md);" placeholder="Indique el motivo del rechazo..." required></textarea>
-                        <button type="submit" class="btn w-full" style="background: var(--rose-500); color: #fff;">
+                        <textarea name="comentario" class="form-textarea textarea-reject" placeholder="Indique el motivo del rechazo..." required></textarea>
+                        <button type="submit" class="btn w-full btn-rose">
                             Confirmar Rechazo
                         </button>
                     </form>
@@ -263,33 +259,33 @@
             <div class="card">
                 <div class="card-body">
                     <div class="form-label mb-lg">Gestión Rápida</div>
-                    <div class="flex-stack" style="gap: var(--space-xs);">
+                    <div class="flex-stack gap-xs">
                         {% if documento.archivo %}
-                        <button type="button" onclick="openDocumentModal('{{ documento.archivo.url }}', '{{ documento.archivo.name|lower }}')" class="quick-action" style="padding: var(--space-sm) var(--space-lg); border: none; background: transparent; width: 100%; text-align: left; cursor: pointer;">
-                            <div class="quick-action-content" style="font-size: 0.867rem;">
-                                <i data-lucide="external-link" style="width: 18px; height: 18px; color: var(--brand-600);"></i>
+                        <button type="button" onclick="openDocumentModal('{{ documento.archivo.url }}', '{{ documento.archivo.name|lower }}')" class="quick-action quick-action-btn">
+                            <div class="quick-action-content text-md-meta">
+                                <i data-lucide="external-link" class="icon-brand-md"></i>
                                 Visualizar Archivo
                             </div>
                         </button>
                         {% endif %}
-                        <a href="{% url 'versiones:lista' documento.id %}" class="quick-action" style="padding: var(--space-sm) var(--space-lg);">
-                            <div class="quick-action-content" style="font-size: 0.867rem;">
-                                <i data-lucide="layers" style="width: 18px; height: 18px; color: var(--brand-600);"></i>
+                        <a href="{% url 'versiones:lista' documento.id %}" class="quick-action quick-action-pad">
+                            <div class="quick-action-content text-md-meta">
+                                <i data-lucide="layers" class="icon-brand-md"></i>
                                 Historial Completo
                             </div>
                         </a>
                         {% if request.user == documento.autor or request.user.rol in 'DECANA,COORDINADOR' %}
-                        <a href="{% url 'documentos:editar' documento.id %}" class="quick-action" style="padding: var(--space-sm) var(--space-lg);">
-                            <div class="quick-action-content" style="font-size: 0.867rem;">
-                                <i data-lucide="edit-3" style="width: 18px; height: 18px; color: var(--brand-600);"></i>
+                        <a href="{% url 'documentos:editar' documento.id %}" class="quick-action quick-action-pad">
+                            <div class="quick-action-content text-md-meta">
+                                <i data-lucide="edit-3" class="icon-brand-md"></i>
                                 Editar Metadatos
                             </div>
                         </a>
                         {% endif %}
                         {% if puede_gestionar_accesos %}
-                        <a href="{% url 'permisos:gestionar_accesos' documento.id %}" class="quick-action" style="padding: var(--space-sm) var(--space-lg);">
-                            <div class="quick-action-content" style="font-size: 0.867rem;">
-                                <i data-lucide="shield" style="width: 18px; height: 18px; color: var(--brand-600);"></i>
+                        <a href="{% url 'permisos:gestionar_accesos' documento.id %}" class="quick-action quick-action-pad">
+                            <div class="quick-action-content text-md-meta">
+                                <i data-lucide="shield" class="icon-brand-md"></i>
                                 Gestionar Accesos
                             </div>
                             {% if solicitudes_pendientes_count > 0 %}
@@ -305,32 +301,45 @@
             <div class="card">
                 <div class="card-body">
                     <div class="form-label mb-lg">Metadatos Clave</div>
-                    <div class="flex-stack" style="gap: var(--space-md);">
+                    <div class="flex-stack gap-md">
                         <div class="flex-between">
                             <span class="text-xs text-muted">Tipo:</span>
-                            <span class="text-xs font-bold text-brand" style="font-family: monospace;">
+                            <span class="text-xs font-bold text-brand font-mono">
                                 {% if ".pdf" in documento.archivo.name|lower %}PDF{% elif ".doc" in documento.archivo.name|lower %}WORD{% elif ".xls" in documento.archivo.name|lower %}EXCEL{% elif ".ppt" in documento.archivo.name|lower %}POWERPOINT{% else %}DOCUMENTO{% endif %}
                             </span>
                         </div>
                         <div class="flex-between">
                             <span class="text-xs text-muted">ID Registro:</span>
-                            <span class="text-xs font-bold text-brand" style="font-family: monospace;">#{{ documento.id|stringformat:"05d" }}</span>
+                            <span class="text-xs font-bold text-brand font-mono">#{{ documento.id|stringformat:"05d" }}</span>
                         </div>
                         <div class="flex-between">
                             <span class="text-xs text-muted">Versiones:</span>
-                            <span class="text-xs font-bold" style="font-family: monospace; color: var(--emerald-600);">{{ versiones.count|default:"1" }} registrada(s)</span>
+                            <span class="text-xs font-bold font-mono-emerald">{{ versiones.count|default:"1" }} registrada(s)</span>
                         </div>
                         <div class="flex-between">
                             <span class="text-xs text-muted">Interacciones:</span>
-                            <span class="text-xs font-bold text-brand" style="font-family: monospace;">{{ total_descargas|default:"0" }} descargas</span>
+                            <span class="text-xs font-bold text-brand font-mono">{{ total_descargas|default:"0" }} descargas</span>
                         </div>
                         <div class="flex-between">
                             <span class="text-xs text-muted">Privacidad:</span>
-                            <span class="text-xs font-bold text-brand" style="font-family: monospace;">{{ documento.get_visibilidad_display }}{% if documento.es_sensible %} · Sensible{% endif %}</span>
+                            <span class="text-xs font-bold text-brand font-mono">{{ documento.get_visibilidad_display }}{% if documento.es_sensible %} · Sensible{% endif %}</span>
                         </div>
                     </div>
                 </div>
+</div>
+
+            <!-- Boton Eliminar Desktop (Solo Desktop) -->
+            {% if request.user == documento.autor or request.user.rol == 'DECANA' %}
+            <div class="hidden-mobile" style="margin-top: 2rem; margin-bottom: 1.5rem; display: flex; justify-content: flex-start; width: 100%;">
+                <form method="post" action="{% url 'documentos:eliminar' documento.id %}" onsubmit="return confirm('Seguro que deseas eliminar este documento permanentemente? Esta accin es irreversible.');" style="width: 100%; width: 100%;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-rose-solid w-full" style="padding: 0.65rem 1rem; border-radius: var(--radius-md); box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.2); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i data-lucide="trash-2" style="color: white; width: 18px; height: 18px;"></i>
+                        Eliminar Documento
+                    </button>
+                </form>
             </div>
+            {% endif %}
 
         </div>
         {% endif %}
@@ -341,11 +350,11 @@
         <div class="modal-container">
             <div class="modal-header">
                 <h3 class="modal-title">
-                    <i data-lucide="file-text" style="width: 24px; height: 24px; color: var(--brand-600);"></i>
+                    <i data-lucide="file-text" class="icon-lg-brand"></i>
                     Previsualización de Documento
                 </h3>
                 <button type="button" class="modal-close-btn" onclick="closeDocumentModal()">
-                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    <i data-lucide="x" class="icon-md"></i>
                 </button>
             </div>
             <div class="modal-body" id="modalBody">
@@ -353,6 +362,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Boton Eliminar Movil (Solo Movil) -->
+    {% if request.user == documento.autor or request.user.rol == 'DECANA' %}
+    <div class="hidden-desktop" style="margin-top: 2rem; border-top: 1px solid var(--slate-200); padding-top: 2rem; display: flex; justify-content: center; width: 100%;">
+        <form method="post" action="{% url 'documentos:eliminar' documento.id %}" onsubmit="return confirm('Seguro que deseas eliminar este documento permanentemente? Esta accin es irreversible.');" style="width: 100%; max-width: 300px;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-rose-solid w-full" style="padding: 0.75rem 1rem; border-radius: var(--radius-md); box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.2); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                <i data-lucide="trash-2" style="color: white; width: 18px; height: 18px;"></i>
+                Eliminar Documento
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -385,8 +408,8 @@
                         Los navegadores web no pueden renderizar nativamente archivos de Word, Excel o PowerPoint de forma local. 
                         Por favor, descargue el archivo para visualizarlo en su equipo.
                     </p>
-                    <a href="${fileUrl}" class="btn" style="background: var(--brand-900); color: #fff;">
-                        <i data-lucide="download"></i>
+                    <a href="${fileUrl}" class="btn btn-brand">
+                        <i data-lucide="download" style="width: 20px !important; height: 20px !important; flex-shrink: 0; display: inline-block;"></i>
                         Descargar Archivo
                     </a>
                 </div>
@@ -422,3 +445,4 @@
     });
 </script>
 {% endblock %}
+

@@ -17,7 +17,7 @@
 
     <div class="table-container mt-xl">
         <div class="table-scroll">
-            <table class="data-table">
+            <div class="table-responsive"> <table class="data-table">
                 <thead>
                     <tr>
                         <th>Documento</th>
@@ -35,10 +35,10 @@
                                 <div class="doc-icon">
                                     <img src="https://img.icons8.com/fluency/48/file.png" alt="File">
                                 </div>
-                                <div class="flex-stack" style="gap: 0.2rem;">
+                                <div class="flex-stack gap-xs">
                                     <span class="font-semibold text-brand">{{ doc.titulo }}</span>
                                     {% if doc.es_sensible %}
-                                        <span class="badge badge-danger" style="width: max-content; padding: 0.2rem 0.5rem;">
+                                        <span class="badge badge-danger badge-sm w-max">
                                             <i data-lucide="lock"></i> Sensible
                                         </span>
                                     {% endif %}
@@ -52,9 +52,9 @@
                         <td class="font-semibold text-muted">{{ doc.autor.get_full_name }}</td>
                         <td class="text-muted text-xs">{{ doc.deleted_at|date:"d/m/Y H:i" }}</td>
                         <td>
-                            <form method="POST" action="{% url 'documentos:restaurar_doc' doc.id %}" style="display:inline;">
+                            <form method="POST" class="inline-block" action="{% url 'documentos:restaurar_doc' doc.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-success" style="padding: 0.5rem 1rem;">
+                                <button type="submit" class="btn btn-success btn-sm">
                                     <i data-lucide="refresh-ccw"></i> Restaurar
                                 </button>
                             </form>
@@ -73,8 +73,10 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </table> </div>
         </div>
     </div>
 
 {% endblock %}
+
+

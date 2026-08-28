@@ -169,3 +169,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// === UI/UX REFACTOR: Mobile Sidebar Toggle ===
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    const headerNav = document.querySelector('.header-nav');
+    
+    if (mobileMenuBtn && headerNav) {
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            headerNav.classList.toggle('nav-open');
+        });
+
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', () => {
+                headerNav.classList.remove('nav-open');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (headerNav.classList.contains('nav-open') && 
+                !headerNav.contains(e.target) && 
+                !mobileMenuBtn.contains(e.target)) {
+                headerNav.classList.remove('nav-open');
+            }
+        });
+    }
+});

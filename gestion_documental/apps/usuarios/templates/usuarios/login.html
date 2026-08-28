@@ -2,457 +2,37 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+        // Lgica Estricta de Splash Screen: Basado en Referrer
+        try {
+            var navEntry = performance.getEntriesByType("navigation")[0];
+            var isReload = navEntry && navEntry.type === "reload";
+            var isInternal = document.referrer && document.referrer.indexOf(window.location.host) !== -1;
+            
+            // Omitir splash SOLO si navegamos internamente (link) y NO es una recarga (F5)
+            if (isInternal && !isReload) {
+                document.documentElement.classList.add('skip-splash-delay');
+                document.addEventListener('DOMContentLoaded', () => document.body.classList.add('skip-splash-delay'));
+            }
+        } catch(e) {}
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGEA - Iniciar Sesión</title>
+    <link rel="stylesheet" href="{% static 'css/ui-ux-pro.css' %}">
     <link rel="icon" type="image/png" href="{% static 'img/sigea_logo_p2.png' %}">
     <!-- Importar fuente de Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <style>
-        /* === RESET BASICO === */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #0f2044;
-            background-image:
-                radial-gradient(circle at 20% 30%, rgba(30,58,99,0.5) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(20,42,89,0.3) 0%, transparent 50%);
-            font-size: 15px;
-            padding: 2rem;
-        }
-
-        /* === CONTENEDOR PRINCIPAL (VENTANA FLOTANTE) === */
-        .container {
-            display: flex;
-            width: 100%;
-            max-width: 1100px;
-            min-height: 600px;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow:
-                0 25px 60px -12px rgba(0, 0, 0, 0.4),
-                0 0 0 1px rgba(255,255,255,0.05);
-            animation: floatIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes floatOut {
-            from {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-12px) scale(0.98);
-            }
-        }
-
-        .container.leaving {
-            animation: floatOut 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
-        }
-
-        @keyframes floatIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* === SPLASH SCREEN (NUEVA ANIMACION INICIAL) === */
-        .splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background-color: #0f2044;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            animation: fadeOutSplash 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            animation-delay: 1.3s;
-            pointer-events: none;
-        }
-
-        .splash-logo {
-            width: 180px;
-            animation: pulseSplash 1s cubic-bezier(0.16, 1, 0.3, 1) infinite alternate;
-        }
-
-        @keyframes pulseSplash {
-            0% { transform: scale(0.85); opacity: 0; }
-            40% { opacity: 1; }
-            100% { transform: scale(1.05); opacity: 1; }
-        }
-
-        @keyframes fadeOutSplash {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        /* === ANIMACIONES EN CASCADA PARA LOS CAMPOS === */
-        .login-card > * {
-            animation: staggerIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-        }
-        
-        .welcome-text { animation-delay: 1.4s; }
-        .login-card h2 { animation-delay: 1.5s; }
-        .auth-error, .alert-success { animation-delay: 1.6s; }
-        .login-card form .input-group:nth-child(2) { animation-delay: 1.6s; }
-        .login-card form .input-group:nth-child(3) { animation-delay: 1.7s; }
-        .actions-group { animation-delay: 1.8s; }
-        .btn-submit { animation-delay: 1.9s; }
-        .support-text { animation-delay: 2.0s; }
-
-        /* === CLASES PARA SALTAR EL SPLASH SCREEN (2DA VISITA EN ADELANTE) === */
-        .skip-splash-delay .splash-screen {
-            display: none !important;
-        }
-        
-        .skip-splash-delay .welcome-text { animation-delay: 0.1s !important; }
-        .skip-splash-delay .login-card h2 { animation-delay: 0.2s !important; }
-        .skip-splash-delay .auth-error, .skip-splash-delay .alert-success { animation-delay: 0.3s !important; }
-        .skip-splash-delay .login-card form .input-group:nth-child(2) { animation-delay: 0.3s !important; }
-        .skip-splash-delay .login-card form .input-group:nth-child(3) { animation-delay: 0.4s !important; }
-        .skip-splash-delay .actions-group { animation-delay: 0.5s !important; }
-        .skip-splash-delay .btn-submit { animation-delay: 0.6s !important; }
-        .skip-splash-delay .support-text { animation-delay: 0.7s !important; }
-
-        @keyframes staggerIn {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* === PANEL IZQUIERDO (INFO) === */
-        .left-panel {
-            background-color: #142a59;
-            width: 45%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 3rem 2.5rem;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Sutil patrón decorativo en el panel izquierdo */
-        .left-panel::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -30%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .left-panel::after {
-            content: '';
-            position: absolute;
-            bottom: -40%;
-            left: -20%;
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .logo-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .logo-img {
-            width: 220px;
-            height: auto;
-            max-width: 100%;
-            object-fit: contain;
-            margin-bottom: 0.5rem;
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
-        }
-
-        .left-panel h1 {
-            font-size: 1.35rem;
-            font-weight: 700;
-            line-height: 1.35;
-            margin-bottom: 1rem;
-            max-width: 90%;
-            letter-spacing: -0.01em;
-            position: relative;
-            z-index: 1;
-        }
-
-        .left-panel p {
-            color: #8fa3c4;
-            font-size: 0.875rem;
-            line-height: 1.6;
-            margin-bottom: 0;
-            max-width: 85%;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* === PANEL DERECHO (LOGIN) === */
-        .right-panel {
-            width: 55%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #ffffff;
-            padding: 3rem;
-        }
-
-        .login-card {
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .welcome-text {
-            font-size: 0.7rem;
-            color: #8c98a9;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 0.25rem;
-        }
-
-        .login-card h2 {
-            font-size: 1.5rem;
-            color: #142a59;
-            margin-top: 0;
-            margin-bottom: 1.75rem;
-            font-weight: 700;
-        }
-
-        /* Formulario y Botones */
-        .input-group {
-            position: relative;
-            margin-bottom: 1rem;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            color: #94a3b8;
-        }
-
-        .input-icon-right {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            color: #94a3b8;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .input-icon-right:hover {
-            color: #142a59;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.8rem 0.8rem 0.8rem 2.75rem;
-            background-color: #f1f5f9;
-            border: 1.5px solid transparent;
-            border-radius: 10px;
-            font-size: 0.875rem;
-            color: #1e293b;
-            outline: none;
-            transition: border-color 0.25s, box-shadow 0.25s;
-            font-family: inherit;
-        }
-
-        .form-control::placeholder {
-            color: #94a3b8;
-        }
-
-        .form-control:focus {
-            border-color: #142a59;
-            box-shadow: 0 0 0 3px rgba(20,42,89,0.08);
-            background-color: #fff;
-        }
-
-        .actions-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.25rem;
-            font-size: 0.8rem;
-        }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            color: #64748b;
-            font-weight: 500;
-        }
-
-        .checkbox-container input {
-            margin-right: 0.5rem;
-            width: 15px;
-            height: 15px;
-            accent-color: #142a59;
-            cursor: pointer;
-        }
-
-        .forgot-link {
-            color: #142a59;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.2s;
-        }
-
-        .forgot-link:hover {
-            color: #1e3a63;
-            text-decoration: underline;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 0.85rem;
-            background-color: #142a59;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 12px rgba(20,42,89,0.25);
-            font-family: inherit;
-        }
-
-        .btn-submit:hover {
-            background-color: #1e3a63;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(20,42,89,0.35);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
-        .support-text {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.8rem;
-            color: #94a3b8;
-            line-height: 2;
-        }
-
-        .support-text a {
-            color: #142a59;
-            font-weight: 600;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .support-text a:hover {
-            text-decoration: underline;
-        }
-
-        /* Mensajes de error y exito */
-        .auth-error {
-            background-color: #fef2f2;
-            color: #dc2626;
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            font-size: 0.8rem;
-            text-align: center;
-            border: 1px solid #fecaca;
-        }
-
-        .alert-success {
-            background-color: #f0fdf4;
-            color: #16a34a;
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            font-size: 0.8rem;
-            text-align: center;
-            border: 1px solid #bbf7d0;
-        }
-
-        /* === RESPONSIVE === */
-        @media (max-width: 900px) {
-            body {
-                padding: 1rem;
-            }
-            .container {
-                flex-direction: column;
-                max-width: 500px;
-                min-height: auto;
-            }
-            .left-panel, .right-panel {
-                width: 100%;
-            }
-            .left-panel {
-                padding: 2.5rem 2rem;
-            }
-            .right-panel {
-                padding: 2rem 1.5rem;
-            }
-            .logo-img {
-                width: 160px;
-            }
-        }
-    </style>
+    
 </head>
-<body>
-    <script>
-        // Verificamos si ya vio el splash en esta sesión o recientemente
-        // Usamos localStorage para que persista incluso si abre en otra pestaña
-        if (localStorage.getItem('sigea_splash_seen') === 'true') {
-            document.body.classList.add('skip-splash-delay');
-            // Inyectamos el estilo duro para garantizar que no se muestre el splash
-            document.write('<style>.splash-screen { display: none !important; } .login-card > * { animation-delay: 0s !important; animation: none !important; opacity: 1 !important; transform: none !important; }</style>');
-        }
-    </script>
-
-    <!-- PANTALLA DE CARGA (SPLASH SCREEN) -->
+<body class="auth-body">
+    
+            <!-- PANTALLA DE CARGA (SPLASH SCREEN) -->
     <div class="splash-screen">
-        <img src="{% static 'img/sigea_logo.png' %}" alt="Logo SIGEA" class="splash-logo" style="filter: brightness(0) invert(1);">
+        <h1 class="splash-text">SIGEA</h1>
     </div>
 
     <div class="container">
@@ -461,7 +41,7 @@
         <div class="left-panel">
             <div class="logo-container">
                 <!-- Tu logo original -->
-                <img src="{% static 'img/sigea_logo.png' %}" alt="Logo SIGEA" class="logo-img">
+                <img src="{% static 'img/sigea_logo_p2.png' %}" alt="Logo SIGEA" class="logo-img">
             </div>
 
             <h1>Sistema Integrado de Gestión de Evidencias para la Acreditación.</h1>
@@ -565,8 +145,8 @@
                     if (href && href !== '#') {
                         e.preventDefault();
                         const container = document.querySelector('.container');
-                        container.classList.add('leaving');
-                        setTimeout(() => { window.location.href = href; }, 300);
+                        // container.classList.add('leaving');
+                        window.location.href = href;
                     }
                 });
             });
@@ -574,3 +154,10 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+

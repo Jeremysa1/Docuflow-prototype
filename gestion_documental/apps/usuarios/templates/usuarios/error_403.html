@@ -5,214 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGEA - {% if error_code == '404' %}Página no encontrada{% else %}Acceso no permitido{% endif %}</title>
+    <link rel="stylesheet" href="{% static 'css/ui-ux-pro.css' %}">
     <!-- Importar fuente de Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <style>
-        /* === RESET BASICO === */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background-color: #f4f7fc;
-        }
-
-        /* === CONTENEDOR PRINCIPAL === */
-        main {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .error-container {
-            max-width: 550px;
-            width: 100%;
-            text-align: center;
-        }
-
-        /* === ICONO SUPERIOR === */
-        .icon-circle {
-            width: 72px;
-            height: 72px;
-            background-color: #ffebeb; /* Rojo muy claro por defecto */
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .icon-circle.not-found {
-            background-color: #ebf8ff; /* Azul para 404 */
-        }
-
-        .icon-circle svg {
-            width: 32px;
-            height: 32px;
-            stroke: #e53e3e; /* Rojo oscuro por defecto */
-        }
-
-        .icon-circle.not-found svg {
-            stroke: #3182ce; /* Azul oscuro para 404 */
-        }
-
-        /* === TEXTOS DE ERROR === */
-        .error-code {
-            font-size: 110px;
-            font-weight: 500;
-            color: #e2e8f0;
-            line-height: 1;
-            letter-spacing: 2px;
-            /* Efecto para que el 0 salga tachado si la fuente lo soporta */
-            font-variant-numeric: slashed-zero;
-            /* Margen negativo para que el título de abajo se superponga ligeramente */
-            margin-bottom: -25px; 
-            position: relative;
-            z-index: 0;
-        }
-
-        .error-title {
-            font-size: 24px;
-            color: #1a202c;
-            font-weight: 600;
-            position: relative;
-            z-index: 1;
-            margin-bottom: 15px;
-        }
-
-        .error-description {
-            font-size: 14.5px;
-            color: #718096;
-            line-height: 1.6;
-            margin-bottom: 35px;
-            padding: 0 10px;
-        }
-
-        /* === CAJA DE INFORMACIÓN (ROLES) === */
-        .info-box {
-            background-color: #fffaf0; /* Naranja/Crema muy claro */
-            border: 1px solid #fbd38d; /* Borde naranja claro */
-            border-radius: 8px;
-            padding: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            text-align: left;
-            margin-bottom: 35px;
-        }
-
-        .info-box svg {
-            width: 18px;
-            height: 18px;
-            stroke: #9c4221; /* Naranja/Café oscuro */
-            margin-top: 2px;
-            flex-shrink: 0;
-        }
-
-        .info-text {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .info-text p {
-            font-size: 13.5px;
-            color: #9c4221;
-            margin: 0;
-        }
-
-        .info-text strong {
-            font-weight: 600;
-        }
-
-        /* === BOTONES === */
-        .actions-container {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        .btn {
-            flex: 1;
-            max-width: 200px;
-            padding: 14px 20px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background-color: #1e3a63;
-            color: white;
-            border: 1px solid #1e3a63;
-        }
-
-        .btn-primary:hover {
-            background-color: #152b4a;
-        }
-
-        .btn-secondary {
-            background-color: transparent;
-            color: #1e3a63;
-            border: 1px solid #1e3a63;
-        }
-
-        .btn-secondary:hover {
-            background-color: rgba(30, 58, 99, 0.05);
-        }
-
-        /* === FOOTER === */
-        footer {
-            background-color: white;
-            padding: 20px;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .footer-text {
-            font-size: 10px;
-            color: #4a5568;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        /* === RESPONSIVE === */
-        @media (max-width: 500px) {
-            .error-code {
-                font-size: 90px;
-                margin-bottom: -20px;
-            }
-            .error-title {
-                font-size: 20px;
-            }
-            .actions-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            .btn {
-                max-width: 100%;
-                width: 100%;
-            }
-        }
-    </style>
+    
 </head>
-<body>
+<body class="auth-error-body">
 
     <!-- CONTENIDO CENTRAL -->
     <main>
@@ -265,7 +66,7 @@
                 <div class="info-text">
                     <p>Tu rol actual: <strong>[{{ request.user.get_rol_display|upper }}]</strong></p>
                     {% if not request.user.esta_habilitado %}
-                    <p>Estado: <strong style="color: #e53e3e;">INHABILITADO</strong></p>
+                    <p>Estado: <strong class="text-danger-403">INHABILITADO</strong></p>
                     <p><em>Debes esperar a que la Decana habilite tu cuenta para acceder a todas las funciones.</em></p>
                     {% endif %}
                     {% if required_role %}
