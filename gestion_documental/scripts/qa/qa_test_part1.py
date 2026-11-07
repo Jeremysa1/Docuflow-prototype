@@ -1,7 +1,7 @@
 """QA Test Part 1: System checks and auth tests."""
 import json, time, os, sys
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 import django; django.setup()
 from django.test import Client
@@ -181,7 +181,8 @@ test("T15-Validadores de contraseña","Verificar políticas de password","RNF-SE
      "Django aplica validadores de similitud, longitud mínima, contraseñas comunes y numéricas.")
 
 # Save results
-with open('qa_results_part1.json','w',encoding='utf-8') as f:
+os.makedirs(os.path.join('scripts', 'qa', 'salidas'), exist_ok=True)
+with open(os.path.join('scripts', 'qa', 'salidas', 'qa_results_part1.json'),'w',encoding='utf-8') as f:
     json.dump(results, f, ensure_ascii=False, indent=2)
 print(f"\n{'='*60}")
 print(f"PART 1 COMPLETE: {sum(1 for r in results if r['status']=='EXITOSA')}/{len(results)} EXITOSAS")

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--tinta:#142a59;--pluma:#1f4fd1;--papel:#fff;--hoja:#f6f8fc;--renglon:#dfe4ee;--gris:#5b6478;--anulado:#b3261e;--aviso:#9a5b00}
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;font:14px/1.45 "Public Sans",sans-serif;color:var(--tinta);background:var(--hoja);font-variant-numeric:tabular-nums}
+header{height:64px;background:var(--tinta);color:#fff;display:flex;align-items:center;padding:0 32px;gap:40px}
+.marca{font-weight:800;font-size:20px;letter-spacing:.02em}
+nav a{color:#c9d3ea;text-decoration:none;margin-right:24px;font-weight:600}
+nav a.on{color:#fff;border-bottom:2px solid #fff;padding-bottom:20px}
+.buscar{margin-left:auto;background:#22397a;border-radius:6px;padding:8px 14px;color:#c9d3ea;width:320px}
+main{display:grid;grid-template-columns:1fr 420px;gap:24px;padding:28px 32px}
+h1{font-size:24px;font-weight:800}
+.sub{color:var(--gris);margin-top:2px}
+.libro{background:var(--papel);border:1px solid var(--renglon);border-radius:8px;margin-top:18px}
+.libro h2,.cola h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);padding:14px 20px;border-bottom:1px solid var(--renglon);display:flex;justify-content:space-between}
+.fila{display:grid;grid-template-columns:64px 1fr 220px 92px;align-items:center;border-bottom:1px solid var(--renglon);height:46px}
+.folio{height:100%;display:flex;align-items:center;justify-content:center;font-weight:800;border-right:2px solid var(--tinta);font-size:15px}
+.nombre{padding:0 16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.barra{height:10px;background:var(--renglon);border-radius:2px;position:relative}
+.barra i{position:absolute;inset:0 auto 0 0;background:var(--tinta);border-radius:2px}
+.barra b{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(90deg,var(--pluma) 0 4px,transparent 4px 7px)}
+.cuenta{text-align:right;padding-right:20px;font-weight:700}
+.cuenta small{color:var(--gris);font-weight:500;font-size:12px}
+.total{display:flex;gap:32px;padding:16px 20px;align-items:baseline}
+.total strong{font-size:40px;font-weight:800;line-height:1}
+.cola{background:var(--papel);border:1px solid var(--renglon);border-radius:8px}
+.acta{display:grid;grid-template-columns:72px 1fr;border-bottom:1px solid var(--renglon)}
+.acta .folio{font-size:13px;flex-direction:column;line-height:1.1}
+.acta .folio span{font-size:11px;color:var(--gris);font-weight:600}
+.acta div.c{padding:12px 16px}
+.acta p{color:var(--gris);font-size:13px}
+.firma{display:inline-block;margin-top:6px;border:1.5px dashed var(--pluma);color:var(--pluma);border-radius:4px;padding:4px 10px;font-weight:700;font-size:12px}
+.vencido{color:var(--aviso);font-weight:700;font-size:12px;margin-left:8px}
+.firmado{color:var(--pluma);font-weight:700}
+.anulado{color:var(--anulado);text-decoration:line-through}
+.pulso{display:flex;gap:16px;padding:14px 16px}
+.pulso div{flex:1}
+.pulso svg{width:100%;height:36px}
+.btn{background:var(--pluma);color:#fff;border:0;border-radius:6px;padding:10px 16px;font-weight:700;font-family:inherit;width:100%;margin-top:12px}
+</style></head><body>
+<header><span class="marca">SIGEA</span><nav><a class="on">Avance</a><a>Evidencias</a><a>Por firmar</a><a>Accesos</a><a>Auditoría</a></nav><span class="buscar">Buscar por título o folio N.º…</span></header>
+<main>
+<section>
+<h1>Libro de avance · Acreditación CNA</h1>
+<p class="sub">Evidencias aprobadas frente a la meta de cada factor. Cada fila es un folio del libro.</p>
+<div class="libro">
+<div class="total"><div><strong>6</strong> <small>de 205 evidencias aprobadas</small></div><div><strong>1</strong> <small>por firmar</small></div><div><strong>2&nbsp;%</strong> <small>avance global</small></div></div>
+<h2><span>Factor</span><span>Aprobadas / meta</span></h2>
+<div class="fila"><span class="folio">F1</span><span class="nombre">Proyecto Educativo del Programa e Identidad</span><span class="barra"></span><span class="cuenta">0 <small>/ 15</small></span></div>
+<div class="fila"><span class="folio">F2</span><span class="nombre">Estudiantes</span><span class="barra"></span><span class="cuenta">0 <small>/ 25</small></span></div>
+<div class="fila"><span class="folio">F3</span><span class="nombre">Profesores</span><span class="barra"><i style="width:20%"></i></span><span class="cuenta">4 <small>/ 20</small></span></div>
+<div class="fila"><span class="folio">F4</span><span class="nombre">Egresados</span><span class="barra"></span><span class="cuenta">0 <small>/ 10</small></span></div>
+<div class="fila"><span class="folio">F5</span><span class="nombre">Aspectos Académicos y Resultados de Aprendizaje</span><span class="barra"></span><span class="cuenta">0 <small>/ 30</small></span></div>
+<div class="fila"><span class="folio">F6</span><span class="nombre">Permanencia y Graduación</span><span class="barra"></span><span class="cuenta">0 <small>/ 15</small></span></div>
+<div class="fila"><span class="folio">F7</span><span class="nombre">Interacción con el Entorno Nacional e Internacional</span><span class="barra"><i style="width:20%"></i></span><span class="cuenta">2 <small>/ 10</small></span></div>
+<div class="fila"><span class="folio">F8</span><span class="nombre">Aportes de la Investigación y la Innovación</span><span class="barra"></span><span class="cuenta">0 <small>/ 20</small></span></div>
+<div class="fila"><span class="folio">F9</span><span class="nombre">Bienestar de la Comunidad Académica</span><span class="barra"></span><span class="cuenta">0 <small>/ 15</small></span></div>
+<div class="fila"><span class="folio">F10</span><span class="nombre">Medios Educativos y Ambientes de Aprendizaje</span><span class="barra"><b style="left:0;width:7%"></b></span><span class="cuenta">0 <small>/ 15 · 1 por firmar</small></span></div>
+</div>
+</section>
+<aside>
+<div class="cola">
+<h2><span>Por firmar</span><span>1</span></h2>
+<div class="acta"><span class="folio">N.º 0029<span>F10</span></span><div class="c"><strong>po2</strong> <span class="vencido">4 días esperando</span><p>Jeremy Sánchez · Ing. de Software</p><span class="firma">Sin firma</span></div></div>
+<div class="acta"><span class="folio">N.º 0028<span>F7</span></span><div class="c"><strong>pendulo</strong><p>Firmado por Andrea Decana</p><span class="firmado">✓ Firmado</span></div></div>
+<div class="acta"><span class="folio">N.º 0021<span>F3</span></span><div class="c"><strong class="anulado">Acta de comité 2025</strong><p>Anulado: falta firma del comité</p></div></div>
+<div style="padding:0 16px 16px"><button class="btn">Revisar y firmar el folio N.º 0029</button></div>
+</div>
+<div class="cola" style="margin-top:20px">
+<h2><span>Actividad · 30 días</span><span>auditoría</span></h2>
+<div class="pulso">
+<div><small>Descargas</small><svg viewBox="0 0 120 36"><polyline fill="none" stroke="#142a59" stroke-width="2" points="0,30 20,28 40,22 60,26 80,14 100,18 120,8"/></svg></div>
+<div><small>Accesos denegados</small><svg viewBox="0 0 120 36"><polyline fill="none" stroke="#b3261e" stroke-width="2" points="0,34 20,34 40,30 60,34 80,34 100,22 120,34"/></svg></div>
+</div></div>
+</aside>
+</main></body></html>

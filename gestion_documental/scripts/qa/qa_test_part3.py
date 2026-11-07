@@ -1,7 +1,7 @@
 """QA Test Part 3: Performance + Security + Integrity."""
 import json, time, os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 import django; django.setup()
 from django.test import Client
@@ -235,7 +235,8 @@ print(f"  Programas: {ProgramaAcademico.objects.count()}")
 from apps.notificaciones.models import Notificacion
 
 # Save
-with open('qa_results_part3.json','w',encoding='utf-8') as f:
+os.makedirs(os.path.join('scripts', 'qa', 'salidas'), exist_ok=True)
+with open(os.path.join('scripts', 'qa', 'salidas', 'qa_results_part3.json'),'w',encoding='utf-8') as f:
     json.dump(results, f, ensure_ascii=False, indent=2)
 print(f"\n{'='*60}")
 print(f"PART 3 COMPLETE: {sum(1 for r in results if r['status']=='EXITOSA')}/{len(results)} EXITOSAS")

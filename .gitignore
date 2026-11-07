@@ -40,3 +40,12 @@ Thumbs.db
 gestion_documental/media/
 gestion_documental/documentacion/test_output.html
 test_output.html
+
+# Herramientas locales del agente y del flujo de diseño
+.claude/
+.impeccable/review/
+.impeccable/hook.cache.json
+.impeccable/config.local.json
+
+# Estáticos recopilados (collectstatic)
+gestion_documental/staticfiles/
