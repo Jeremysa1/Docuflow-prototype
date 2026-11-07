@@ -5,8 +5,13 @@ Contiene toda la lógica de negocio relacionada con la gestión de documentos.
 """
 from datetime import timedelta
 
+from core.utils.helpers import ReglaNegocioError
+
 from django.db.models import Q, Count
+from django.core.cache import cache
 from django.utils import timezone
+
+from core.cache_stats import bump_stats, conteo_cacheado
 
 from .models import Documento, Categoria
 from ..usuarios.models import ProgramaAcademico, Usuario
@@ -56,32 +61,19 @@ class DocumentoService:
         # Registrar auditoría
         AuditService.log(usuario=autor, accion='SUBIO', documento=documento)
 
-        # Notificaciones si va a revisión
+        # Notificaciones si va a revisión.
+        # A3: la Coordinadora es única de facultad -> no se filtra por programa.
         if estado == 'PENDIENTE':
+            mensaje = f"{autor.get_full_name()} subió '{titulo}' y requiere tu revisión."
             if autor.rol == 'DOCENTE_PLANTA':
-                # Notificar al Coordinador del programa
-                coordinadores = Usuario.objects.filter(
-                    rol='COORDINADOR',
-                    programa_academico=autor.programa_academico
-                )
-                for coord in coordinadores:
-                    NotificacionService.crear_notificacion(
-                        usuario=coord,
-                        mensaje=f"{autor.get_full_name()} subió '{titulo}' y requiere tu revisión.",
-                        tipo='INFO',
-                        documento=documento
-                    )
+                NotificacionService.notificar_revisores(documento, mensaje, actor=autor)
             elif autor.rol == 'COORDINADOR':
-                # Notificar a la Decana
-                decanas = Usuario.objects.filter(rol='DECANA')
-                for decana in decanas:
-                    NotificacionService.crear_notificacion(
-                        usuario=decana,
-                        mensaje=f"{autor.get_full_name()} subió '{titulo}' y requiere tu revisión.",
-                        tipo='INFO',
-                        documento=documento
-                    )
+                # Lo que sube la Coordinadora lo revisa la Decana.
+                NotificacionService.notificar_revisores(
+                    documento, mensaje, actor=autor, incluir_decana=True
+                )
 
+        bump_stats()
         return documento
 
     @staticmethod
@@ -99,7 +91,8 @@ class DocumentoService:
 
         # Permisos usando nueva lógica
         tiene_acceso = PermisoService.usuario_tiene_acceso(usuario, doc)
-        puede_aprobar = usuario.rol in ('COORDINADOR', 'DECANA') and doc.estado == 'PENDIENTE'
+        # M6: nadie revisa su propia evidencia
+        puede_aprobar = usuario.rol in ('COORDINADOR', 'DECANA') and doc.estado == 'PENDIENTE' and doc.autor_id != usuario.id
         puede_descargar = tiene_acceso
         puede_ver = tiene_acceso
         
@@ -107,9 +100,10 @@ class DocumentoService:
             raise PermissionError("No tienes permiso para ver este documento.")
 
         # Verificar si el usuario puede gestionar accesos
+        # Regla facultad: autor, COORDINADOR (única de facultad) o DECANA.
         puede_gestionar_accesos = (
             usuario == doc.autor or
-            (usuario.rol == 'COORDINADOR' and usuario.programa_academico == doc.programa) or
+            usuario.rol == 'COORDINADOR' or
             usuario.rol == 'DECANA'
         )
 
@@ -141,7 +135,7 @@ class DocumentoService:
                           factor_cna=None, estado=None,
                           fecha_desde=None, fecha_hasta=None,
                           autor_query=None, vigente=None,
-                          visibilidad_filter=None, orden=None):
+                          visibilidad_filter=None, orden=None, programa_id=None):
         """Búsqueda avanzada con todos los filtros y ordenamiento dinámico."""
         queryset = Documento.objects.select_related('programa', 'categoria', 'autor')
 
@@ -161,26 +155,42 @@ class DocumentoService:
             ).distinct()
 
         # Filtros
+        from core.utils.helpers import parse_fecha_segura, inicio_dia
         if visibilidad_filter and usuario.rol in ('COORDINADOR', 'DECANA'):
             queryset = queryset.filter(visibilidad=visibilidad_filter)
+        # M5: un sensible sin acceso no se encuentra por descripción ni por autor
+        if usuario.rol in ('COORDINADOR', 'DECANA') or usuario.is_superuser:
+            detalle_visible = Q()
+        else:
+            detalle_visible = Q(es_sensible=False) | Q(autor=usuario) | Q(
+                permisos__usuario=usuario, permisos__puede_ver=True)
         if query:
-            queryset = queryset.filter(Q(titulo__icontains=query) | Q(descripcion__icontains=query))
-        if categoria_id:
+            queryset = queryset.filter(
+                Q(titulo__icontains=query) | (Q(descripcion__icontains=query) & detalle_visible)
+            ).distinct()
+        if programa_id and str(programa_id).isdigit():
+            queryset = queryset.filter(programa_id=programa_id)
+        if categoria_id and str(categoria_id).isdigit():
             queryset = queryset.filter(categoria_id=categoria_id)
         if factor_cna:
             queryset = queryset.filter(factor_cna=factor_cna)
         if estado:
             queryset = queryset.filter(estado=estado)
+        fecha_desde = parse_fecha_segura(fecha_desde)
+        fecha_hasta = parse_fecha_segura(fecha_hasta)
         if fecha_desde:
-            queryset = queryset.filter(fecha_creacion__date__gte=fecha_desde)
+            # H-13: rangos index-friendly en vez de __date.
+            queryset = queryset.filter(fecha_creacion__gte=inicio_dia(fecha_desde))
         if fecha_hasta:
-            queryset = queryset.filter(fecha_creacion__date__lte=fecha_hasta)
+            queryset = queryset.filter(
+                fecha_creacion__lt=inicio_dia(fecha_hasta) + timedelta(days=1)
+            )
         if autor_query:
             queryset = queryset.filter(
-                Q(autor__first_name__icontains=autor_query) |
-                Q(autor__last_name__icontains=autor_query) |
-                Q(autor__email__icontains=autor_query)
-            )
+                (Q(autor__first_name__icontains=autor_query) |
+                 Q(autor__last_name__icontains=autor_query) |
+                 Q(autor__email__icontains=autor_query)) & detalle_visible
+            ).distinct()
         if vigente == '1':
             queryset = queryset.filter(
                 Q(fecha_vigencia__gte=timezone.now().date()) | Q(fecha_vigencia__isnull=True)
@@ -197,13 +207,21 @@ class DocumentoService:
         return queryset.order_by(orden_campo)
 
     @staticmethod
+    def _validar_revision(documento, usuario):
+        """M6: solo se decide sobre evidencias en revisión y nunca sobre las propias."""
+        if documento.estado != Documento.Estado.PENDIENTE:
+            raise ReglaNegocioError(f'«{documento.titulo}» ya no está en revisión.')
+        if documento.autor_id == usuario.id:
+            raise ReglaNegocioError(f'«{documento.titulo}» es tuya: debe revisarla otra persona.')
+
+    @staticmethod
     def aprobar_documento(documento_id, usuario, request=None):
         """Aprueba un documento y notifica al autor."""
         documento = Documento.objects.get(pk=documento_id)
-        
-        # Validación de seguridad: Coordinadores solo pueden aprobar de su propio programa
-        if usuario.rol == 'COORDINADOR' and documento.programa != usuario.programa_academico:
-            raise PermissionError("No tienes permiso para gestionar documentos de otro programa.")
+        DocumentoService._validar_revision(documento, usuario)
+
+        # Regla facultad: 1 Coordinadora para toda la facultad -> puede aprobar de cualquier programa.
+        # (Solo se bloquea si el rol no es directivo; la vista ya exige COORDINADOR/DECANA.)
 
         documento.estado = Documento.Estado.APROBADO
         documento.save(update_fields=['estado', 'fecha_modificacion'])
@@ -221,16 +239,16 @@ class DocumentoService:
             documento=documento
         )
 
+        bump_stats()
         return documento
 
     @staticmethod
     def rechazar_documento(documento_id, usuario, comentario, request=None):
         """Rechaza un documento y notifica al autor."""
         documento = Documento.objects.get(pk=documento_id)
-        
-        # Validación de seguridad: Coordinadores solo pueden rechazar de su propio programa
-        if usuario.rol == 'COORDINADOR' and documento.programa != usuario.programa_academico:
-            raise PermissionError("No tienes permiso para gestionar documentos de otro programa.")
+        DocumentoService._validar_revision(documento, usuario)
+
+        # Regla facultad: 1 Coordinadora para toda la facultad -> puede rechazar de cualquier programa.
 
         documento.estado = Documento.Estado.RECHAZADO
         documento.comentario_rechazo = comentario
@@ -249,6 +267,7 @@ class DocumentoService:
             documento=documento
         )
 
+        bump_stats()
         return documento
 
     @staticmethod
@@ -257,6 +276,13 @@ class DocumentoService:
         from django.utils import timezone
         # Use all_objects in case we are deleting something that's somehow already hidden, though typically objects is fine
         documento = Documento.all_objects.get(pk=documento_id)
+
+        # H-02: solo autor, DECANA o COORDINADOR (única de facultad) pueden enviar a papelera.
+        if usuario is None or not getattr(usuario, 'is_authenticated', False):
+            raise PermissionError("Inicia sesión para eliminar evidencias.")
+        es_autor = (usuario == documento.autor or getattr(usuario, 'pk', None) == getattr(documento, 'autor_id', None))
+        if not (es_autor or getattr(usuario, 'rol', None) in ('DECANA', 'COORDINADOR')):
+            raise PermissionError("No tienes permiso para eliminar este documento.")
 
         documento.is_deleted = True
         documento.deleted_at = timezone.now()
@@ -269,12 +295,20 @@ class DocumentoService:
                 detalle=f'Envió a la papelera: {documento.titulo}'
             )
 
+        bump_stats()
         return True
 
     @staticmethod
     def restaurar_documento(documento_id, usuario=None, request=None):
         """Restaura un documento desde la papelera."""
         documento = Documento.all_objects.get(pk=documento_id)
+
+        # H-02: mismo control que eliminar.
+        if usuario is None or not getattr(usuario, 'is_authenticated', False):
+            raise PermissionError("Inicia sesión para restaurar evidencias.")
+        es_autor = (usuario == documento.autor or getattr(usuario, 'pk', None) == getattr(documento, 'autor_id', None))
+        if not (es_autor or getattr(usuario, 'rol', None) in ('DECANA', 'COORDINADOR')):
+            raise PermissionError("No tienes permiso para restaurar este documento.")
         
         documento.is_deleted = False
         documento.deleted_at = None
@@ -285,10 +319,11 @@ class DocumentoService:
                 usuario=usuario, accion='ACTUALIZO', documento=documento, request=request,
                 detalle=f'Restauró de la papelera: {documento.titulo}'
             )
+        bump_stats()
         return True
 
     @staticmethod
-    def registrar_descarga(documento_id, usuario, request):
+    def registrar_descarga(documento_id, usuario, request, detalle=''):
         """Registra la descarga en auditoría y retorna el archivo."""
         from ..permisos.services import PermisoService
         doc = Documento.objects.get(pk=documento_id)
@@ -298,14 +333,42 @@ class DocumentoService:
             raise PermissionError("No tienes permiso para descargar este documento.")
 
         AuditService.log(
-            usuario=usuario, accion='DESCARGO', documento=doc, request=request
+            usuario=usuario, accion='DESCARGO', documento=doc, request=request, detalle=detalle or ''
         )
         return doc.archivo.path
 
     @staticmethod
+    def archivo_para_vista_previa(documento_id, usuario, request=None):
+        """A4: ruta del PDF vigente si el usuario puede verlo. Audita el resultado.
+
+        Lanza Documento.DoesNotExist, PermissionError (ya auditado como
+        ACCESO_DENEGADO) o FileNotFoundError (formato sin vista previa o
+        archivo físico ausente).
+        """
+        import os
+        from ..permisos.services import PermisoService
+
+        doc = Documento.objects.get(pk=documento_id)
+        if not PermisoService.usuario_tiene_acceso(usuario, doc):
+            AuditService.log(usuario=usuario, accion='ACCESO_DENEGADO', documento=doc,
+                             request=request, detalle='Intento de vista previa sin permiso')
+            raise PermissionError("No tienes permiso para ver este documento.")
+        if not doc.archivo or not doc.archivo.name.lower().endswith('.pdf'):
+            raise FileNotFoundError('Formato sin vista previa.')
+        ruta = doc.archivo.path
+        if not os.path.exists(ruta):
+            raise FileNotFoundError('Archivo físico ausente.')
+        AuditService.log(usuario=usuario, accion='VISUALIZO', documento=doc, request=request)
+        return ruta
+
+    @staticmethod
     def listar_categorias():
-        """Lista todas las categorías."""
-        return Categoria.objects.all()
+        """Lista todas las categorías (cache 1h: catálogo casi estático)."""
+        cats = cache.get("sigea:categorias")
+        if cats is None:
+            cats = list(Categoria.objects.all())
+            cache.set("sigea:categorias", cats, 3600)
+        return cats
 
     # ─── ESTADÍSTICAS PARA DASHBOARD ─────────────────────────────
 
@@ -313,11 +376,20 @@ class DocumentoService:
     def stats_docente(usuario):
         """Estadísticas para el dashboard del docente."""
         mis_docs = Documento.objects.filter(autor=usuario)
+        conteo = conteo_cacheado(
+            f"dash:docente:{usuario.id}",
+            lambda: mis_docs.aggregate(
+                total=Count('id'),
+                pendientes=Count('id', filter=Q(estado='PENDIENTE')),
+                aprobados=Count('id', filter=Q(estado='APROBADO')),
+                rechazados=Count('id', filter=Q(estado='RECHAZADO')),
+            ),
+        )
         return {
-            'mis_docs_count': mis_docs.count(),
-            'pendientes_count': mis_docs.filter(estado='PENDIENTE').count(),
-            'aprobados_count': mis_docs.filter(estado='APROBADO').count(),
-            'rechazados_count': mis_docs.filter(estado='RECHAZADO').count(),
+            'mis_docs_count': conteo['total'],
+            'pendientes_count': conteo['pendientes'],
+            'aprobados_count': conteo['aprobados'],
+            'rechazados_count': conteo['rechazados'],
             'actividad_reciente': mis_docs.select_related('categoria')[:5],
             'notificaciones': NotificacionService.listar_notificaciones(usuario, solo_no_leidas=False)[:4],
         }
@@ -326,19 +398,37 @@ class DocumentoService:
     def stats_coordinador(usuario):
         """Estadísticas para el dashboard del coordinador."""
         mis_docs = Documento.objects.filter(autor=usuario)
-        hoy = timezone.now().date()
-        programa = usuario.programa_academico
-        docs_programa = Documento.objects.filter(programa=programa) if programa else Documento.objects.none()
+        _ahora = timezone.now()
+        inicio_hoy = _ahora.replace(hour=0, minute=0, second=0, microsecond=0)
+        fin_hoy = inicio_hoy + timedelta(days=1)
+        # Regla facultad: la Coordinadora ve toda la facultad, no solo su programa.
+        docs_programa = Documento.objects.all()
+        conteo = conteo_cacheado(
+            f"dash:coord:{usuario.id}",
+            lambda: docs_programa.aggregate(
+                por_aprobar=Count('id', filter=Q(estado='PENDIENTE')),
+                aprobados_hoy=Count(
+                    'id', filter=Q(
+                        estado='APROBADO',
+                        fecha_modificacion__gte=inicio_hoy,
+                        fecha_modificacion__lt=fin_hoy,
+                    )
+                ),
+                rechazados_hoy=Count(
+                    'id', filter=Q(
+                        estado='RECHAZADO',
+                        fecha_modificacion__gte=inicio_hoy,
+                        fecha_modificacion__lt=fin_hoy,
+                    )
+                ),
+            ),
+        )
 
         return {
             'mis_docs_count': mis_docs.count(),
-            'por_aprobar_count': docs_programa.filter(estado='PENDIENTE').count(),
-            'aprobados_hoy_count': docs_programa.filter(
-                estado='APROBADO', fecha_modificacion__date=hoy
-            ).count(),
-            'rechazados_hoy_count': docs_programa.filter(
-                estado='RECHAZADO', fecha_modificacion__date=hoy
-            ).count(),
+            'por_aprobar_count': conteo['por_aprobar'],
+            'aprobados_hoy_count': conteo['aprobados_hoy'],
+            'rechazados_hoy_count': conteo['rechazados_hoy'],
             'docs_pendientes': docs_programa.filter(
                 estado='PENDIENTE'
             ).select_related('autor', 'categoria')[:10],
@@ -351,23 +441,31 @@ class DocumentoService:
         from ..auditoria.models import RegistroAuditoria
 
         todos = Documento.objects.all()
-        hoy = timezone.now().date()
-        inicio_mes = hoy.replace(day=1)
+        _ahora_mes = timezone.now()
+        # H-13: inicio de mes como rango (index-friendly) en vez de __date.
+        desde_mes = _ahora_mes.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         hace_3_dias = timezone.now() - timedelta(days=3)
 
         categorias_conteo = Categoria.objects.annotate(
             cantidad=Count('documentos')
         ).order_by('-cantidad')
 
+        conteo = conteo_cacheado(
+            "dash:decana",
+            lambda: todos.aggregate(
+                total=Count('id'),
+                por_aprobar=Count('id', filter=Q(estado='PENDIENTE')),
+                este_mes=Count('id', filter=Q(fecha_creacion__gte=desde_mes)),
+            ),
+        )
+
         return {
-            'total_docs_count': todos.count(),
-            'por_aprobar_count': todos.filter(estado='PENDIENTE').count(),
+            'total_docs_count': conteo['total'],
+            'por_aprobar_count': conteo['por_aprobar'],
             'usuarios_activos_count': Usuario.objects.filter(
                 is_active=True, esta_habilitado=True
             ).count(),
-            'docs_este_mes_count': todos.filter(
-                fecha_creacion__date__gte=inicio_mes
-            ).count(),
+            'docs_este_mes_count': conteo['este_mes'],
             'categorias_conteo': categorias_conteo,
             'trazabilidad_reciente': RegistroAuditoria.objects.select_related(
                 'usuario', 'documento'
@@ -385,10 +483,7 @@ class ReporteService:
         """Obtiene las estadísticas de documentos agrupados por factor CNA."""
         from django.db.models import Count, Q
         
-        metas_por_factor = {
-            'F1': 15, 'F2': 25, 'F3': 20, 'F4': 10, 'F5': 30, 'F6': 15,
-            'F7': 10, 'F8': 20, 'F9': 15, 'F10': 15, 'F11': 20, 'F12': 10,
-        }
+        from .metricas import METAS_POR_FACTOR as metas_por_factor
 
         stats = Documento.objects.exclude(factor_cna__isnull=True).exclude(factor_cna='').values('factor_cna').annotate(
             total_aprobados=Count('id', filter=Q(estado='APROBADO')),

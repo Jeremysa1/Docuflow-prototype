@@ -14,5 +14,6 @@ urlpatterns = [
     path('recuperar/reenviar/', views.reenviar_token_view, name='reenviar_token'),
     path('recuperar/nueva-contrasena/', views.nueva_contrasena_view, name='nueva_contrasena'),
     path('gestion/', views.gestion_usuarios_view, name='gestion_usuarios'),
-    path('gestion/<int:usuario_id>/estado/', views.cambiar_estado_usuario_view, name='cambiar_estado'),
+    # H5: ruta 'cambiar_estado' eliminada — apuntaba a una vista inexistente
+    # (cambiar_estado_usuario_view). La gestión usa habilitar/deshabilitar/eliminar/editar.
 ]

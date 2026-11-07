@@ -1,11 +1,21 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from apps.usuarios.models import Usuario, ProgramaAcademico
 from apps.documentos.models import Categoria
+import os
+import secrets
 
 class Command(BaseCommand):
-    help = 'Crea los datos iniciales para la base de datos'
+    help = 'Crea los datos iniciales para la base de datos (SOLO desarrollo)'
 
     def handle(self, *args, **kwargs):
+        import django.conf as _conf
+        if not _conf.settings.DEBUG and os.getenv('SEED_ALLOW_PROD', '0') != '1':
+            raise CommandError('Rehúsa crear seeds en prod. Define SEED_ALLOW_PROD=1 solo si sabes lo que haces.')
+        seed_password = os.getenv('SEED_PASSWORD')
+        if not seed_password:
+            # H-09: nunca más Admin123! por defecto; password aleatorio impreso una vez
+            seed_password = secrets.token_urlsafe(16)
+            self.stdout.write(self.style.WARNING('[SEED] SEED_PASSWORD no definido: usando password aleatorio (ver abajo).'))
         # 1. Crear Programas Académicos
         programas_data = [
             {'nombre': 'Ingeniería Civil', 'codigo': 'civil'},
@@ -72,10 +82,12 @@ class Command(BaseCommand):
                     'programa_academico': u['programa_academico']
                 }
             )
-            user.set_password('Admin123!')
+            user.set_password(seed_password)
             user.save()
 
         # 4. Imprimir resultados
         self.stdout.write(self.style.SUCCESS('[OK] Datos iniciales creados correctamente'))
         self.stdout.write('   Usuarios creados/actualizados: 4')
         self.stdout.write('   Programas: 3 | Categorias: 13')
+        if not os.getenv('SEED_PASSWORD'):
+            self.stdout.write(self.style.WARNING(f'   [SEED] Password inicial (rótelo ya): {seed_password}'))

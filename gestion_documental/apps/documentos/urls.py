@@ -20,9 +20,10 @@ urlpatterns = [
     path('<int:documento_id>/aprobar/', views.aprobar_documento, name='aprobar_doc'),
     path('<int:documento_id>/rechazar/', views.rechazar_documento, name='rechazar_doc'), # Kept param name as in views.py but changed name
     path('<int:documento_id>/descargar/', views.descargar_documento_view, name='descargar_doc'),
+    path('<int:documento_id>/vista-previa/', views.previsualizar_documento, name='vista_previa'),
     path('version/<int:ver_id>/descargar/', views.descargar_version_view, name='descargar_version'),
     path('factores-cna/', views.factores_cna_view, name='factores_cna'),
-    path('factores-cna/exportar/csv/', views.exportar_factores_csv, name='exportar_factores_csv'),
+    path('factores-cna/exportar/excel/', views.exportar_factores_excel, name='exportar_factores_excel'),
     path('factores-cna/exportar/pdf/', views.exportar_factores_pdf, name='exportar_factores_pdf'),
     path('api/buscar/', views.buscar_documentos_ajax, name='buscar_ajax'),
 ]

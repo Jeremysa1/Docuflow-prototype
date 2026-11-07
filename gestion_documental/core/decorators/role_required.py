@@ -5,7 +5,7 @@ Proporcionan control de acceso basado en roles y permisos sobre documentos.
 """
 from functools import wraps
 
-from django.http import HttpResponseForbidden
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 
 from apps.permisos.models import PermisoDocumento
@@ -21,18 +21,14 @@ def role_required(*roles):
         def mi_vista(request):
             ...
 
-    Retorna 403 si el usuario no tiene ninguno de los roles especificados.
+    Lanza PermissionDenied (403 con la página del sistema) si el usuario no tiene ninguno de los roles especificados.
     """
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
-            if not request.user.is_authenticated:
-                return HttpResponseForbidden('Acceso denegado. Debe iniciar sesión.')
-
-            if request.user.rol not in roles:
-                return HttpResponseForbidden(
-                    'Acceso denegado. No tiene los permisos necesarios para acceder a este recurso.'
-                )
+            # R9 (spec 002): PermissionDenied -> página 403 del sistema (templates/403.html)
+            if not request.user.is_authenticated or request.user.rol not in roles:
+                raise PermissionDenied('No tienes permiso para acceder a este recurso.')
 
             return view_func(request, *args, **kwargs)
         return _wrapped_view
@@ -48,14 +44,14 @@ def document_permission_required(permission_type='ver'):
     Args:
         permission_type: Tipo de permiso requerido ('ver' o 'descargar')
 
-    Retorna 403 si el usuario no tiene el permiso requerido.
+    Lanza PermissionDenied (403 con la página del sistema) si el usuario no tiene el permiso requerido.
     """
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
             documento_id = kwargs.get('documento_id')
             if not documento_id:
-                return HttpResponseForbidden('Documento no especificado.')
+                raise PermissionDenied('Documento no especificado.')
 
             documento = get_object_or_404(Documento, pk=documento_id)
 
@@ -84,8 +80,6 @@ def document_permission_required(permission_type='ver'):
             if permission_type == 'ver' and documento.es_compartido:
                 return view_func(request, *args, **kwargs)
 
-            return HttpResponseForbidden(
-                'Acceso denegado. No tiene permisos para realizar esta acción sobre el documento.'
-            )
+            raise PermissionDenied('Acceso denegado. No tiene permisos para realizar esta acción sobre el documento.')
         return _wrapped_view
     return decorator

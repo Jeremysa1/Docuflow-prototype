@@ -70,19 +70,13 @@ class Usuario(AbstractUser):
     )
     token_intentos = models.IntegerField(default=0, verbose_name='Intentos de token')
 
-    # Foto de Perfil
-    foto_perfil = models.ImageField(
-        upload_to='perfiles/',
-        max_length=255,
-        null=True,
-        blank=True,
-        verbose_name='Foto de Perfil'
-    )
-
     class Meta:
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
         ordering = ['last_name', 'first_name']
+        indexes = [
+            models.Index(fields=['rol'], name='usr_rol_idx'),
+        ]
 
     def __str__(self):
         return f"{self.get_full_name()} ({self.get_rol_display()})"
@@ -92,7 +86,8 @@ class Usuario(AbstractUser):
         full_name = f"{self.first_name} {self.last_name}".strip()
         return full_name or self.username
 
-    def get_iniciales(self):
+    @property
+    def iniciales(self):
         """Retorna las iniciales del usuario para el avatar."""
         if self.first_name and self.last_name:
             return f"{self.first_name[0]}{self.last_name[0]}".upper()

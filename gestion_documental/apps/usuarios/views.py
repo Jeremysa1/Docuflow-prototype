@@ -7,11 +7,18 @@ la lógica de negocio al servicio correspondiente.
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .forms import LoginForm, RecuperarContrasenaForm, CambiarContrasenaForm
 from .services import UsuarioService
 from .exceptions import AuthError
 from core.decorators.role_required import role_required
+from core.utils.helpers import ReglaNegocioError
+import logging
+
+logger = logging.getLogger(__name__)
+MSG_ERROR_GENERICO = 'No se pudo completar la acción. Inténtalo de nuevo o contacta a soporte.'
 from django.core.paginator import Paginator
 
 
@@ -35,14 +42,10 @@ def login_view(request):
                 messages.success(request, f'Bienvenido, {user.get_full_name()}')
                 return redirect('documentos:dashboard')
 
-            except AuthError as e:
-                if e.codigo == 401:
-                    error_tipo = '401'
-                    error_mensaje = e.mensaje
-                elif e.codigo == 403:
-                    return render(request, 'usuarios/error_403.html', {
-                        'error_mensaje': e.mensaje,
-                    })
+            except AuthError:
+                # R3-06: respuesta idéntica para 401 y 403 (sin oráculo de enumeración)
+                error_tipo = '401'
+                error_mensaje = 'No pudimos verificar tu identidad'
     else:
         form = LoginForm()
 
@@ -63,29 +66,54 @@ def registro_view(request):
     error = None
     if request.method == 'POST':
         nombre_completo = request.POST.get('nombre_completo', '')
-        email = request.POST.get('email', '')
-        rol = request.POST.get('rol', '')
+        email = request.POST.get('email', '').strip().lower()
+        # H-hardening: el registro público solo crea DOCENTE_PLANTA; se ignora cualquier rol enviado
+        rol = 'DOCENTE_PLANTA'
         password = request.POST.get('password', '')
         password_confirm = request.POST.get('password_confirm', '')
 
-        if password != password_confirm:
+        from django.core.validators import validate_email
+        from core.utils.helpers import obtener_ip_cliente, throttle_fijo
+        try:
+            validate_email(email)
+            correo_valido = True
+        except DjangoValidationError:
+            correo_valido = False
+
+        # M9: máximo 5 registros por hora desde una misma IP
+        if throttle_fijo(f"sigea:throttle:registro:{obtener_ip_cliente(request) or 'sin-ip'}", 5, 3600):
+            error = 'Hiciste demasiados registros seguidos. Inténtalo de nuevo en una hora.'
+        elif not nombre_completo.strip():
+            error = 'Escribe tu nombre completo.'
+        elif not correo_valido:
+            error = 'Escribe un correo válido.'
+        elif password != password_confirm:
             error = "Las contraseñas no coinciden."
         else:
             try:
-                partes = nombre_completo.strip().split(' ', 1)
-                nombre = partes[0]
-                apellido = partes[1] if len(partes) > 1 else ''
-                
-                # Crear usuario
-                user = UsuarioService.crear_usuario(nombre, apellido, email, rol, None)
-                user.set_password(password)
-                user.esta_habilitado = False  # Siempre requiere habilitación de la Decana
-                user.save()
-                
-                messages.success(request, 'Cuenta creada exitosamente. Un administrador debe habilitarla para que puedas iniciar sesión.')
-                return redirect('auth:login')
-            except Exception as e:
-                error = str(e)
+                # R3-05: misma política que el resto del sistema (validators de settings)
+                validate_password(password)
+            except DjangoValidationError as e:
+                error = ' '.join(e.messages)
+            else:
+                try:
+                    partes = nombre_completo.strip().split(' ', 1)
+                    nombre = partes[0]
+                    apellido = partes[1] if len(partes) > 1 else ''
+
+                    # Crear usuario
+                    user = UsuarioService.crear_usuario(nombre, apellido, email, rol, None, request=request)
+                    user.set_password(password)
+                    user.esta_habilitado = False  # Siempre requiere habilitación de la Decana
+                    user.save()
+
+                    messages.success(request, 'Cuenta creada exitosamente. Un administrador debe habilitarla para que puedas iniciar sesión.')
+                    return redirect('auth:login')
+                except ReglaNegocioError as e:
+                    error = str(e)
+                except Exception:
+                    logger.exception('Error en el registro público')
+                    error = MSG_ERROR_GENERICO
 
     return render(request, 'usuarios/registro.html', {'error': error})
 
@@ -106,7 +134,10 @@ def recuperar_contrasena_view(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             UsuarioService.solicitar_recuperacion(email)
+            # R2-01: reinicio limpio — una validación previa jamás debe sobrevivir a un email nuevo
             request.session['recovery_email'] = email
+            request.session.pop('token_validado', None)
+            request.session.pop('recovery_email_validado', None)
             return redirect('auth:confirmar_email')
     else:
         form = RecuperarContrasenaForm()
@@ -125,6 +156,9 @@ def confirmar_email_view(request):
     if request.method == 'POST':
         # Enviar token
         UsuarioService.solicitar_recuperacion(email)
+        # R2-01: el token nuevo invalida cualquier validación anterior
+        request.session.pop('token_validado', None)
+        request.session.pop('recovery_email_validado', None)
         return redirect('auth:validar_token')
 
     return render(request, 'usuarios/confirmar_email.html', {
@@ -146,7 +180,9 @@ def validar_token_view(request):
         resultado = UsuarioService.validar_token(email, token)
 
         if resultado['valido']:
+            # R2-01: la validación queda ligada al email validado, no a la sesión en abstracto
             request.session['token_validado'] = True
+            request.session['recovery_email_validado'] = email
             return redirect('auth:nueva_contrasena')
         else:
             error = resultado['error']
@@ -164,6 +200,9 @@ def reenviar_token_view(request):
         email = request.session.get('recovery_email')
         if email:
             UsuarioService.solicitar_recuperacion(email)
+            # R2-01: el token nuevo invalida cualquier validación anterior
+            request.session.pop('token_validado', None)
+            request.session.pop('recovery_email_validado', None)
             messages.success(request, 'Código reenviado exitosamente.')
     return redirect('auth:validar_token')
 
@@ -172,8 +211,10 @@ def nueva_contrasena_view(request):
     """Vista para establecer nueva contraseña."""
     email = request.session.get('recovery_email')
     token_validado = request.session.get('token_validado')
+    email_validado = request.session.get('recovery_email_validado')
 
-    if not email or not token_validado:
+    # R2-01: el flag solo vale para el email que se validó
+    if not email or not token_validado or email_validado != email:
         return redirect('auth:login')
 
     error = None
@@ -192,6 +233,7 @@ def nueva_contrasena_view(request):
                     # Limpiar sesión de recuperación
                     request.session.pop('recovery_email', None)
                     request.session.pop('token_validado', None)
+                    request.session.pop('recovery_email_validado', None)
                     messages.success(
                         request,
                         'Contraseña cambiada exitosamente. Inicia sesión con tu nueva contraseña.'
@@ -211,13 +253,6 @@ def nueva_contrasena_view(request):
 @login_required
 def perfil_view(request):
     """Vista del perfil del usuario actual."""
-    if request.method == 'POST':
-        foto = request.FILES.get('foto_perfil')
-        if foto:
-            UsuarioService.actualizar_foto_perfil(request.user, foto)
-            messages.success(request, 'Foto de perfil actualizada correctamente.')
-            return redirect('usuarios:perfil')
-            
     return render(request, 'usuarios/perfil.html', {
         'usuario': request.user,
     })
@@ -264,10 +299,14 @@ def agregar_usuario_view(request):
         rol = request.POST.get('rol')
         programa_id = request.POST.get('programa_id')
         try:
-            UsuarioService.crear_usuario(nombre, apellido, email, rol, programa_id or None)
-            messages.success(request, f'Usuario {nombre} {apellido} creado exitosamente.')
-        except Exception as e:
+            UsuarioService.crear_usuario(nombre, apellido, email, rol, programa_id or None,
+                                         actor=request.user, request=request)
+            messages.success(request, f'Creaste la cuenta de {nombre} {apellido}. Le enviamos una invitación a {email} para que cree su contraseña.')
+        except ReglaNegocioError as e:
             messages.error(request, str(e))
+        except Exception:
+            logger.exception('Error al crear usuario')
+            messages.error(request, MSG_ERROR_GENERICO)
     return redirect('usuarios:gestion_usuarios')
 
 
@@ -276,10 +315,13 @@ def agregar_usuario_view(request):
 def habilitar_usuario_view(request, uid):
     if request.method == 'POST':
         try:
-            user = UsuarioService.habilitar_usuario(uid)
+            user = UsuarioService.habilitar_usuario(uid, actor=request.user, request=request)
             messages.success(request, f'Usuario {user.get_full_name()} habilitado.')
-        except Exception as e:
+        except ReglaNegocioError as e:
             messages.error(request, str(e))
+        except Exception:
+            logger.exception('Error al habilitar usuario %s', uid)
+            messages.error(request, MSG_ERROR_GENERICO)
     return redirect('usuarios:gestion_usuarios')
 
 
@@ -288,10 +330,13 @@ def habilitar_usuario_view(request, uid):
 def deshabilitar_usuario_view(request, uid):
     if request.method == 'POST':
         try:
-            user = UsuarioService.deshabilitar_usuario(uid)
+            user = UsuarioService.deshabilitar_usuario(uid, actor=request.user, request=request)
             messages.success(request, f'Usuario {user.get_full_name()} deshabilitado.')
-        except Exception as e:
+        except ReglaNegocioError as e:
             messages.error(request, str(e))
+        except Exception:
+            logger.exception('Error al deshabilitar usuario %s', uid)
+            messages.error(request, MSG_ERROR_GENERICO)
     return redirect('usuarios:gestion_usuarios')
 
 
@@ -300,10 +345,13 @@ def deshabilitar_usuario_view(request, uid):
 def eliminar_usuario_view(request, uid):
     if request.method == 'POST':
         try:
-            user = UsuarioService.eliminar_usuario(uid, request.user.id)
+            user = UsuarioService.eliminar_usuario(uid, request.user.id, actor=request.user, request=request)
             messages.success(request, f'Usuario {user.get_full_name()} eliminado.')
-        except Exception as e:
+        except ReglaNegocioError as e:
             messages.error(request, str(e))
+        except Exception:
+            logger.exception('Error al eliminar usuario %s', uid)
+            messages.error(request, MSG_ERROR_GENERICO)
     return redirect('usuarios:gestion_usuarios')
 
 
@@ -315,8 +363,39 @@ def editar_usuario_view(request, uid):
         rol = request.POST.get('rol')
         programa_id = request.POST.get('programa_id')
         try:
-            user = UsuarioService.actualizar_usuario(uid, rol, programa_id)
+            user = UsuarioService.actualizar_usuario(uid, rol, programa_id, current_user_id=request.user.id,
+                                                     actor=request.user, request=request)
             messages.success(request, f'Usuario {user.get_full_name()} actualizado correctamente.')
-        except Exception as e:
-            messages.error(request, f'Error al actualizar usuario: {str(e)}')
+        except ReglaNegocioError as e:
+            messages.error(request, str(e))
+        except Exception:
+            logger.exception('Error al actualizar usuario %s', uid)
+            messages.error(request, MSG_ERROR_GENERICO)
     return redirect('usuarios:gestion_usuarios')
+
+
+def invitacion_view(request, uidb64, token):
+    """M8: la persona invitada por la Decana crea su contraseña con un enlace de un solo uso."""
+    user = UsuarioService.usuario_de_invitacion(uidb64, token)
+    if user is None:
+        return render(request, 'usuarios/invitacion.html', {'invalido': True}, status=400)
+
+    error = None
+    if request.method == 'POST':
+        nueva = request.POST.get('nueva_contrasena', '')
+        if nueva != request.POST.get('confirmar_contrasena', ''):
+            error = 'Las contraseñas no coinciden.'
+        else:
+            try:
+                validate_password(nueva, user)
+            except DjangoValidationError as e:
+                error = ' '.join(e.messages)
+            else:
+                user.set_password(nueva)  # cambia el hash: el enlace deja de valer
+                user.save(update_fields=['password'])
+                from core.services.audit_service import AuditService
+                AuditService.log(usuario=user, accion='ACTUALIZO_USUARIO', request=request,
+                                 detalle='Contraseña creada desde la invitación')
+                messages.success(request, 'Listo, ya tienes contraseña. Inicia sesión.')
+                return redirect('auth:login')
+    return render(request, 'usuarios/invitacion.html', {'error': error, 'invitado': user})

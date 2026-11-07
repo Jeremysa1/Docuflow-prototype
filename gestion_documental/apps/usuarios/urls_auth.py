@@ -13,4 +13,5 @@ urlpatterns = [
     path('recuperar/token/', views.validar_token_view, name='validar_token'),
     path('recuperar/reenviar/', views.reenviar_token_view, name='reenviar_token'),
     path('recuperar/nueva-contrasena/', views.nueva_contrasena_view, name='nueva_contrasena'),
+    path('invitacion/<uidb64>/<token>/', views.invitacion_view, name='invitacion'),
 ]

@@ -5,6 +5,8 @@ Define el modelo Documento y el catálogo de Categorías.
 """
 from django.db import models
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex, OpClass
+from django.db.models.functions import Upper
 
 from ..usuarios.models import ProgramaAcademico
 
@@ -121,6 +123,16 @@ class Documento(models.Model):
         verbose_name = 'Documento'
         verbose_name_plural = 'Documentos'
         ordering = ['-fecha_creacion']
+        indexes = [
+            models.Index(fields=['estado', '-fecha_modificacion'], name='doc_estado_mod_idx'),
+            models.Index(fields=['autor', 'estado'], name='doc_autor_estado_idx'),
+            models.Index(fields=['is_deleted', '-deleted_at'], name='doc_papelera_idx'),
+            models.Index(fields=['factor_cna'], name='doc_factor_idx'),
+            models.Index(fields=['visibilidad'], name='doc_visib_idx'),
+            # H-10: trigramas para LIKE '%...%' (buscador). Requiere pg_trgm.
+            GinIndex(OpClass(Upper('titulo'), name='gin_trgm_ops'), name='doc_titulo_trgm'),
+            GinIndex(OpClass(Upper('descripcion'), name='gin_trgm_ops'), name='doc_desc_trgm'),
+        ]
 
     def __str__(self):
         return f"{self.titulo} ({self.get_estado_display()})"

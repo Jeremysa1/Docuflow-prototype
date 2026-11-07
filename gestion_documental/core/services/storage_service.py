@@ -7,6 +7,7 @@ solo requiera modificar esta clase.
 Ruta de guardado: docs/{programa_codigo}/{categoria_nombre}/{timestamp}_{filename}
 """
 import os
+import uuid
 from datetime import datetime
 
 from django.core.files.storage import default_storage
@@ -29,17 +30,28 @@ class StorageService:
         Returns:
             str: Ruta relativa del archivo guardado
         """
-        # Construir la ruta: docs/{programa_codigo}/{categoria_nombre}/{timestamp}_{filename}
+        # Construir la ruta: docs/{programa_codigo}/{categoria_nombre}/{timestamp}_{uuid}{ext}
+        # H-04/H-05: nombre no predecible + extensión validada; nunca se preserva el nombre original.
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = file.name.replace(' ', '_')
-        safe_categoria = categoria.nombre.replace(' ', '_').lower()
-        safe_programa = programa.codigo.lower()
+        ext = os.path.splitext(getattr(file, 'name', ''))[1].lower()
+        if ext not in settings.ALLOWED_DOCUMENT_EXTENSIONS:
+            from django.core.exceptions import ValidationError
+            raise ValidationError(
+                f'Extensión no permitida. Válidas: {", ".join(settings.ALLOWED_DOCUMENT_EXTENSIONS)}'
+            )
+        size = getattr(file, 'size', 0) or 0
+        if size > settings.MAX_UPLOAD_SIZE:
+            from django.core.exceptions import ValidationError
+            raise ValidationError('El archivo excede el tamaño máximo permitido.')
+        safe_categoria = ''.join(c if c.isalnum() else '_' for c in categoria.nombre.replace(' ', '_')).lower()[:50]
+        safe_programa = ''.join(c if c.isalnum() else '_' for c in programa.codigo.lower())[:30]
+        filename = f"{timestamp}_{uuid.uuid4().hex}{ext}"
 
         relative_path = os.path.join(
             'docs',
             safe_programa,
             safe_categoria,
-            f"{timestamp}_{filename}"
+            filename
         )
 
         # Guardar usando el storage backend configurado

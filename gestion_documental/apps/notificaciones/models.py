@@ -46,6 +46,12 @@ class Notificacion(models.Model):
         verbose_name = 'Notificación'
         verbose_name_plural = 'Notificaciones'
         ordering = ['-fecha_creacion']
+        indexes = [
+            models.Index(
+                fields=['usuario', 'leida', '-fecha_creacion'],
+                name='notif_usr_leida_idx',
+            ),
+        ]
 
     def __str__(self):
         return f"[{self.get_tipo_display()}] {self.mensaje[:50]}"
