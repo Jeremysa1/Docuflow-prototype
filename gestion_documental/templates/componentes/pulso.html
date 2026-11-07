@@ -1,0 +1,22 @@
+{% load sigea %}
+{# Pulso de 30 días (contexto: pulso = MetricasService.pulso_30_dias()) #}
+<div class="sg-pulso">
+  {% for s in pulso.series %}
+  <a class="sg-pulso__serie{% if s.alerta and s.total %} sg-pulso--alerta{% endif %}"
+     href="{% url 'auditoria:lista' %}?accion={{ s.accion }}&amp;fecha_inicio={{ pulso.desde|date:'Y-m-d' }}">
+    <span class="sg-pulso__nombre">{{ s.nombre }}</span>
+    <span>
+      <span class="sg-pulso__total">{{ s.total }}</span>
+      <span class="sg-pulso__variacion">{% if s.variacion > 0 %}+{{ s.variacion }}{% elif s.variacion < 0 %}{{ s.variacion }}{% else %}igual{% endif %} vs. 30 días previos</span>
+    </span>
+    <svg viewBox="0 0 300 40" preserveAspectRatio="none" role="img"
+         aria-label="{{ s.nombre }} por día en los últimos 30 días: total {{ s.total }}, hoy {{ s.ultimo }}">
+      <title>{{ s.nombre }}: {{ s.total }} en 30 días</title>
+      <line class="sg-pulso__base" x1="0" y1="38.5" x2="300" y2="38.5"></line>
+      <g class="sg-pulso__barras">
+        {% for b in s.barras %}{% if b.valor %}<rect x="{{ b.x }}" y="{{ b.y }}" width="7" height="{{ b.alto }}" rx="1"{% if b.es_alto %} class="es-alto"{% endif %}><title>{{ b.valor }}</title></rect>{% endif %}{% endfor %}
+      </g>
+    </svg>
+  </a>
+  {% endfor %}
+</div>

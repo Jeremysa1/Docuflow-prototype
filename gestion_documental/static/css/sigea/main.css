@@ -1,0 +1,10 @@
+/* SIGEA — punto de entrada del sistema de diseño. */
+@layer base, componentes, graficos, shell, paginas;
+
+/* ?v= obliga al navegador a descargar la versión nueva: súbelo al cambiar el CSS */
+@import url("tokens.css?v=005");
+@import url("base.css?v=005") layer(base);
+@import url("componentes.css?v=005") layer(componentes);
+@import url("graficos.css?v=005") layer(graficos);
+@import url("shell.css?v=005") layer(shell);
+@import url("paginas.css?v=005") layer(paginas);

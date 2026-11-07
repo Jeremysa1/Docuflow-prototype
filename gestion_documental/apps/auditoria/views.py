@@ -1,11 +1,18 @@
 """
 Vistas del módulo de auditoría.
 """
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Count, Q
+from django.http import HttpResponse
+from django.contrib import messages
+
+import logging
 
 from apps.auditoria.services import AuditoriaService
+
+logger = logging.getLogger(__name__)
 from core.decorators.role_required import role_required
 
 
@@ -27,18 +34,20 @@ def lista_auditoria(request):
         fecha_fin=fecha_fin if fecha_fin else None,
     )
     
-    # Estadísticas para el sidebar (optimizadas)
-    total_registros = registros.count()
+    # Estadísticas para el sidebar: un solo agregado en vez de 4 consultas.
+    conteo = registros.aggregate(
+        total=Count('id'),
+        subidas=Count('id', filter=Q(accion='SUBIO')),
+        aprobaciones=Count('id', filter=Q(accion='APROBO')),
+        eliminaciones=Count('id', filter=Q(accion='ELIMINO')),
+    )
+    total_registros = conteo['total']
     if total_registros > 0:
-        subidas = registros.filter(accion='SUBIO').count()
-        aprobaciones = registros.filter(accion='APROBO').count()
-        eliminaciones = registros.filter(accion='ELIMINO').count()
-        
         stats = {
             'total': total_registros,
-            'subidas_pct': int((subidas / total_registros) * 100),
-            'aprobaciones_pct': int((aprobaciones / total_registros) * 100),
-            'eliminaciones_pct': int((eliminaciones / total_registros) * 100),
+            'subidas_pct': int((conteo['subidas'] / total_registros) * 100),
+            'aprobaciones_pct': int((conteo['aprobaciones'] / total_registros) * 100),
+            'eliminaciones_pct': int((conteo['eliminaciones'] / total_registros) * 100),
         }
     else:
         stats = {
@@ -52,9 +61,12 @@ def lista_auditoria(request):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
+    from apps.auditoria.models import RegistroAuditoria
+
     return render(request, 'auditoria/lista.html', {
         'page_obj': page_obj,
         'stats': stats,
+        'acciones': RegistroAuditoria.Accion.choices,
     })
 
 import csv
@@ -62,48 +74,58 @@ from django.http import HttpResponse
 
 @login_required
 @role_required('DECANA', 'COORDINADOR')
-def exportar_auditoria(request):
-    """Exporta los registros de auditoría filtrados a CSV."""
+def exportar_auditoria_excel(request):
+    """Exporta los registros de auditoria filtrados a Excel."""
     usuario_filtro = request.GET.get('usuario')
     accion_filtro = request.GET.get('accion')
     documento_filtro = request.GET.get('documento')
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
 
-    registros = AuditoriaService.listar_registros(
-        usuario=usuario_filtro,
-        accion=accion_filtro,
-        documento=documento_filtro,
-        fecha_inicio=fecha_inicio if fecha_inicio else None,
-        fecha_fin=fecha_fin if fecha_fin else None,
-    )
+    try:
+        registros = AuditoriaService.listar_registros(
+            usuario=usuario_filtro,
+            accion=accion_filtro,
+            documento=documento_filtro,
+            fecha_inicio=fecha_inicio if fecha_inicio else None,
+            fecha_fin=fecha_fin if fecha_fin else None,
+        )
 
-    response = HttpResponse(
-        content_type='text/csv',
-    )
-    response['Content-Disposition'] = 'attachment; filename="auditoria_SIGEA.csv"'
-    # Añadir BOM para que Excel lea correctamente el UTF-8 con caracteres especiales
-    response.write('\ufeff'.encode('utf8'))
+        excel_data = AuditoriaService.generar_auditoria_excel(registros)
+        response = HttpResponse(excel_data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="auditoria_SIGEA.xlsx"'
+        return response
+    except Exception:
+        logger.exception('Error al exportar la auditoría a Excel')
+        messages.error(request, 'No se pudo generar el archivo Excel. Inténtalo de nuevo.')
+        return redirect('auditoria:lista')
 
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['Fecha', 'Hora', 'Usuario (Email)', 'Nombre', 'Programa Académico', 'Acción', 'Documento/Descripción', 'Dirección IP'])
+@login_required
+@role_required('DECANA', 'COORDINADOR')
+def exportar_auditoria_pdf(request):
+    """Exporta los registros de auditoria filtrados a PDF."""
+    usuario_filtro = request.GET.get('usuario')
+    accion_filtro = request.GET.get('accion')
+    documento_filtro = request.GET.get('documento')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
 
-    for reg in registros:
-        fecha = reg.fecha_hora.astimezone().strftime('%d/%m/%Y')
-        hora = reg.fecha_hora.astimezone().strftime('%H:%M:%S')
-        email = reg.usuario.email if reg.usuario else 'Sistema'
-        nombre = reg.usuario.get_full_name() if reg.usuario else '-'
-        programa = reg.usuario.programa_academico.nombre if reg.usuario and hasattr(reg.usuario, 'programa_academico') and reg.usuario.programa_academico else '-'
-        accion = reg.get_accion_display()
-        
-        # Documento o Detalle
-        if reg.documento:
-            doc_desc = f"{reg.documento.titulo} (ID: {reg.documento.id})"
-        else:
-            doc_desc = reg.detalle or '-'
-            
-        ip = reg.ip_address or '-'
+    try:
+        registros = AuditoriaService.listar_registros(
+            usuario=usuario_filtro,
+            accion=accion_filtro,
+            documento=documento_filtro,
+            fecha_inicio=fecha_inicio if fecha_inicio else None,
+            fecha_fin=fecha_fin if fecha_fin else None,
+        )
 
-        writer.writerow([fecha, hora, email, nombre, programa, accion, doc_desc, ip])
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="auditoria_SIGEA.pdf"'
+        AuditoriaService.generar_auditoria_pdf(response, registros)
+        return response
+    except Exception:
+        logger.exception('Error al exportar la auditoría a PDF')
+        messages.error(request, 'No se pudo generar el archivo PDF. Inténtalo de nuevo.')
+        return redirect('auditoria:lista')
 
-    return response
+

@@ -1,285 +1,111 @@
 {% extends 'base.html' %}
-{% block title %}Gestión de Accesos - {{ documento.titulo }}{% endblock %}
-{% block page_title %}Gestión de Accesos{% endblock %}
+{% load sigea %}
+{% block title %}Accesos · {{ documento.titulo }} · SIGEA{% endblock %}
 
 {% block content %}
-
-    <!-- HEADER -->
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1 class="flex-wrap-center-gap">
-                Gestión de Accesos — {{ documento.titulo|truncatechars:40 }}
-                {% if es_sensible %}
-                    <span class="badge badge-danger badge-pill">Sensible</span>
-                {% endif %}
-            </h1>
-            <p>Asigna y gestiona quién puede acceder a este documento.</p>
-        </div>
-        <a href="{% url 'documentos:detalle' documento.id %}" class="btn btn-ghost">
-            <i data-lucide="arrow-left"></i>
-            Volver al documento
-        </a>
-    </header>
-
-    <!-- SECCIÓN 1: Solicitudes Pendientes -->
-    <div class="card mb-2xl">
-        <div class="card-body">
-            <div class="section-title mb-xl flex-row-center-gap">
-                <div class="quick-action-icon qa-icon-amber">
-                    <i data-lucide="clock"></i>
-                </div>
-                Solicitudes Pendientes
-            </div>
-
-            {% if solicitudes_pendientes %}
-            <div class="flex-stack gap-md">
-                {% for sol in solicitudes_pendientes %}
-                <div class="request-card">
-                    <div class="flex-between mb-lg flex-wrap-gap-md">
-                        <div class="flex-row">
-                            <img src="https://ui-avatars.com/api/?name={{ sol.solicitante.get_full_name|urlencode }}&background=random" class="avatar-md" alt="Avatar">
-                            <div>
-                                <div class="font-bold text-sm text-brand">{{ sol.solicitante.get_full_name }}</div>
-                                <div class="text-xxs font-bold text-light uppercase tracking-wide mt-sm">{{ sol.solicitante.get_rol_display }} &middot; {{ sol.solicitante.programa_academico.nombre|default:"Institucional" }}</div>
-                            </div>
-                        </div>
-                        <span class="text-xxs font-bold text-light date-badge">{{ sol.fecha_solicitud|date:"d/m/Y H:i" }}</span>
-                    </div>
-
-                    <div class="request-reason-box">
-                        <strong class="text-brand text-sm block-mb-xs">Motivo de solicitud:</strong>
-                        <span class="text-sm text-muted">{{ sol.motivo }}</span>
-                    </div>
-
-                    {% if es_sensible %}
-                        <!-- Documento sensible: votos -->
-                        <div class="votes-box">
-                            <div class="form-label votes-header">
-                                Aprobaciones: <span class="text-brand">{{ sol.aprobaciones_count|default:0 }} / 2</span> (Mínimo 2 requeridas)
-                            </div>
-
-                            <div class="flex-stack gap-sm">
-                                {% for voto in sol.votos.all %}
-                                <div class="flex-row text-sm text-muted vote-row">
-                                    {% if voto.voto == 'APROBADO' %}
-                                        <i data-lucide="check-circle-2" class="icon-xs-emerald"></i>
-                                    {% else %}
-                                        <i data-lucide="x-circle" class="icon-xs-rose"></i>
-                                    {% endif %}
-                                    <span class="font-bold text-brand">{{ voto.votante.get_full_name }}</span> &mdash; {{ voto.get_voto_display }}
-                                </div>
-                                {% empty %}
-                                <div class="flex-row text-xs text-muted italic">
-                                    <i data-lucide="hourglass" class="icon-xs"></i> Aún no hay votos registrados.
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        {% if sol.ya_voto %}
-                        <div class="alert alert-success alert-text-center">
-                            Ya emitiste tu voto para esta solicitud.
-                        </div>
-                        {% else %}
-                        <div class="flex-row flex-wrap-gap">
-                            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="m-0">
-                                {% csrf_token %}
-                                <input type="hidden" name="decision" value="APROBADO">
-                                <button type="submit" class="btn btn-sm btn-emerald"><i data-lucide="check"></i> Aprobar</button>
-                            </form>
-                            <button type="button" class="btn btn-sm btn-reject-toggle btn-rose-soft" data-sol-id="{{ sol.id }}">
-                                <i data-lucide="x"></i> Rechazar
-                            </button>
-                        </div>
-                        <div id="reject-form-{{ sol.id }}" class="hidden mt-md-fade-in">
-                            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="reject-form-box">
-                                {% csrf_token %}
-                                <input type="hidden" name="decision" value="RECHAZADO">
-                                <textarea name="motivo_rechazo" class="form-textarea textarea-reject" placeholder="Indica el motivo del rechazo..." required></textarea>
-                                <div class="flex-end">
-                                    <button type="submit" class="btn btn-sm btn-rose-solid">Confirmar Rechazo</button>
-                                </div>
-                            </form>
-                        </div>
-                        {% endif %}
-
-                    {% else %}
-                        <!-- Documento normal -->
-                        {% if puede_revocar %}
-                        <div class="flex-row flex-wrap-gap">
-                            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="m-0">
-                                {% csrf_token %}
-                                <input type="hidden" name="decision" value="APROBADA">
-                                <button type="submit" class="btn btn-sm btn-emerald"><i data-lucide="check"></i> Aprobar</button>
-                            </form>
-                            <button type="button" class="btn btn-sm btn-reject-toggle btn-rose-soft" data-sol-id="{{ sol.id }}">
-                                <i data-lucide="x"></i> Rechazar
-                            </button>
-                        </div>
-                        <div id="reject-form-{{ sol.id }}" class="hidden mt-md-fade-in">
-                            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="reject-form-box">
-                                {% csrf_token %}
-                                <input type="hidden" name="decision" value="RECHAZADA">
-                                <textarea name="motivo_rechazo" class="form-textarea textarea-reject" placeholder="Indica el motivo del rechazo..." required></textarea>
-                                <div class="flex-end">
-                                    <button type="submit" class="btn btn-sm btn-rose-solid">Confirmar Rechazo</button>
-                                </div>
-                            </form>
-                        </div>
-                        {% endif %}
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="empty-state empty-state-dashed">
-                <div class="empty-state-icon"><i data-lucide="inbox"></i></div>
-                <p class="text-sm text-muted">No hay solicitudes pendientes para este documento.</p>
-            </div>
-            {% endif %}
-        </div>
+<div class="sg-pagina">
+  <nav aria-label="Ruta">
+    <ol class="sg-migas">
+      <li><a href="{% url 'documentos:detalle' documento.id %}">{{ documento.titulo|truncatechars:50 }}</a></li>
+      <li aria-current="page">Accesos</li>
+    </ol>
+  </nav>
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "lock" %}</span>
+      <h1>Quién puede ver esta evidencia</h1>
+      {% if es_sensible %}
+      <p class="sg-fila"><span class="sg-estado sg-estado--sensible">{% icono "lock" "sg-icono--sm" %}<span>Sensible</span></span> Cada solicitud necesita dos votos a favor (autor, Coordinadora o Decana). Un solo voto en contra la rechaza.</p>
+      {% else %}
+      <p>El autor aprueba o rechaza cada solicitud.</p>
+      {% endif %}
     </div>
+  </header>
 
-    <!-- SECCIÓN 2: Usuarios con acceso actual -->
-    <div class="card mb-2xl">
-        <div class="card-body">
-            <div class="section-title mb-xl flex-row-center-gap">
-                <div class="quick-action-icon qa-icon-sky">
-                    <i data-lucide="users"></i>
-                </div>
-                Usuarios con Acceso Explícito
-            </div>
-
-            {% if usuarios_con_acceso %}
-            <div class="table-container table-container-flat mb-xl">
-                <div class="table-scroll">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Usuario</th>
-                                <th class="text-center">Puede Ver</th>
-                                <th class="text-center">Puede Descargar</th>
-                                <th class="text-center">Desde</th>
-                                {% if puede_revocar %}<th class="text-right">Acción</th>{% endif %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for permiso in usuarios_con_acceso %}
-                            <tr>
-                                <td>
-                                    <div class="flex-row">
-                                        <img src="https://ui-avatars.com/api/?name={{ permiso.usuario.get_full_name|urlencode }}&background=random" class="avatar-sm" alt="Avatar">
-                                        <div>
-                                            <div class="font-bold text-sm text-brand">{{ permiso.usuario.get_full_name }}</div>
-                                            <div class="text-xxs text-muted">{{ permiso.usuario.email }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    {% if permiso.puede_ver %}
-                                        <span class="icon-badge-emerald"><i data-lucide="check" class="icon-xxs"></i></span>
-                                    {% else %}
-                                        <span class="icon-badge-rose"><i data-lucide="x" class="icon-xxs"></i></span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if permiso.puede_descargar %}
-                                        <span class="icon-badge-emerald"><i data-lucide="check" class="icon-xxs"></i></span>
-                                    {% else %}
-                                        <span class="icon-badge-rose"><i data-lucide="x" class="icon-xxs"></i></span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center font-mono" class="text-xs text-muted">{{ permiso.otorgado_en|date:"d/m/Y" }}</td>
-                                {% if puede_revocar %}
-                                <td class="text-right">
-                                    <form method="post" action="{% url 'permisos:revocar_acceso' documento.id permiso.usuario.id %}" class="m-0 inline-block"
-                                        onsubmit="return confirm('¿Quitar acceso a {{ permiso.usuario.get_full_name|escapejs }}?');">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-ghost btn-xs btn-ghost-rose">
-                                            Revocar
-                                        </button>
-                                    </form>
-                                </td>
-                                {% endif %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% else %}
-            <div class="empty-state empty-state-dashed mb-xl">
-                <div class="empty-state-icon"><i data-lucide="users"></i></div>
-                <p class="text-sm text-muted">No hay usuarios con acceso explícito asignado.</p>
-            </div>
-            {% endif %}
-
-            <div class="alert alert-info">
-                <i data-lucide="info" class="icon-info-sky"></i>
-                <p class="text-sm m-0"><strong>Nota:</strong> La Decana y el Coordinador tienen acceso administrativo por defecto. El autor siempre tiene acceso completo.</p>
-            </div>
+  <section class="sg-hoja" aria-labelledby="pendientes-titulo">
+    <header class="sg-hoja__cabeza"><h2 id="pendientes-titulo">{% icono "inbox" %}Solicitudes pendientes</h2><span class="sg-contador">{{ solicitudes_pendientes|length }}</span></header>
+    {% if solicitudes_pendientes %}
+    <ul class="sg-lista">
+      {% for sol in solicitudes_pendientes %}
+      <li>
+        <span class="sg-avatar" aria-hidden="true">{{ sol.solicitante|iniciales }}</span>
+        <div class="sg-lista__cuerpo">
+          <strong>{{ sol.solicitante.get_full_name|default:sol.solicitante.email }}</strong>
+          <span class="sg-lista__meta">{{ sol.solicitante.get_rol_display }}{% if sol.solicitante.programa_academico %} · {{ sol.solicitante.programa_academico.nombre }}{% endif %} · hace {{ sol.fecha_solicitud|timesince }}</span>
+          <p>«{{ sol.motivo }}»</p>
+          {% if es_sensible %}
+          <span class="sg-fila sg-peque">
+            <span class="sg-votos" aria-hidden="true"><span class="{% if sol.aprobaciones_count >= 1 %}es-voto{% endif %}"></span><span class="{% if sol.aprobaciones_count >= 2 %}es-voto{% endif %}"></span></span>
+            <span>{{ sol.aprobaciones_count }} de 2 votos a favor</span>
+            {% for voto in sol.votos.all %}<span class="sg-texto-2">· {{ voto.votante.get_full_name }}: {{ voto.get_voto_display|lower }}</span>{% endfor %}
+          </span>
+          {% endif %}
+          {% if not sol.ya_voto %}
+          <div class="sg-cola__acciones">
+            <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}">{% csrf_token %}
+              <input type="hidden" name="decision" value="APROBADA">
+              <button type="submit" class="sg-btn sg-btn--aprobar">{% icono "check" %}<span>{% if es_sensible %}Votar a favor{% else %}Aprobar{% endif %}</span></button>
+            </form>
+            <details class="sg-desplegable">
+              <summary class="sg-btn sg-btn--rechazar">{% icono "x" %}<span>{% if es_sensible %}Votar en contra{% else %}Rechazar{% endif %}</span></summary>
+              <form method="post" action="{% url 'permisos:responder_solicitud' sol.id %}" class="sg-pila">{% csrf_token %}
+                <input type="hidden" name="decision" value="RECHAZADA">
+                <label class="sg-campo"><span class="sg-etiqueta">Motivo</span><textarea name="motivo_rechazo" rows="2" required placeholder="Se le enviará a quien pidió acceso"></textarea></label>
+                <button type="submit" class="sg-btn sg-btn--peligro">Confirmar rechazo</button>
+              </form>
+            </details>
+          </div>
+          {% else %}
+          <span class="sg-estado sg-estado--neutro">{% icono "check" "sg-icono--sm" %}<span>Ya votaste</span></span>
+          {% endif %}
         </div>
-    </div>
-
-    <!-- SECCIÓN 3: Historial rechazadas -->
-    {% if solicitudes_rechazadas %}
-    <div class="card">
-        <div class="card-body">
-            <div class="section-title mb-xl flex-row-center-gap">
-                <div class="quick-action-icon qa-icon-rose">
-                    <i data-lucide="archive-x"></i>
-                </div>
-                Historial de Solicitudes Rechazadas
-            </div>
-
-            <div class="table-container table-container-flat">
-                <div class="table-scroll">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Usuario</th>
-                                <th>Fecha</th>
-                                <th>Motivo de Rechazo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for sol in solicitudes_rechazadas %}
-                            <tr>
-                                <td class="font-bold text-sm text-brand">{{ sol.solicitante.get_full_name }}</td>
-                                <td class="text-xs text-muted font-mono">{{ sol.fecha_respuesta|date:"d/m/Y"|default:sol.fecha_solicitud|date:"d/m/Y" }}</td>
-                                <td class="text-sm text-muted" class="italic">"{{ sol.motivo_rechazo|default:"Sin motivo registrado." }}"</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+      {% include "componentes/estado_vacio.html" with icono="inbox" titulo="No hay solicitudes pendientes" %}
     {% endif %}
+  </section>
 
-{% endblock %}
+  <div class="sg-rejilla sg-rejilla--mitades">
+    <section class="sg-hoja" aria-labelledby="con-acceso-titulo">
+      <header class="sg-hoja__cabeza"><h2 id="con-acceso-titulo">{% icono "user-check" %}Con acceso</h2></header>
+      {% if usuarios_con_acceso %}
+      <ul class="sg-lista">
+        {% for permiso in usuarios_con_acceso %}
+        <li>
+          <span class="sg-avatar" aria-hidden="true">{{ permiso.usuario|iniciales }}</span>
+          <div class="sg-lista__cuerpo"><strong>{{ permiso.usuario.get_full_name|default:permiso.usuario.email }}</strong>
+            <span class="sg-lista__meta">{{ permiso.usuario.email }}{% if permiso.otorgado_en %} · desde {{ permiso.otorgado_en|date:"j M Y" }}{% endif %}</span></div>
+          {% if puede_revocar %}
+          <form method="post" action="{% url 'permisos:revocar_acceso' documento.id permiso.usuario.id %}">{% csrf_token %}
+            <button type="submit" class="sg-btn sg-btn--peligro" data-confirmar="{{ permiso.usuario.get_full_name }} dejará de ver y descargar esta evidencia." data-confirmar-titulo="Quitar acceso">{% icono "user-x" %}<span>Quitar</span></button>
+          </form>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+        {% include "componentes/estado_vacio.html" with icono="users" titulo="Nadie más tiene acceso" texto="Solo el autor y las directivas pueden verla." %}
+      {% endif %}
+    </section>
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const rejectButtons = document.querySelectorAll('.btn-reject-toggle');
-        rejectButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const solId = this.getAttribute('data-sol-id');
-                const form = document.getElementById('reject-form-' + solId);
-                if (form) {
-                    const isHidden = form.classList.contains('hidden');
-                    if (isHidden) {
-                        form.classList.remove('hidden');
-                        const textarea = form.querySelector('textarea');
-                        if (textarea) textarea.focus();
-                    } else {
-                        form.classList.add('hidden');
-                    }
-                }
-            });
-        });
-    });
-</script>
+    <section class="sg-hoja" aria-labelledby="rechazadas-titulo">
+      <header class="sg-hoja__cabeza"><h2 id="rechazadas-titulo">{% icono "user-x" %}Solicitudes rechazadas</h2></header>
+      {% if solicitudes_rechazadas %}
+      <ul class="sg-lista">
+        {% for sol in solicitudes_rechazadas %}
+        <li>
+          <span class="sg-avatar" aria-hidden="true">{{ sol.solicitante|iniciales }}</span>
+          <div class="sg-lista__cuerpo"><strong>{{ sol.solicitante.get_full_name|default:sol.solicitante.email }}</strong>
+            <span class="sg-lista__meta">{{ sol.fecha_respuesta|date:"j M Y" }} · {{ sol.motivo_rechazo|default:"sin motivo" }}</span></div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+        {% include "componentes/estado_vacio.html" with icono="circle-check" titulo="Sin rechazos" %}
+      {% endif %}
+    </section>
+  </div>
+</div>
 {% endblock %}

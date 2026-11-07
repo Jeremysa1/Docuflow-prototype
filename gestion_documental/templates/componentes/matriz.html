@@ -1,0 +1,49 @@
+{% load sigea %}
+{# Matriz factor × programa (contexto: matriz = MetricasService.matriz_factor_programa()) #}
+<div class="sg-matriz-marco">
+  <table class="sg-matriz sg-matriz--movil-lista">
+    <caption class="sg-oculto">Evidencias aprobadas frente a la meta por factor CNA y programa</caption>
+    <thead>
+      <tr>
+        <th scope="col">Factor</th>
+        {% for p in matriz.programas %}<th scope="col" class="sg-matriz__num">{{ p.nombre }}</th>{% endfor %}
+        <th scope="col" class="sg-matriz__num sg-matriz__facultad">Facultad</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in matriz.filas %}
+      <tr>
+        <th scope="row"><span><span class="sg-matriz__codigo">{{ fila.codigo }}</span>{{ fila.nombre }}</span></th>
+        {% for programa, celda in fila.celdas %}
+        <td class="sg-matriz__num">
+          <a class="sg-matriz__celda sg-grad-{{ celda.gradacion.nivel }}"
+             href="{% url 'documentos:busqueda' %}?factor={{ fila.codigo }}&amp;programa={{ programa.id }}"
+             title="{{ fila.codigo }} en {{ programa.nombre }}: {{ celda.aprobados }} de {{ celda.meta }} ({{ celda.gradacion.etiqueta }})">{{ celda.aprobados }}<small> / {{ celda.meta }}</small>{% if celda.pendientes %}<span class="sg-matriz__pend">+{{ celda.pendientes }} en revisión</span>{% endif %}</a>
+        </td>
+        {% endfor %}
+        <td class="sg-matriz__num sg-matriz__facultad">
+          <a class="sg-matriz__celda sg-grad-{{ fila.facultad.gradacion.nivel }}"
+             href="{% url 'documentos:busqueda' %}?factor={{ fila.codigo }}"
+             title="{{ fila.codigo }} en la facultad: {{ fila.facultad.aprobados }} de {{ fila.facultad.meta }} ({{ fila.facultad.gradacion.etiqueta }})">{{ fila.facultad.aprobados }}<small> / {{ fila.facultad.meta }}</small><span class="sg-matriz__grado">{{ fila.facultad.gradacion.etiqueta }}</span></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="row">Total</th>
+        {% for programa, celda in matriz.totales %}<td class="sg-matriz__num"><span class="sg-matriz__total">{{ celda.aprobados }}<small> / {{ celda.meta }}</small></span></td>{% endfor %}
+        <td class="sg-matriz__num sg-matriz__facultad"><span class="sg-matriz__total">{{ matriz.total_facultad.aprobados }}<small> / {{ matriz.total_facultad.meta }} · {{ matriz.total_facultad.gradacion.porcentaje }} %</small></span></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+<p class="sg-fila sg-peque sg-texto-2">{% icono "info" "sg-icono--sm" %}<span>Cada programa se mide contra la meta de la facultad: aún no hay metas por programa.</span></p>
+<ul class="sg-leyenda" aria-label="Gradación de cumplimiento CNA">
+  <li><span class="sg-leyenda__muestra sg-grad-0"></span>Sin evidencia</li>
+  <li><span class="sg-leyenda__muestra sg-grad-1"></span>No se cumple (1–59 %)</li>
+  <li><span class="sg-leyenda__muestra sg-grad-2"></span>Insatisfactorio (60–69 %)</li>
+  <li><span class="sg-leyenda__muestra sg-grad-3"></span>Aceptable (70–79 %)</li>
+  <li><span class="sg-leyenda__muestra sg-grad-4"></span>Alto grado (80–89 %)</li>
+  <li><span class="sg-leyenda__muestra sg-grad-5"></span>Pleno (90 % o más)</li>
+</ul>

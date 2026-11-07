@@ -1,497 +1,67 @@
 {% extends 'base.html' %}
-{% block title %}Aprobar documentos - SIGEA{% endblock %}
-{% block page_title %}Aprobar documentos{% endblock %}
+{% load sigea %}
+{% block title %}Por revisar · SIGEA{% endblock %}
 
 {% block content %}
-
-
-<!-- Banner de Alerta -->
-{% if hay_urgentes %}
-<div class="alert-banner"
-    class="alert-banner-danger">
-    <div class="alert-banner-content">
-        <div class="alert-banner-icon alert-banner-icon-danger">
-            <i data-lucide="alert-triangle"></i>
-        </div>
-        <div>
-            <strong class="text-sm font-bold text-rose-800">Atención: {{ docs_urgentes_count }}
-                documento{{ docs_urgentes_count|pluralize:"s" }} lleva{{ docs_urgentes_count|pluralize:"n" }} más de 3
-                días sin revisión</strong>
-        </div>
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "clipboard-check" %}</span>
+      <h1>Por revisar</h1>
+      <p>{{ por_revisar|plural:"evidencia espera,evidencias esperan" }} tu revisión. Hoy: {{ aprobados_hoy|plural:"aprobada,aprobadas" }} y {{ rechazados_hoy|plural:"rechazada,rechazadas" }}.</p>
     </div>
-    <a href="?urgente=1" class="btn btn-sm btn-rose-600">
-        Priorizar urgentes
-    </a>
-</div>
-{% endif %}
+  </header>
 
-<!-- Tarjetas de Estadísticas -->
-<div class="stats-grid">
-    <div class="stat-card stat-card--amber">
-        <div class="stat-card-icon"><i data-lucide="clock"></i></div>
-        <div class="stat-card-label">Pendientes</div>
-        <div class="stat-card-value">{{ por_revisar }}</div>
-    </div>
+  {% if hay_urgentes and not es_urgente %}
+  <div class="sg-alerta-franja" role="status">{% icono "hourglass" %}<span>{{ docs_urgentes_count|plural:"evidencia lleva,evidencias llevan" }} más de 3 días sin revisar.</span><a href="?estado=PENDIENTE&amp;urgente=1">Ver primero esas</a></div>
+  {% endif %}
 
-    <div class="stat-card stat-card--emerald">
-        <div class="stat-card-icon"><i data-lucide="check-circle"></i></div>
-        <div class="stat-card-label">Aprobados hoy</div>
-        <div class="stat-card-value">{{ aprobados_hoy }}</div>
-    </div>
+  <nav class="sg-pestanas" aria-label="Filtrar">
+    <a href="?estado=PENDIENTE"{% if estado_actual == 'PENDIENTE' and not es_urgente %} aria-current="page"{% endif %}>{% icono "clock" "sg-icono--sm" %}En revisión <span class="sg-contador">{{ por_revisar }}</span></a>
+    <a href="?estado=PENDIENTE&amp;urgente=1"{% if es_urgente %} aria-current="page"{% endif %}>{% icono "hourglass" "sg-icono--sm" %}Más de 3 días <span class="sg-contador">{{ docs_urgentes_count }}</span></a>
+    <a href="?estado=APROBADO"{% if estado_actual == 'APROBADO' %} aria-current="page"{% endif %}>{% icono "circle-check" "sg-icono--sm" %}Aprobadas</a>
+    <a href="?estado=RECHAZADO"{% if estado_actual == 'RECHAZADO' %} aria-current="page"{% endif %}>{% icono "circle-x" "sg-icono--sm" %}Rechazadas</a>
+  </nav>
 
-    <div class="stat-card stat-card--rose">
-        <div class="stat-card-icon"><i data-lucide="x-circle"></i></div>
-        <div class="stat-card-label">Rechazados hoy</div>
-        <div class="stat-card-value">{{ rechazados_hoy }}</div>
-    </div>
-
-    {% if hay_urgentes %}
-    <div class="stat-card stat-card-danger-urgent">
-        <div class="stat-card-icon stat-icon-danger-urgent"><i
-                data-lucide="flame"></i></div>
-        <div class="stat-card-label text-rose-700">Urgentes</div>
-        <div class="stat-card-value text-rose-800">{{ docs_urgentes_count }}</div>
-    </div>
-    {% endif %}
-</div>
-
-<!-- Contenedor Principal (Tabla) -->
-<div class="table-container pos-relative">
-
-    <!-- Toolbar (Tabs) -->
-    <div
-        class="toolbar-tabs">
-        <div class="flex-row"
-            class="filter-chip-group">
-            <a href="?estado=" class="filter-chip filter-chip-sm {% if not estado_actual and not es_urgente %}filter-chip-active{% endif %}">Todos</a>
-            <a href="?estado=PENDIENTE" class="filter-chip filter-chip-sm {% if estado_actual == 'PENDIENTE' and not es_urgente %}filter-chip-active{% endif %}">Pendientes</a>
-            <a href="?estado=APROBADO" class="filter-chip filter-chip-sm {% if estado_actual == 'APROBADO' %}filter-chip-active{% endif %}">Aprobados</a>
-            <a href="?urgente=1" class="filter-chip filter-chip-sm {% if es_urgente %}filter-chip-active{% endif %}">Urgentes</a>
-        </div>
-
-        <div id="selection-counter" class="hidden flex-row"
-            class="selection-counter-panel">
-            <span class="text-xxs font-bold uppercase tracking-wide"
-                class="selection-counter-divider"><span
-                    id="selected-count">0</span> Seleccionados</span>
-            <button type="button" data-action="clear-selection" class="text-xxs font-bold"
-                class="btn-clear-selection">Limpiar</button>
-        </div>
-    </div>
-
-    <!-- Tabla de Documentos -->
-    <form id="bulk-action-form" method="post" action="{% url 'documentos:aprobar_lote' %}">
-        {% csrf_token %}
-        <div class="table-scroll">
-            <div class="table-responsive"> <table class="data-table" id="docs-table">
-                <thead>
-                    <tr>
-                        <th class="w-50px text-center">
-                            <input type="checkbox" id="select-all"
-                                class="checkbox-brand">
-                        </th>
-                        <th>Documento</th>
-                        <th>Cargado por</th>
-                        <th>Categoría / Factor</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th class="text-right">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for doc in page_obj %}
-                    <tr class="doc-row" data-doc-id="{{ doc.id }}" data-status="{{ doc.estado }}">
-                        <td class="text-center">
-                            <input type="checkbox" name="documento_ids" value="{{ doc.id }}" id="check-{{ doc.id }}"
-                                class="doc-checkbox checkbox-brand" {% if doc.estado != 'PENDIENTE' %}disabled{% endif %}>
-                        </td>
-                        <td>
-                            <div class="flex-row">
-                                <div class="doc-icon">
-                                    {% if ".pdf" in doc.archivo.name|lower %}
-                                    <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
-                                    {% elif ".doc" in doc.archivo.name|lower %}
-                                    <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word">
-                                    {% elif ".xls" in doc.archivo.name|lower %}
-                                    <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel">
-                                    {% elif ".ppt" in doc.archivo.name|lower %}
-                                    <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png"
-                                        alt="PPT">
-                                    {% else %}
-                                    <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc">
-                                    {% endif %}
-                                </div>
-                                <a href="{% url 'documentos:detalle' doc.id %}" class="font-semibold text-brand">{{ doc.titulo|truncatechars:35 }}</a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="flex-row">
-                                <img src="https://ui-avatars.com/api/?name={{ doc.autor.get_full_name|urlencode }}&background=0D1B2A&color=fff&size=32"
-                                    class="avatar-sm"
-                                    alt="Avatar">
-                                <div>
-                                    <div class="font-bold text-xs text-brand">{{ doc.autor.get_full_name }}</div>
-                                    <div class="text-xxs font-bold text-light uppercase tracking-wide mt-sm">{{ doc.autor.rol|default:"USUARIO" }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="font-semibold text-muted">{{ doc.categoria.nombre|default:"Sin categoría" }}
-                            </div>
-                            <div class="text-xxs font-bold uppercase tracking-wide mt-sm">
-                                {% if doc.factor_cna %}
-                                <span class="text-brand-600">{{ doc.get_factor_cna_display|truncatechars:25 }}</span>
-                                {% else %}
-                                <span class="text-rose-500">No asignado</span>
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td class="text-muted text-xs font-mono">{{ doc.fecha_modificacion|date:"d/m/Y" }}</td>
-                        <td>
-                            {% if doc.estado == 'APROBADO' %}
-                            <span class="badge badge-success">Aprobado</span>
-                            {% elif doc.estado == 'RECHAZADO' %}
-                            <span class="badge badge-danger">Rechazado</span>
-                            {% else %}
-                            <span class="badge badge-warning">Pendiente</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="flex-row flex-end-gap">
-                                {% if doc.estado == 'PENDIENTE' %}
-                                <button type="button" data-action="approve" data-doc-id="{{ doc.id }}"
-                                    class="btn-icon btn-approve" title="Aprobar">
-                                    <i data-lucide="check"></i>
-                                </button>
-                                <button type="button" data-action="toggle-reject" data-doc-id="{{ doc.id }}"
-                                    class="btn-icon btn-reject" title="Rechazar">
-                                    <i data-lucide="x"></i>
-                                </button>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Panel de Rechazo (Oculto por defecto) -->
-                    {% if doc.estado == 'PENDIENTE' %}
-                    <tr id="reject-{{ doc.id }}" class="hidden reject-panel-row">
-                        <td colspan="7" class="pad-xl">
-                            <div class="flex-stack gap-md">
-                                <label class="form-label text-rose-800">Motivo del rechazo para: <span
-                                        class="text-rose-600">{{ doc.titulo }}</span></label>
-                                <textarea id="comment-{{ doc.id }}" class="form-textarea"
-                                    class="textarea-reject-sm"
-                                    placeholder="Explique por qué se rechaza el documento..."></textarea>
-                                <div class="flex-row flex-end-gap-md">
-                                    <button type="button" data-action="cancel-reject" data-doc-id="{{ doc.id }}"
-                                        class="btn btn-ghost btn-sm">Cancelar</button>
-                                    <button type="button" data-action="confirm-reject" data-doc-id="{{ doc.id }}"
-                                        class="btn btn-sm btn-rose-600">Confirmar
-                                        Rechazo</button>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endif %}
-
-                    {% empty %}
-                    <tr>
-                        <td colspan="7">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">
-                                    <i data-lucide="check-circle-2"></i>
-                                </div>
-                                <p>No hay documentos para mostrar en esta vista.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table> </div>
-        </div>
-
-        <!-- Floating Action Bar (Bulk Actions) -->
-        <div id="bulk-action-bar"
-            class="bulk-action-bar">
-            <div>
-                <span class="text-xxs font-bold uppercase tracking-wide"
-                    class="bulk-action-label">Acción en Lote</span>
-                <span class="text-sm font-bold"><span id="bulk-count">0</span> Documentos Seleccionados</span>
-            </div>
-
-            <div class="bulk-action-divider"></div>
-
-            <div class="flex-row gap-md">
-                <button type="button" id="btn-bulk-approve" class="btn"
-                    class="btn-emerald-shadow">
-                    <i data-lucide="check-circle"></i>
-                    Aprobar Seleccionados
-                </button>
-
-                <button type="button" data-action="clear-selection" class="text-xs font-bold"
-                    class="btn-clear-selection">
-                    Cancelar
-                </button>
-            </div>
-        </div>
+  <section class="sg-hoja">
+    {% if page_obj %}
+    <form method="post" action="{% url 'documentos:aprobar_lote' %}" id="form-lote">
+      {% csrf_token %}
+      {% if estado_actual == 'PENDIENTE' %}
+      <div class="sg-hoja__cabeza">
+        <label class="sg-check"><input type="checkbox" data-marcar-todos="documento_ids"><span>Seleccionar todas</span></label>
+        <button type="submit" class="sg-btn sg-btn--aprobar" data-confirmar="Las evidencias seleccionadas quedarán aprobadas y contarán en su factor." data-confirmar-titulo="Aprobar seleccionadas">{% icono "check-check" %}<span>Aprobar seleccionadas</span></button>
+      </div>
+      {% endif %}
+      <div class="sg-tabla-marco">
+        <table class="sg-tabla">
+          <thead><tr>{% if estado_actual == 'PENDIENTE' %}<th scope="col"><span class="sg-oculto">Seleccionar</span></th>{% endif %}<th scope="col">Evidencia</th><th scope="col">Autor</th><th scope="col">Factor</th><th scope="col">{% if estado_actual == 'PENDIENTE' %}Esperando{% else %}Estado{% endif %}</th><th scope="col"><span class="sg-oculto">Acciones</span></th></tr></thead>
+          <tbody>
+          {% for doc in page_obj %}
+            <tr>
+              {% if estado_actual == 'PENDIENTE' %}<td data-label="Seleccionar">{% if doc.autor_id != request.user.id %}<input type="checkbox" name="documento_ids" value="{{ doc.id }}" aria-label="Seleccionar {{ doc.titulo }}">{% else %}<span class="sg-peque sg-texto-2">Tuya</span>{% endif %}</td>{% endif %}
+              <td class="sg-tabla__titulo"><div class="sg-doc">{% tipo_archivo doc %}<div><a class="sg-tabla__principal" href="{% url 'documentos:detalle' doc.id %}">{{ doc.titulo }}</a>
+                <span class="sg-tabla__secundario">{{ doc.categoria.nombre|default:"Sin categoría" }}{% if doc.programa %} · {{ doc.programa.nombre }}{% endif %}</span></div></div></td>
+              <td data-label="Autor"><span class="sg-usuario-celda"><span class="sg-avatar" aria-hidden="true">{{ doc.autor|iniciales }}</span><span class="sg-recorte">{{ doc.autor.get_full_name|default:doc.autor.email }}</span></span></td>
+              <td data-label="Factor">{% chip_factor_codigo doc.factor_cna %}</td>
+              <td data-label="{% if estado_actual == 'PENDIENTE' %}Esperando{% else %}Estado{% endif %}">{% if doc.estado == 'PENDIENTE' %}{% estado_documento doc %} <span class="sg-peque sg-texto-2 sg-sin-corte">{{ doc.fecha_modificacion|dias }}</span>{% else %}{% estado_documento doc %}{% endif %}</td>
+              <td class="sg-tabla__acciones"><a class="sg-btn{% if doc.estado == 'PENDIENTE' %} sg-btn--marca{% endif %}" href="{% url 'documentos:detalle' doc.id %}">{% if doc.estado == 'PENDIENTE' %}Revisar{% else %}Ver{% endif %}</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </form>
-
-    <!-- Paginación -->
-    {% if page_obj.has_other_pages %}
-    <div class="pagination"
-        class="pagination-flat">
-        <div class="pagination-info">
-            Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} documentos
-        </div>
-        <div class="pagination-buttons">
-            {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}"
-                class="pagination-btn"><i data-lucide="chevron-left"></i></a>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-            <span class="pagination-btn active">{{ num }}</span>
-            {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %} <a
-                href="?page={{ num }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}"
-                class="pagination-btn">{{ num }}</a>
-                {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if es_urgente %}&urgente=1{% endif %}"
-                    class="pagination-btn"><i data-lucide="chevron-right"></i></a>
-                {% endif %}
-        </div>
-    </div>
+    {% include "partials/paginacion.html" %}
+    {% else %}
+      {% if es_urgente %}
+        {% include "componentes/estado_vacio.html" with icono="check-check" titulo="Nada lleva más de 3 días" texto="Toda la cola está al día." %}
+      {% elif estado_actual == 'PENDIENTE' %}
+        {% include "componentes/estado_vacio.html" with icono="check-check" titulo="No hay evidencias por revisar" texto="Cuando un docente suba una evidencia, aparecerá aquí ordenada por antigüedad." %}
+      {% else %}
+        {% include "componentes/estado_vacio.html" with icono="inbox" titulo="No hay evidencias en este estado" %}
+      {% endif %}
     {% endif %}
-
+  </section>
 </div>
-
-<!-- Modal de Confirmación -->
-<div id="custom-confirm-modal" class="hidden modal-fixed">
-    <div id="confirm-backdrop"
-        class="modal-backdrop-blur">
-    </div>
-
-    <div
-        class="modal-center-container">
-        <div id="confirm-panel" class="card"
-            class="modal-panel-anim">
-            <div class="card-body text-center">
-                <div
-                    class="modal-icon-container-emerald">
-                    <i data-lucide="check-circle-2" class="icon-emerald-lg"></i>
-                </div>
-                <h3 id="confirm-title"
-                    class="modal-title-md">
-                    Confirmar Acción</h3>
-                <p id="confirm-message" class="text-sm text-muted">¿Estás seguro de continuar?</p>
-            </div>
-            <div
-                class="modal-footer-actions">
-                <button type="button" id="confirm-btn-no" class="btn btn-ghost btn-sm">Cancelar</button>
-                <button type="button" id="confirm-btn-yes" class="btn btn-sm"
-                    class="btn-emerald">
-                    <i data-lucide="check"></i> Confirmar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 {% endblock %}
-
-{% block extra_js %}
-<script>
-    const selectAll = document.getElementById('select-all');
-    const checkboxes = document.querySelectorAll('.doc-checkbox:not(:disabled)');
-    const bulkBar = document.getElementById('bulk-action-bar');
-    const bulkCount = document.getElementById('bulk-count');
-    const selectionCounter = document.getElementById('selection-counter');
-    const selectedCount = document.getElementById('selected-count');
-    const docsTable = document.getElementById('docs-table');
-
-    // Lógica del Modal Personalizado
-    let pendingConfirmAction = null;
-
-    function showConfirmModal(title, message, onConfirm) {
-        document.getElementById('confirm-title').innerText = title;
-        document.getElementById('confirm-message').innerText = message;
-        pendingConfirmAction = onConfirm;
-
-        const modal = document.getElementById('custom-confirm-modal');
-        const backdrop = document.getElementById('confirm-backdrop');
-        const panel = document.getElementById('confirm-panel');
-
-        modal.classList.remove('hidden');
-
-        requestAnimationFrame(() => {
-            backdrop.classList.add('modal-visible');
-            panel.classList.add('modal-visible');
-            panel.classList.add('modal-visible-transform');
-        });
-    }
-
-    function hideConfirmModal() {
-        const modal = document.getElementById('custom-confirm-modal');
-        const backdrop = document.getElementById('confirm-backdrop');
-        const panel = document.getElementById('confirm-panel');
-
-        backdrop.classList.remove('modal-visible');
-        panel.classList.remove('modal-visible');
-        panel.classList.remove('modal-visible-transform');
-
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            pendingConfirmAction = null;
-        }, 300);
-    }
-
-    document.getElementById('confirm-btn-no').addEventListener('click', hideConfirmModal);
-    document.getElementById('confirm-btn-yes').addEventListener('click', () => {
-        if (pendingConfirmAction) pendingConfirmAction();
-        hideConfirmModal();
-    });
-
-    function updateUI() {
-        if (!checkboxes.length) return;
-        const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
-
-        if (checked > 0) {
-            bulkBar.classList.add('bulk-bar-visible');
-            bulkCount.innerText = checked;
-            selectionCounter.classList.remove('hidden');
-            selectionCounter.classList.add('flex-display');
-            selectedCount.innerText = checked;
-        } else {
-            bulkBar.classList.remove('bulk-bar-visible');
-            selectionCounter.classList.add('hidden');
-            selectionCounter.classList.remove('flex-display');
-        }
-
-        if (selectAll) {
-            selectAll.checked = (checked === checkboxes.length && checkboxes.length > 0);
-        }
-    }
-
-    // Delegación de Eventos
-    if (docsTable) {
-        docsTable.addEventListener('click', (e) => {
-            const target = e.target.closest('[data-action]');
-            const row = e.target.closest('.doc-row');
-
-            if (row && !target && !e.target.closest('a') && !e.target.closest('button') && !e.target.closest('input')) {
-                const docId = row.getAttribute('data-doc-id');
-                const cb = document.getElementById('check-' + docId);
-                if (cb && !cb.disabled) {
-                    cb.checked = !cb.checked;
-                    updateUI();
-                }
-                return;
-            }
-
-            if (!target) return;
-            const action = target.getAttribute('data-action');
-            const docId = target.getAttribute('data-doc-id');
-
-            if (action === 'approve') {
-                submitApproval(docId);
-            } else if (action === 'toggle-reject' || action === 'cancel-reject') {
-                toggleReject('reject-' + docId);
-            } else if (action === 'confirm-reject') {
-                submitRejection(docId);
-            }
-        });
-    }
-
-    document.addEventListener('click', (e) => {
-        const target = e.target.closest('[data-action="clear-selection"]');
-        if (target) {
-            checkboxes.forEach(cb => cb.checked = false);
-            if (selectAll) selectAll.checked = false;
-            updateUI();
-        }
-    });
-
-    if (selectAll) {
-        selectAll.addEventListener('change', () => {
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
-            updateUI();
-        });
-    }
-
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', updateUI);
-    });
-
-    function toggleReject(id) {
-        const el = document.getElementById(id);
-        if (el) {
-            if (el.classList.contains('hidden')) {
-                el.classList.remove('hidden');
-                el.classList.add('fade-in-anim-fast'); setTimeout(()=> el.classList.remove('fade-in-anim-fast'), 300);
-            } else {
-                el.classList.add('hidden');
-            }
-        }
-    }
-
-    function submitApproval(docId) {
-        showConfirmModal(
-            'Aprobar Documento',
-            '¿Está seguro de que desea aprobar este documento individualmente?',
-            () => {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/documentos/${docId}/aprobar/`;
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = 'csrfmiddlewaretoken';
-                csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                form.appendChild(csrfInput);
-                document.body.appendChild(form);
-                form.submit();
-            }
-        );
-    }
-
-    function submitRejection(docId) {
-        const comment = document.getElementById('comment-' + docId).value;
-        if (!comment.trim()) {
-            alert('Por favor, indique el motivo del rechazo.');
-            return;
-        }
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/documentos/${docId}/rechazar/`;
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const commentInput = document.createElement('input');
-        commentInput.type = 'hidden';
-        commentInput.name = 'comentario';
-        commentInput.value = comment;
-        form.appendChild(csrfInput);
-        form.appendChild(commentInput);
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    const btnBulkApprove = document.getElementById('btn-bulk-approve');
-    if (btnBulkApprove) {
-        btnBulkApprove.addEventListener('click', () => {
-            const count = Array.from(checkboxes).filter(cb => cb.checked).length;
-            showConfirmModal(
-                'Aprobar Lote',
-                `¿Está seguro de aprobar ${count} documento${count !== 1 ? 's' : ''} seleccionado${count !== 1 ? 's' : ''}?`,
-                () => {
-                    document.getElementById('bulk-action-form').submit();
-                }
-            );
-        });
-    }
-</script>
-{% endblock %}
-

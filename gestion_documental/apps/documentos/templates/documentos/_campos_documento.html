@@ -1,0 +1,65 @@
+{% load sigea %}
+{# Campos compartidos de subir y editar evidencia. Contexto: form, con_archivo (bool) #}
+{% if form.non_field_errors %}<div class="sg-aviso sg-aviso--error" role="alert">{% icono "circle-alert" %}<span>{{ form.non_field_errors|join:" " }}</span></div>{% endif %}
+
+{% if con_archivo %}
+<div class="sg-campo{% if form.archivo.errors %} sg-campo--error{% endif %}">
+  <span class="sg-etiqueta" id="archivo-etiqueta">Archivo</span>
+  <label class="sg-archivo">
+    {% icono "upload" "sg-vacio__icono" %}
+    <strong data-archivo-nombre>Arrastra el archivo o elígelo de tu equipo</strong>
+    <span>PDF, Word, Excel o PowerPoint · máximo 10 MB</span>
+    <input type="file" name="archivo" id="id_archivo" accept=".pdf,.docx,.xlsx,.pptx" required aria-labelledby="archivo-etiqueta"{% if form.archivo.errors %} aria-invalid="true" aria-describedby="archivo-error"{% endif %}>
+  </label>
+  {% for e in form.archivo.errors %}<p class="sg-campo__error" id="archivo-error">{% icono "circle-alert" "sg-icono--sm" %}{{ e }}</p>{% endfor %}
+</div>
+{% endif %}
+
+<div class="sg-campo{% if form.titulo.errors %} sg-campo--error{% endif %}">
+  <label for="id_titulo">Título</label>
+  <input type="text" name="titulo" id="id_titulo" value="{{ form.titulo.value|default:'' }}" maxlength="255" required placeholder="Ej.: Plan de cualificación docente 2026">
+  {% for e in form.titulo.errors %}<p class="sg-campo__error">{% icono "circle-alert" "sg-icono--sm" %}{{ e }}</p>{% endfor %}
+</div>
+
+<div class="sg-campo">
+  <label for="id_descripcion">Descripción <span class="sg-texto-2">(opcional)</span></label>
+  <textarea name="descripcion" id="id_descripcion" rows="3" placeholder="Qué contiene y para qué sirve como evidencia">{{ form.descripcion.value|default:'' }}</textarea>
+</div>
+
+<div class="sg-form__fila sg-form__fila--2">
+  <div class="sg-campo{% if form.factor_cna.errors %} sg-campo--error{% endif %}">
+    <label for="id_factor_cna">Factor CNA</label>
+    {{ form.factor_cna }}
+    <p class="sg-campo__ayuda">El factor de acreditación al que aporta esta evidencia.</p>
+    {% for e in form.factor_cna.errors %}<p class="sg-campo__error">{% icono "circle-alert" "sg-icono--sm" %}{{ e }}</p>{% endfor %}
+  </div>
+  <div class="sg-campo{% if form.programa.errors %} sg-campo--error{% endif %}">
+    <label for="id_programa">Programa</label>
+    {{ form.programa }}
+    {% for e in form.programa.errors %}<p class="sg-campo__error">{% icono "circle-alert" "sg-icono--sm" %}{{ e }}</p>{% endfor %}
+  </div>
+  <div class="sg-campo{% if form.categoria.errors %} sg-campo--error{% endif %}">
+    <label for="id_categoria">Categoría</label>
+    {{ form.categoria }}
+    {% for e in form.categoria.errors %}<p class="sg-campo__error">{% icono "circle-alert" "sg-icono--sm" %}{{ e }}</p>{% endfor %}
+  </div>
+  <div class="sg-campo">
+    <label for="id_fecha_vigencia">Vigente hasta <span class="sg-texto-2">(opcional)</span></label>
+    <input type="date" name="fecha_vigencia" id="id_fecha_vigencia" value="{{ form.fecha_vigencia.value|date:'Y-m-d'|default:form.fecha_vigencia.value|default:'' }}">
+  </div>
+</div>
+
+<fieldset class="sg-campo">
+  <legend class="sg-etiqueta">¿Quién puede encontrarla?</legend>
+  <div class="sg-opciones sg-opciones--fila">
+    <label class="sg-opcion"><input type="radio" name="visibilidad" value="PROGRAMA"{% if form.visibilidad.value == 'PROGRAMA' or not form.visibilidad.value %} checked{% endif %}>
+      <span><strong>Mi programa</strong><small>La ven los docentes de tu programa, que pueden pedirte acceso.</small></span></label>
+    <label class="sg-opcion"><input type="radio" name="visibilidad" value="INSTITUCIONAL"{% if form.visibilidad.value == 'INSTITUCIONAL' %} checked{% endif %}>
+      <span><strong>Toda la facultad</strong><small>Aparece en las búsquedas de todos los programas.</small></span></label>
+  </div>
+</fieldset>
+
+<label class="sg-opcion">
+  <input type="checkbox" name="es_sensible"{% if form.es_sensible.value %} checked{% endif %}>
+  <span><strong>{% icono "lock" "sg-icono--sm" %} Documento sensible</strong><small>Para verlo hará falta el voto de dos personas: tú, la Coordinadora o la Decana.</small></span>
+</label>

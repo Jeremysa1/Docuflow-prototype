@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#142a59;--g4:#24479a;--g3:#5f82cf;--g2:#a9bde6;--g1:#e3eaf7;--g0:#f4f6fb;--gris:#5b6478;--linea:#dfe4ee}
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;font:14px/1.45 "Public Sans",sans-serif;color:var(--azul);background:#fff;font-variant-numeric:tabular-nums;display:grid;grid-template-columns:232px 1fr}
+aside{background:var(--azul);color:#fff;padding:24px 18px}
+aside b{font-size:20px;font-weight:800;display:block;margin-bottom:28px}
+aside a{display:block;color:#c9d3ea;padding:9px 10px;border-radius:6px;font-weight:600;margin-bottom:2px}
+aside a.on{background:#22397a;color:#fff}
+main{padding:28px 36px}
+h1{font-size:24px;font-weight:800}
+.sub{color:var(--gris)}
+.leyenda{display:flex;gap:18px;margin:18px 0 10px;font-size:12px;color:var(--gris);align-items:center}
+.leyenda i{display:inline-block;width:14px;height:14px;border-radius:2px;margin-right:6px;vertical-align:-2px}
+table{border-collapse:collapse;width:100%}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);text-align:left;padding:8px;border-bottom:1px solid var(--linea)}
+td{padding:0;border-bottom:1px solid var(--linea);height:40px}
+td.f{font-weight:800;width:56px;padding-left:8px}
+td.n{font-weight:600;width:330px}
+td.c{text-align:center}
+td.c span{display:block;margin:4px;height:30px;border-radius:3px;line-height:30px;font-size:12px;font-weight:700}
+.l0{background:var(--g0);color:var(--gris)}.l1{background:var(--g1)}.l2{background:var(--g2)}.l3{background:var(--g3);color:#fff}.l4{background:var(--g4);color:#fff}
+.lado{display:grid;grid-template-columns:1fr 340px;gap:28px;margin-top:6px}
+.tarjeta{border:1px solid var(--linea);border-radius:8px;padding:16px}
+.tarjeta h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);margin-bottom:10px}
+.grande{font-size:44px;font-weight:800;line-height:1}
+</style></head><body>
+<aside><b>SIGEA</b><a class="on">Matriz CNA</a><a>Evidencias</a><a>Revisión</a><a>Accesos</a><a>Auditoría</a></aside>
+<main>
+<h1>Matriz de autoevaluación</h1><p class="sub">Gradación de cumplimiento por factor y programa, según evidencias aprobadas.</p>
+<div class="leyenda"><span><i class="l0"></i>Sin evidencia</span><span><i class="l1"></i>Insatisfactorio</span><span><i class="l2"></i>Aceptable</span><span><i class="l3"></i>Alto grado</span><span><i class="l4"></i>Pleno</span></div>
+<div class="lado"><table>
+<tr><th></th><th>Factor</th><th>Ing. Software</th><th>Ing. Mecánica</th><th>Facultad</th></tr>
+<tr><td class="f">F1</td><td class="n">Proyecto Educativo del Programa</td><td class="c"><span class="l0">0/15</span></td><td class="c"><span class="l0">0/15</span></td><td class="c"><span class="l0">0 %</span></td></tr>
+<tr><td class="f">F2</td><td class="n">Estudiantes</td><td class="c"><span class="l0">0/25</span></td><td class="c"><span class="l0">0/25</span></td><td class="c"><span class="l0">0 %</span></td></tr>
+<tr><td class="f">F3</td><td class="n">Profesores</td><td class="c"><span class="l2">4/20</span></td><td class="c"><span class="l0">0/20</span></td><td class="c"><span class="l1">20 %</span></td></tr>
+<tr><td class="f">F4</td><td class="n">Egresados</td><td class="c"><span class="l0">0/10</span></td><td class="c"><span class="l0">0/10</span></td><td class="c"><span class="l0">0 %</span></td></tr>
+<tr><td class="f">F5</td><td class="n">Aspectos Académicos</td><td class="c"><span class="l0">0/30</span></td><td class="c"><span class="l0">0/30</span></td><td class="c"><span class="l0">0 %</span></td></tr>
+<tr><td class="f">F6</td><td class="n">Permanencia y Graduación</td><td class="c"><span class="l0">0/15</span></td><td class="c"><span class="l0">0/15</span></td><td class="c"><span class="l0">0 %</span></td></tr>
+<tr><td class="f">F7</td><td class="n">Interacción con el Entorno</td><td class="c"><span class="l1">2/10</span></td><td class="c"><span class="l0">0/10</span></td><td class="c"><span class="l1">20 %</span></td></tr>
+<tr><td class="f">F8</td><td class="n">Investigación e Innovación</td><td class="c"><span class="l0">0/20</span></td><td class="c"><span class="l0">0/20</span></td><td class="c"><span class="l0">0 %</span></td></tr>
+<tr><td class="f">F9</td><td class="n">Bienestar</td><td class="c"><span class="l0">0/15</span></td><td class="c"><span class="l0">0/15</span></td><td class="c"><span class="l0">0 %</span></td></tr>
+<tr><td class="f">F10</td><td class="n">Medios Educativos</td><td class="c"><span class="l0">0/15</span></td><td class="c"><span class="l0">0/15</span></td><td class="c"><span class="l0">0 %</span></td></tr>
+</table>
+<div><div class="tarjeta"><h2>Avance global</h2><span class="grande">2 %</span><p class="sub">6 de 205 evidencias aprobadas</p></div>
+<div class="tarjeta" style="margin-top:16px"><h2>Revisión</h2><span class="grande">1</span><p class="sub">pendiente · el más antiguo lleva 4 días</p></div></div>
+</div>
+</main></body></html>

@@ -18,6 +18,8 @@ env/
 
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # IDE
 .vscode/
@@ -28,7 +30,11 @@ env/
 # Django
 *.sqlite3
 db.sqlite3
+staticfiles/
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Resultados de los scripts de QA manual
+scripts/qa/salidas/

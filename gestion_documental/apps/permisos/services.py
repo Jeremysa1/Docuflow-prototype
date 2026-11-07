@@ -5,9 +5,12 @@ Contiene toda la lógica de negocio relacionada con la asignación
 y verificación de permisos, solicitudes de acceso y votos sensibles.
 """
 from django.utils import timezone
+from django.db import transaction
 from .models import PermisoDocumento, SolicitudAcceso, VotoAccesoSensible
 from ..notificaciones.services import NotificacionService
 from ..usuarios.models import Usuario
+from core.services.audit_service import AuditService
+from core.utils.helpers import ReglaNegocioError
 
 
 class PermisoService:
@@ -72,7 +75,28 @@ class PermisoService:
     # ─── VERIFICACIÓN DE ACCESO ──────────────────────────────────
 
     @staticmethod
-    def usuario_tiene_acceso(usuario, documento):
+    def precargar_accesos(usuario, doc_ids):
+        """Batch para listados: 2 queries fijas en vez de 2 por documento.
+
+        Retorna (ids_con_permiso_ver, ids_con_solicitud_pendiente).
+        """
+        doc_ids = list(doc_ids)
+        if not doc_ids:
+            return set(), set()
+        permisos_ids = set(PermisoDocumento.objects.filter(
+            usuario=usuario,
+            documento_id__in=doc_ids,
+            puede_ver=True,
+        ).values_list('documento_id', flat=True))
+        solicitudes_ids = set(SolicitudAcceso.objects.filter(
+            solicitante=usuario,
+            documento_id__in=doc_ids,
+            estado='PENDIENTE',
+        ).values_list('documento_id', flat=True))
+        return permisos_ids, solicitudes_ids
+
+    @staticmethod
+    def usuario_tiene_acceso(usuario, documento, _permisos_ids=None):
         """
         Determina si un usuario tiene acceso REAL (detalle y descarga) a un documento.
         
@@ -88,6 +112,8 @@ class PermisoService:
             return True
 
         # Acceso para Docentes solo si la solicitud fue aprobada
+        if _permisos_ids is not None:
+            return documento.id in _permisos_ids
         return PermisoDocumento.objects.filter(
             usuario=usuario,
             documento=documento,
@@ -97,7 +123,7 @@ class PermisoService:
     # ─── SOLICITUDES DE ACCESO ───────────────────────────────────
 
     @staticmethod
-    def solicitar_acceso(solicitante, documento_id, motivo):
+    def solicitar_acceso(solicitante, documento_id, motivo, request=None):
         """
         Crea una solicitud de acceso a un documento.
         Notifica según si el documento es sensible o no.
@@ -108,13 +134,13 @@ class PermisoService:
 
         # Verificar que no sea el autor
         if documento.autor == solicitante:
-            raise Exception("Eres el autor de este documento.")
+            raise ReglaNegocioError("Eres el autor de este documento.")
 
         # Verificar que no tenga ya un permiso activo
         if PermisoDocumento.objects.filter(
             usuario=solicitante, documento=documento, puede_ver=True
         ).exists():
-            raise Exception("Ya tienes acceso a este documento.")
+            raise ReglaNegocioError("Ya tienes acceso a este documento.")
 
         # Verificar solicitud PENDIENTE existente
         solicitud_existente = SolicitudAcceso.objects.filter(
@@ -123,7 +149,7 @@ class PermisoService:
 
         if solicitud_existente:
             if solicitud_existente.estado == 'PENDIENTE':
-                raise Exception("Ya tienes una solicitud pendiente para este documento.")
+                raise ReglaNegocioError("Ya tienes una solicitud pendiente para este documento.")
             # Si fue RECHAZADA, permitir nueva solicitud (eliminar anterior)
             solicitud_existente.delete()
 
@@ -134,35 +160,25 @@ class PermisoService:
             motivo=motivo,
             estado='PENDIENTE'
         )
+        AuditService.log(
+            usuario=solicitante, accion='SOLICITO_ACCESO', documento=documento,
+            request=request, detalle=f"Motivo: {motivo}",
+        )
 
         # NOTIFICACIONES según tipo de documento
         if documento.es_sensible:
-            # Notificar al autor + coordinadores del programa + decanas
-            destinatarios = set()
-            destinatarios.add(documento.autor)
-
-            coordinadores = Usuario.objects.filter(
-                rol='COORDINADOR',
-                programa_academico=documento.programa
+            # A3: autor + Coordinadora de facultad + Decana (quienes votan), sin duplicados.
+            NotificacionService.notificar_revisores(
+                documento,
+                (
+                    f"{solicitante.get_full_name()} solicitó acceso al documento "
+                    f"sensible '{documento.titulo}'. Se requiere tu aprobación "
+                    f"en Gestionar Accesos."
+                ),
+                actor=solicitante,
+                incluir_decana=True,
+                extra=[documento.autor],
             )
-            for coord in coordinadores:
-                destinatarios.add(coord)
-
-            decanas = Usuario.objects.filter(rol='DECANA')
-            for decana in decanas:
-                destinatarios.add(decana)
-
-            for dest in destinatarios:
-                NotificacionService.crear_notificacion(
-                    usuario=dest,
-                    mensaje=(
-                        f"{solicitante.get_full_name()} solicitó acceso al documento "
-                        f"sensible '{documento.titulo}'. Se requiere tu aprobación "
-                        f"en Gestionar Accesos."
-                    ),
-                    tipo='INFO',
-                    documento=documento
-                )
         else:
             # Solo notificar al autor
             NotificacionService.crear_notificacion(
@@ -180,7 +196,7 @@ class PermisoService:
     # ─── RESPUESTA A SOLICITUDES (DOCUMENTOS NORMALES) ───────────
 
     @staticmethod
-    def responder_solicitud_normal(solicitud_id, respondedor, decision, motivo_rechazo=None):
+    def responder_solicitud_normal(solicitud_id, respondedor, decision, motivo_rechazo=None, request=None):
         """
         Responde una solicitud de acceso para documentos NO sensibles.
         Solo puede responder el autor del documento.
@@ -191,11 +207,11 @@ class PermisoService:
 
         # Verificar que el respondedor sea el autor
         if respondedor != solicitud.documento.autor:
-            raise Exception("Solo el autor puede responder esta solicitud.")
+            raise ReglaNegocioError("Solo el autor puede responder esta solicitud.")
 
         # Verificar que esté pendiente
         if solicitud.estado != 'PENDIENTE':
-            raise Exception("Esta solicitud ya fue respondida.")
+            raise ReglaNegocioError("Esta solicitud ya fue respondida.")
 
         if decision == 'APROBADA':
             # Crear permiso
@@ -210,6 +226,10 @@ class PermisoService:
             solicitud.fecha_respuesta = timezone.now()
             solicitud.respondido_por = respondedor
             solicitud.save()
+            AuditService.log(
+                usuario=respondedor, accion='APROBO_ACCESO', documento=solicitud.documento,
+                request=request, detalle=f"Acceso concedido a {solicitud.solicitante.email}",
+            )
 
             NotificacionService.crear_notificacion(
                 usuario=solicitud.solicitante,
@@ -224,13 +244,18 @@ class PermisoService:
 
         elif decision == 'RECHAZADA':
             if not motivo_rechazo or not motivo_rechazo.strip():
-                raise Exception("El motivo de rechazo es obligatorio.")
+                raise ReglaNegocioError("El motivo de rechazo es obligatorio.")
 
             solicitud.estado = 'RECHAZADA'
             solicitud.motivo_rechazo = motivo_rechazo
             solicitud.fecha_respuesta = timezone.now()
             solicitud.respondido_por = respondedor
             solicitud.save()
+            AuditService.log(
+                usuario=respondedor, accion='RECHAZO_ACCESO', documento=solicitud.documento,
+                request=request,
+                detalle=f"Solicitud de {solicitud.solicitante.email} rechazada. Motivo: {motivo_rechazo}",
+            )
 
             NotificacionService.crear_notificacion(
                 usuario=solicitud.solicitante,
@@ -248,38 +273,54 @@ class PermisoService:
     # ─── VOTOS PARA DOCUMENTOS SENSIBLES ─────────────────────────
 
     @staticmethod
-    def votar_acceso_sensible(solicitud_id, votante, voto, motivo_rechazo=None):
+    def votar_acceso_sensible(solicitud_id, votante, voto, motivo_rechazo=None, request=None):
         """
         Registra un voto para una solicitud de acceso a documento sensible.
         Requiere 2 aprobaciones para conceder acceso.
         Un solo rechazo deniega inmediatamente.
         """
-        solicitud = SolicitudAcceso.objects.select_related(
-            'documento', 'documento__programa', 'solicitante'
-        ).get(pk=solicitud_id)
+        # R2-02: la transición del quórum debe ser atómica y con la fila bloqueada
+        with transaction.atomic():
+            solicitud = SolicitudAcceso.objects.select_for_update().select_related(
+                'documento', 'documento__programa', 'solicitante'
+            ).get(pk=solicitud_id)
+            return PermisoService._aplicar_voto(solicitud, votante, voto, motivo_rechazo, request)
+
+    @staticmethod
+    def _aplicar_voto(solicitud, votante, voto, motivo_rechazo=None, request=None):
+        """Aplica un voto con la solicitud ya bloqueada (llamar dentro de transaction.atomic)."""
         documento = solicitud.documento
 
         # Verificar que el votante tiene derecho a votar
+        # Regla facultad: DECANA y COORDINADOR son únicos de facultad -> acceso total.
+        # (Si a futuro hay un coordinador por programa, restringir aquí por programa.)
         es_autor = (votante == documento.autor)
-        es_coordinador = (votante.rol == 'COORDINADOR')
         es_decana = (votante.rol == 'DECANA')
+        es_coordinador = (votante.rol == 'COORDINADOR')
 
         if not (es_autor or es_coordinador or es_decana):
-            raise Exception("No tienes permiso para votar en esta solicitud.")
+            raise ReglaNegocioError("No tienes permiso para votar en esta solicitud.")
+
+        # R2-02: separación de funciones — el beneficiario no vota su propia solicitud
+        if votante == solicitud.solicitante or getattr(votante, 'pk', None) == getattr(solicitud, 'solicitante_id', None):
+            raise ReglaNegocioError("No puedes votar tu propia solicitud.")
 
         # Verificar que no haya votado ya
         if VotoAccesoSensible.objects.filter(
             solicitud=solicitud, votante=votante
         ).exists():
-            raise Exception("Ya emitiste tu voto para esta solicitud.")
+            raise ReglaNegocioError("Ya emitiste tu voto para esta solicitud.")
 
         # Verificar que esté pendiente
         if solicitud.estado != 'PENDIENTE':
-            raise Exception("Esta solicitud ya fue resuelta.")
+            raise ReglaNegocioError("Esta solicitud ya fue resuelta.")
+
+        if voto not in ('APROBADO', 'RECHAZADO'):
+            raise ReglaNegocioError("Decisión no válida.")
 
         if voto == 'RECHAZADO':
             if not motivo_rechazo or not motivo_rechazo.strip():
-                raise Exception("El motivo de rechazo es obligatorio.")
+                raise ReglaNegocioError("El motivo de rechazo es obligatorio.")
 
             # Crear voto de rechazo
             VotoAccesoSensible.objects.create(
@@ -295,6 +336,14 @@ class PermisoService:
             solicitud.fecha_respuesta = timezone.now()
             solicitud.respondido_por = votante
             solicitud.save()
+            AuditService.log(
+                usuario=votante, accion='VOTO_ACCESO', documento=documento, request=request,
+                detalle=f"Voto RECHAZADO sobre solicitud de {solicitud.solicitante.email}",
+            )
+            AuditService.log(
+                usuario=votante, accion='RECHAZO_ACCESO', documento=documento, request=request,
+                detalle=f"Solicitud de {solicitud.solicitante.email} rechazada. Motivo: {motivo_rechazo}",
+            )
 
             NotificacionService.crear_notificacion(
                 usuario=solicitud.solicitante,
@@ -320,6 +369,10 @@ class PermisoService:
             votos_aprobados = VotoAccesoSensible.objects.filter(
                 solicitud=solicitud, voto='APROBADO'
             ).count()
+            AuditService.log(
+                usuario=votante, accion='VOTO_ACCESO', documento=documento, request=request,
+                detalle=f"Voto APROBADO ({votos_aprobados}/2) sobre solicitud de {solicitud.solicitante.email}",
+            )
 
             if votos_aprobados >= 2:
                 # Conceder acceso
@@ -334,6 +387,10 @@ class PermisoService:
                 solicitud.fecha_respuesta = timezone.now()
                 solicitud.respondido_por = votante
                 solicitud.save()
+                AuditService.log(
+                    usuario=votante, accion='APROBO_ACCESO', documento=documento, request=request,
+                    detalle=f"Acceso sensible concedido a {solicitud.solicitante.email} con {votos_aprobados} votos",
+                )
 
                 NotificacionService.crear_notificacion(
                     usuario=solicitud.solicitante,
@@ -351,7 +408,7 @@ class PermisoService:
     # ─── REVOCAR ACCESO ──────────────────────────────────────────
 
     @staticmethod
-    def revocar_acceso(documento_id, usuario_id, revocador):
+    def revocar_acceso(documento_id, usuario_id, revocador, request=None):
         """
         Revoca el acceso de un usuario a un documento.
         Solo el autor del documento puede revocar accesos.
@@ -362,7 +419,7 @@ class PermisoService:
         usuario = Usuario.objects.get(pk=usuario_id)
 
         if revocador != documento.autor:
-            raise Exception("Solo el autor puede revocar accesos.")
+            raise ReglaNegocioError("Solo el autor puede revocar accesos.")
 
         # Eliminar permiso
         PermisoDocumento.objects.filter(
@@ -379,6 +436,11 @@ class PermisoService:
             motivo_rechazo='Acceso revocado por el autor.',
             fecha_respuesta=timezone.now(),
             respondido_por=revocador
+        )
+
+        AuditService.log(
+            usuario=revocador, accion='REVOCO_ACCESO', documento=documento, request=request,
+            detalle=f"Acceso revocado a {usuario.email}",
         )
 
         # Notificar al usuario
@@ -445,7 +507,8 @@ class PermisoService:
         ).order_by('-fecha_solicitud')
 
         if usuario.rol == 'COORDINADOR':
-            queryset = queryset.filter(documento__programa=usuario.programa_academico)
+            # Regla facultad: la Coordinadora ve solicitudes de todos los programas.
+            pass
         elif usuario.rol != 'DECANA':
             queryset = queryset.none()
         return queryset

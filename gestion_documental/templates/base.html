@@ -1,229 +1,123 @@
-{% load static %}
-<!DOCTYPE html>
+{% load static sigea %}<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#142a59">
   <title>{% block title %}SIGEA{% endblock %}</title>
   <link rel="icon" type="image/png" href="{% static 'img/sigea_logo_p2.png' %}">
-  
-  <!-- CSS del Sistema de Diseño (Vanilla CSS Puro) -->
-  <link rel="stylesheet" href="{% static 'css/ui-ux-pro.css' %}?v=4">
-  
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
+  <link rel="preload" href="{% static 'fonts/public-sans/public-sans-latin-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/public-sans/public-sans-latin-700.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/sigea/main.css' %}?v=005">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
-  
-  <div class="app-shell">
-    
-    {# === HEADER PRINCIPAL === #}
-    <header class="app-header">
-      
-      {# -- Fila superior: Logo + Búsqueda + Acciones -- #}
-      <div class="header-top">
-        
-                <div class="header-brand-container">
-          <button id="openSidebarBtn" class="header-icon-btn hidden-desktop" style="border: none; background: transparent; cursor: pointer; color: var(--brand-900); padding: 0;">
-            <i data-lucide="menu" style="width: 28px; height: 28px;"></i>
-          </button>
-          <a href="{% url 'documentos:dashboard' %}" class="header-brand hidden-mobile">
-            <span class="header-brand-name">SIGEA</span>
+  <a class="sg-saltar" href="#contenido">Saltar al contenido</a>
+
+  <div class="sg-app">
+    <aside class="sg-riel" aria-label="Menú principal">
+      <a class="sg-riel__marca" href="{% url 'documentos:dashboard' %}" aria-label="SIGEA, ir al panel">
+        <span class="sg-emblema" aria-hidden="true"></span><span aria-hidden="true">IGEA</span>
+      </a>
+      <nav aria-label="Secciones">
+        {% for grupo in nav_grupos %}
+        <div class="sg-riel__grupo">
+          {% if grupo.titulo %}<p class="sg-riel__titulo">{{ grupo.titulo }}</p>{% endif %}
+          {% for d in grupo.destinos %}
+          <a class="sg-riel__enlace" href="{{ d.url }}"{% if d.activo %} aria-current="page"{% endif %} title="{{ d.etiqueta }}">
+            {% icono d.icono %}<span>{{ d.etiqueta }}</span>
           </a>
-        </div>
-
-        {% block navbar_search %}
-        <div class="header-search">
-          <form id="navbarSearchForm" method="get" action="{% url 'documentos:lista' %}">
-            <i data-lucide="search" class="header-search-icon"></i>
-            <input type="text" id="navbarSearchInput" name="q" placeholder="Buscar documentos, reportes..." autocomplete="off">
-          </form>
-          <div id="searchResults" class="topbar-search-results"></div>
-        </div>
-        {% endblock %}
-
-        <div class="header-actions">
-                    <a href="{% url 'usuarios:perfil' %}" class="header-icon-btn" title="Configuracion">
-            <i data-lucide="settings"></i>
-          </a>
-          <a href="{% url 'notificaciones:lista' %}" class="header-icon-btn" title="Notificaciones">
-            <i data-lucide="bell"></i>
-            {% if notificaciones_no_leidas_count > 0 %}
-              <span class="header-notif-dot"></span>
-            {% endif %}
-          </a>
-          
-          <div class="header-user-menu">
-            <a href="{% url 'usuarios:perfil' %}" class="header-avatar" title="{{ user.get_full_name }}">
-              {% if user.foto_perfil %}
-                <img src="{{ user.foto_perfil.url }}" alt="Avatar">
-              {% else %}
-                {{ user.get_iniciales|default:"U" }}
-              {% endif %}
-            </a>
-            <div class="header-user-info">
-              <span class="header-user-name">{{ user.first_name|default:user.username }}</span>
-              <span class="header-user-role">{{ user.get_rol_display|default:"Usuario" }}</span>
-            </div>
-          </div>
-
-          <form method="post" action="{% url 'auth:logout' %}" class="header-logout-form">
-            {% csrf_token %}
-            <button type="submit" class="header-logout-btn" title="Cerrar sesión">
-              <i data-lucide="log-out"></i>
-            </button>
-          </form>
-        </div>
-      </div>
-
-            {# -- Fila inferior: Navegacin por tabs -- #}
-      <nav class="header-nav" id="mobileSidebar">
-        <!-- HEADER DEL SIDEBAR (Solo Movil) -->
-        <div class="sidebar-header hidden-desktop">
-          <span class="header-brand-name" style="color: white; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.05em;">SIGEA</span>
-          <button id="closeSidebarBtn" class="header-icon-btn" style="border: none; background: transparent; cursor: pointer; color: white; padding: 0;">
-            <i data-lucide="x" style="width: 28px; height: 28px;"></i>
-          </button>
-        </div>
-        
-        <a href="{% url 'documentos:dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-          <i data-lucide="layout-grid"></i>
-          Dashboard
-        </a>
-        
-        <a href="{% url 'documentos:mis_documentos' %}" class="nav-tab {% if request.resolver_match.url_name == 'mis_documentos' %}active{% endif %}">
-          <i data-lucide="folder"></i>
-          Mis documentos
-        </a>
-        
-        <a href="{% url 'documentos:subir' %}" class="nav-tab {% if request.resolver_match.url_name == 'subir' %}active{% endif %}">
-          <i data-lucide="upload-cloud"></i>
-          Subir
-        </a>
-        
-        <a href="{% url 'documentos:lista' %}" class="nav-tab {% if request.resolver_match.namespace == 'documentos' and request.resolver_match.url_name == 'lista' or request.resolver_match.url_name == 'busqueda' %}active{% endif %}">
-          <i data-lucide="search"></i>
-          Búsqueda
-        </a>
-        
-        {% if user.rol == 'DECANA' %}
-        <a href="{% url 'documentos:factores_cna' %}" class="nav-tab {% if request.resolver_match.url_name == 'factores_cna' %}active{% endif %}">
-          <i data-lucide="bar-chart-2"></i>
-          Factores CNA
-        </a>
-        {% endif %}
-
-        {% if user.rol == 'COORDINADOR' or user.rol == 'DECANA' %}
-        <a href="{% url 'documentos:aprobar' %}" class="nav-tab {% if request.resolver_match.url_name == 'aprobar' %}active{% endif %}">
-          <i data-lucide="check-square"></i>
-          Aprobar
-        </a>
-        <a href="{% url 'auditoria:lista' %}" class="nav-tab {% if request.resolver_match.namespace == 'auditoria' %}active{% endif %}">
-          <i data-lucide="shield"></i>
-          Auditoría
-        </a>
-        {% endif %}
-
-        {% if user.rol == 'DECANA' %}
-        <a href="{% url 'usuarios:gestion_usuarios' %}" class="nav-tab {% if request.resolver_match.url_name == 'gestion_usuarios' %}active{% endif %}">
-          <i data-lucide="users"></i>
-          Usuarios
-        </a>
-        {% endif %}
-
-        <a href="{% url 'documentos:papelera' %}" class="nav-tab {% if request.resolver_match.url_name == 'papelera' %}active{% endif %}">
-          <i data-lucide="trash-2"></i>
-          Papelera
-        </a>
-
-        
-
-        <!-- LOGOUT (Solo Movil) -->
-        <div class="sidebar-logout hidden-desktop" style="margin-top: auto; padding: 1rem; width: 100%;">
-          <form method="post" action="{% url 'auth:logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="nav-tab" style="width: 100%; text-align: left; background: rgba(255,255,255,0.1); border-radius: 8px; justify-content: flex-start; color: white; border: none; cursor: pointer; padding: 1rem;">
-              <i data-lucide="log-out"></i>
-              Cerrar Sesión
-            </button>
-          </form>
-        </div>
-      </nav>
-      <div id="sidebarOverlay" class="sidebar-overlay hidden-desktop"></div>
-    </header>
-
-    {# === CONTENT === #}
-    <main class="content">
-      <div class="content-wrapper">
-        
-        {# Alertas Globales de Django #}
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert 
-              {% if message.tags == 'error' %}alert-error
-              {% elif message.tags == 'success' %}alert-success
-              {% elif message.tags == 'warning' %}alert-warning
-              {% else %}alert-info{% endif %}">
-              
-              <div class="alert-icon">
-                {% if message.tags == 'error' %}<i data-lucide="alert-circle"></i>
-                {% elif message.tags == 'success' %}<i data-lucide="check-circle-2"></i>
-                {% elif message.tags == 'warning' %}<i data-lucide="alert-triangle"></i>
-                {% else %}<i data-lucide="info"></i>{% endif %}
-                {{ message }}
-              </div>
-              
-              <button class="alert-close" onclick="this.parentElement.remove();">
-                <i data-lucide="x"></i>
-              </button>
-            </div>
           {% endfor %}
-        {% endif %}
-        
-        {% block content %}{% endblock %}
-        
+        </div>
+        {% endfor %}
+      </nav>
+      <div class="sg-riel__pie">
+        <a class="sg-riel__usuario" href="{% url 'usuarios:perfil' %}" title="Tu perfil">
+          <span class="sg-avatar sg-avatar--marca" aria-hidden="true">{{ user|iniciales }}</span>
+          <div><strong>{{ user.first_name|default:user.username }}</strong><small>{{ user.get_rol_display }}</small></div>
+        </a>
+        <form method="post" action="{% url 'auth:logout' %}">{% csrf_token %}
+          <button type="submit" class="sg-riel__enlace sg-riel__enlace--salir" title="Cerrar sesión">{% icono "log-out" %}<span>Cerrar sesión</span></button>
+        </form>
+        <button type="button" class="sg-riel__enlace" data-riel-alternar aria-expanded="true">{% icono "panel-left" %}<span>Contraer menú</span></button>
       </div>
-    </main>
+    </aside>
 
+    <div class="sg-principal">
+      <header class="sg-barra">
+        <a class="sg-barra__marca" href="{% url 'documentos:dashboard' %}" aria-label="SIGEA, ir al panel">
+          <span class="sg-emblema" aria-hidden="true"></span><span aria-hidden="true">IGEA</span>
+        </a>
+        {% block navbar_search %}
+        <form class="sg-buscador sg-solo-escritorio" role="search" method="get" action="{% url 'documentos:busqueda' %}">
+          {% icono "search" %}
+          <label for="sg-buscar" class="sg-oculto">Buscar evidencias</label>
+          <input id="sg-buscar" name="q" type="search" placeholder="Buscar evidencias por título" autocomplete="off"
+                 data-url="{% url 'documentos:buscar_ajax' %}" aria-controls="sg-buscar-resultados" aria-expanded="false">
+          <div id="sg-buscar-resultados" class="sg-buscador__resultados" role="listbox" aria-label="Resultados"></div>
+        </form>
+        {% endblock %}
+        <div class="sg-barra__acciones">
+          <a class="sg-btn sg-btn--fantasma sg-btn--icono sg-solo-movil" href="{% url 'documentos:busqueda' %}" aria-label="Buscar">{% icono "search" %}</a>
+          <a class="sg-btn sg-btn--fantasma sg-btn--icono sg-campana" href="{% url 'notificaciones:lista' %}"
+             aria-label="Notificaciones{% if notificaciones_no_leidas_count %}: {{ notificaciones_no_leidas_count }} sin leer{% endif %}">
+            {% icono "bell" %}{% if notificaciones_no_leidas_count %}<span class="sg-campana__punto"></span>{% endif %}
+          </a>
+          <a class="sg-solo-movil" href="{% url 'usuarios:perfil' %}" aria-label="Tu perfil"><span class="sg-avatar">{{ user|iniciales }}</span></a>
+        </div>
+      </header>
+
+      <main id="contenido" class="sg-contenido" tabindex="-1">
+        {% if messages %}
+        <div class="sg-avisos" role="status" aria-live="polite">
+          {% for message in messages %}
+          <div class="sg-aviso sg-aviso--{{ message.tags|default:'info' }}">
+            {% if message.tags == 'success' %}{% icono "circle-check" %}{% elif message.tags == 'error' %}{% icono "circle-alert" %}{% elif message.tags == 'warning' %}{% icono "triangle-alert" %}{% else %}{% icono "info" %}{% endif %}
+            <span>{{ message }}</span>
+            <button type="button" class="sg-aviso__cerrar" aria-label="Cerrar aviso">{% icono "x" "sg-icono--sm" %}</button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <nav class="sg-movil" aria-label="Menú principal">
+      {% for d in nav_movil %}
+      <a href="{{ d.url }}"{% if d.activo %} aria-current="page"{% endif %} aria-label="{{ d.etiqueta }}">{% icono d.icono %}<span>{{ d.corta }}</span></a>
+      {% endfor %}
+      <button type="button" data-abrir-mas{% if nav_mas_activo %} aria-current="page"{% endif %}>{% icono "ellipsis" %}<span>Más</span></button>
+    </nav>
   </div>
-  
-  <script src="{% static 'js/main.js' %}"></script>
-  <script>
-    // Inicializar íconos de Lucide
-    lucide.createIcons();
-  </script>
-  {% block extra_js %}{% endblock %}
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const openBtn = document.getElementById('openSidebarBtn');
-        const closeBtn = document.getElementById('closeSidebarBtn');
-        const sidebar = document.getElementById('mobileSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
 
-        if(openBtn && closeBtn && sidebar && overlay) {
-            openBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                sidebar.classList.add('open');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden'; 
-            });
-            const closeMenu = (e) => {
-                e.preventDefault();
-                sidebar.classList.remove('open');
-                overlay.classList.remove('active');
-                document.body.style.overflow = '';
-            };
-            closeBtn.addEventListener('click', closeMenu);
-            overlay.addEventListener('click', closeMenu);
-        }
-    });
-  </script>
+  <dialog id="sg-hoja-mas" class="sg-hoja-mas" aria-labelledby="sg-hoja-mas-titulo">
+    <div class="sg-hoja-mas__cabeza">
+      <h2 id="sg-hoja-mas-titulo">Más opciones</h2>
+      <button type="button" class="sg-btn sg-btn--fantasma sg-btn--icono" data-cerrar aria-label="Cerrar">{% icono "x" %}</button>
+    </div>
+    <nav aria-label="Más secciones">
+      {% for d in nav_mas %}<a href="{{ d.url }}"{% if d.activo %} aria-current="page"{% endif %}>{% icono d.icono %}{{ d.etiqueta }}</a>{% endfor %}
+      <a href="{% url 'usuarios:perfil' %}">{% icono "user" %}Tu perfil</a>
+      <form method="post" action="{% url 'auth:logout' %}">{% csrf_token %}<button type="submit" class="sg-salir">{% icono "log-out" %}Cerrar sesión</button></form>
+    </nav>
+  </dialog>
+
+  <dialog id="sg-confirmar" class="sg-dialogo" aria-labelledby="sg-confirmar-titulo" aria-describedby="sg-confirmar-mensaje">
+    <form method="dialog">
+      <div class="sg-dialogo__cuerpo">
+        <h2 id="sg-confirmar-titulo" data-titulo>Confirmar</h2>
+        <p id="sg-confirmar-mensaje" data-mensaje></p>
+      </div>
+      <div class="sg-dialogo__acciones">
+        <button type="submit" value="no" class="sg-btn">Cancelar</button>
+        <button type="submit" value="si" class="sg-btn sg-btn--marca">Confirmar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script defer src="{% static 'js/sigea.js' %}"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
-
-
-
-
-

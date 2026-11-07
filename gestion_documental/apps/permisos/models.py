@@ -94,6 +94,9 @@ class SolicitudAcceso(models.Model):
         # Un usuario solo puede tener una solicitud activa por documento
         unique_together = ['solicitante', 'documento']
         ordering = ['-fecha_solicitud']
+        indexes = [
+            models.Index(fields=['estado', '-fecha_solicitud'], name='sol_estado_fsol_idx'),
+        ]
 
     def __str__(self):
         return f"{self.solicitante} → {self.documento}"

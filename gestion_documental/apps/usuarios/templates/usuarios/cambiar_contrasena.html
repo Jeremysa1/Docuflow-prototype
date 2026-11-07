@@ -1,98 +1,18 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cambiar Contraseña - SIGEA</title>
-    <link rel="stylesheet" href="{% static 'css/ui-ux-pro.css' %}">
-    <!-- Importar fuente de Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    
-</head>
-<body class="auth-change-body">
-
-    <div class="login-card">
-        
-        <!-- Logo Textual dentro de la tarjeta -->
-        <div class="brand-title">SIGEA</div>
-
-        <!-- Textos principales -->
-        <h1>Cambiar Contraseña</h1>
-        <p class="subtitle">El token es válido, favor ingresa y confirma tu nueva contraseña que cumpla las politicas de seguridad:</p>
-
-        <!-- Errores de Django -->
-        {% if error %}
-        <div class="auth-error">{{ error }}</div>
-        {% endif %}
-
-        <!-- Formulario -->
-        <form method="POST">
-            {% csrf_token %}
-            
-            <!-- Input 1 -->
-            <div class="form-group">
-                <label>Nueva contraseña</label>
-                <div class="input-wrapper">
-                    <input type="password" name="nueva_contrasena" id="new-password" placeholder="••••••••" required>
-                    <!-- Botón de ver contraseña -->
-                    <button type="button" class="toggle-password">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Input 2 -->
-            <div class="form-group">
-                <label>Confirme nueva contraseña</label>
-                <div class="input-wrapper">
-                    <input type="password" name="confirmar_contrasena" id="confirm-password" placeholder="••••••••" required>
-                    <button type="button" class="toggle-password">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Caja de Requisitos -->
-            <div class="requirements-box">
-                <div class="req-header">
-                    <!-- Ícono de escudo verde con check -->
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        <path d="M9 12l2 2 4-4" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Requisitos de seguridad
-                </div>
-                <ul class="req-list">
-                    <li id="req-length">Mínimo 8 caracteres</li>
-                    <li id="req-uppercase">Incluir una letra mayúscula</li>
-                    <li id="req-special">Incluir un carácter especial</li>
-                </ul>
-            </div>
-
-            <!-- Botón -->
-            <button type="submit" class="btn-submit">
-                Cambiar contraseña
-                <!-- Ícono de flecha derecha -->
-                <svg viewBox="0 0 24 24">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </button>
-        </form>
-
-    </div>
-
-    <!-- Scripts existentes para validación live -->
-    <script src="{% static 'js/main.js' %}"></script>
-</body>
-</html>
+{% extends "usuarios/_acceso.html" %}
+{% load sigea %}
+{% block title %}Nueva contraseña{% endblock %}
+{% block caja %}
+<header>
+  <h1>Crea tu nueva contraseña</h1>
+  <p>Usa al menos 8 caracteres, una mayúscula y un símbolo (!@#$%^&amp;*).</p>
+</header>
+{% if error %}<div class="sg-aviso sg-aviso--error" role="alert">{% icono "circle-alert" %}<span>{{ error }}</span></div>{% endif %}
+<form method="post" class="sg-form">
+  {% csrf_token %}
+  <div class="sg-campo"><label for="nueva">Nueva contraseña</label>
+    <div class="sg-campo-clave"><input id="nueva" name="nueva_contrasena" type="password" autocomplete="new-password" minlength="8" required>
+      <button type="button" data-alternar-clave aria-controls="nueva" aria-pressed="false" aria-label="Mostrar contraseña">{% icono "eye-off" "sg-clave__oculta" %}{% icono "eye" "sg-clave__visible" %}</button></div></div>
+  <div class="sg-campo"><label for="confirmar">Repítela</label><input id="confirmar" name="confirmar_contrasena" type="password" autocomplete="new-password" required></div>
+  <button type="submit" class="sg-btn sg-btn--marca sg-btn--bloque">Guardar contraseña</button>
+</form>
+{% endblock %}

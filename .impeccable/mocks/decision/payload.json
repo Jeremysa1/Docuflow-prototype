@@ -1,0 +1,128 @@
+{
+  "title": "Elige el mundo visual de SIGEA",
+  "question": "La tirada asignó «Libro de actas foliado». Quédate con ella, toma una alternativa o pide otra tirada. Todas mantienen azul institucional y blanco.",
+  "options": [
+    {
+      "id": "assigned",
+      "kind": "assigned",
+      "label": "Libro de actas foliado",
+      "kicker": "THE ROLL",
+      "lineage": "Libros de actas y registros foliados de la administración académica colombiana",
+      "thesis": "Cada evidencia es un folio numerado de un libro oficial: se firma en tinta azul y nunca se borra, se anula con una línea. La trazabilidad deja de ser un módulo y se vuelve el margen de todo el sistema.",
+      "palette": ["#142a59", "#1f4fd1", "#ffffff", "#f6f8fc", "#dfe4ee", "#b3261e", "#9a5b00"],
+      "materials": ["papel blanco renglonado en azul gris", "tinta azul de firma", "margen foliado", "anulación con línea"],
+      "viewport": "Barra azul con SIGEA y la navegación. A la izquierda, el «Libro de avance»: 12 factores como folios F1–F12 con aprobadas frente a la meta. A la derecha, la cola «Por firmar» con días de espera y, debajo, el pulso de actividad (descargas y accesos denegados).",
+      "risk": "Si la metáfora se lleva a texturas de papel o letra manuscrita, se vuelve disfraz; tiene que vivir solo en la numeración, el margen y el vocabulario de estados.",
+      "raised": [
+        {"from": "challenger-emigre", "raise": "Escala tipográfica estricta de 5 pasos, una sola familia: ningún tamaño fuera de la escala."},
+        {"from": "challenger-jcard", "raise": "Toda métrica de avance muestra cantidad frente a meta (4 / 20), nunca un porcentaje solo."},
+        {"from": "challenger-orienteering", "raise": "El azul pluma se reserva para la acción pendiente del usuario; nada más usa ese color."},
+        {"from": "challenger-emission", "raise": "Cada estado se distingue también por forma (firmado sólido, pendiente punteado, anulado tachado), no solo por color."},
+        {"from": "challenger-saville", "raise": "Numeración consecutiva visible en todas partes: se puede buscar y citar cualquier evidencia por su folio N.º."}
+      ],
+      "html": ".impeccable/mocks/decision/assigned.html"
+    },
+    {
+      "id": "model-pick",
+      "kind": "pick",
+      "label": "Matriz de autoevaluación",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "Matrices de ponderación y gradación de cumplimiento de los informes de autoevaluación CNA",
+      "thesis": "El sistema se lee como la matriz del informe de autoevaluación: factores por programa, con la gradación de cumplimiento del CNA (insatisfactorio → pleno) como una escala de azules.",
+      "palette": ["#142a59", "#24479a", "#5f82cf", "#a9bde6", "#e3eaf7", "#ffffff"],
+      "materials": ["tabla densa", "escala secuencial de azules", "riel lateral azul"],
+      "viewport": "Riel lateral azul. Al centro, la matriz factor × programa con la gradación CNA en celdas; a la derecha, avance global y cola de revisión.",
+      "risk": "Es la dirección más cercana al tablero analítico estándar: muy clara, pero la que más corre el riesgo de verse como cualquier otro panel.",
+      "html": ".impeccable/mocks/decision/model-pick.html"
+    },
+    {
+      "id": "challenger-wayfinding",
+      "kind": "challenger",
+      "catalogId": "wayfinding-cartography-signage-terminal-yellow-wayfinding",
+      "label": "Señalética de terminal",
+      "verdict": "competitive",
+      "lineage": "Sistemas de señalización de aeropuerto, traducidos a azul y blanco",
+      "thesis": "Cada pantalla muestra solo la siguiente decisión, como una banda colgada en el pasillo; los factores F1–F12 son puertas de embarque monumentales.",
+      "palette": ["#0f2148", "#142a59", "#ffffff", "#5b6478"],
+      "materials": ["bandas de señal", "pictogramas blancos", "numerales monumentales"],
+      "viewport": "Banda azul superior con la siguiente acción del rol y una flecha. Debajo, los 12 factores como puertas numeradas con aprobadas / meta.",
+      "case": "Gana en claridad de producto (cada rol ve su siguiente paso), pero los usuarios no se identifican con un aeropuerto y el amarillo original se pierde al fijar azul y blanco.",
+      "risk": "Con pocos datos, las puertas vacías dominan la pantalla; con mucho detalle, la banda pierde su fuerza.",
+      "html": ".impeccable/mocks/decision/challenger-wayfinding.html",
+      "hero": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-terminal-yellow-wayfinding-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-terminal-yellow-wayfinding.webp"
+    },
+    {
+      "id": "challenger-emigre",
+      "kind": "challenger",
+      "catalogId": "emigre-bitmap-specimen",
+      "label": "Espécimen tipográfico bitmap",
+      "verdict": "declined",
+      "lineage": "Especímenes bitmap de Emigre",
+      "palette": ["#ffffff", "#111111"],
+      "materials": ["letra de píxel", "semitono"],
+      "case": "Se funde mal: el estilo bitmap no dice nada de acreditación ni de evidencias.",
+      "kept": "Disciplina de escala: una familia repetida en pasos fijos."
+    },
+    {
+      "id": "challenger-jcard",
+      "kind": "challenger",
+      "catalogId": "vernacular-ephemera-cassette-j-card",
+      "label": "Carátula de casete",
+      "verdict": "declined",
+      "lineage": "Carátulas de mixtape escritas a mano",
+      "palette": ["#2b4cc9", "#ffffff", "#c8102e"],
+      "materials": ["bolígrafo", "renglones impresos"],
+      "case": "Se funde mal: lo artesanal choca con un sistema institucional.",
+      "kept": "Honestidad de capacidad: cada lado muestra lo que cabe; cada factor muestra cantidad frente a meta."
+    },
+    {
+      "id": "challenger-orienteering",
+      "kind": "challenger",
+      "catalogId": "notation-diagram-systems-orienteering-map",
+      "label": "Mapa de orientación",
+      "verdict": "declined",
+      "lineage": "Mapas de orientación ISOM",
+      "palette": ["#ffffff", "#7b2fa0", "#a35a2a"],
+      "materials": ["curvas de nivel", "trazo púrpura"],
+      "case": "Se funde mal: obliga a otra paleta y a una metáfora de terreno ajena.",
+      "kept": "Un solo color reservado para el recorrido activo: la acción pendiente del usuario."
+    },
+    {
+      "id": "challenger-saville",
+      "kind": "challenger",
+      "catalogId": "brand-identity-canon-saville-catalog-sleeve",
+      "label": "Catálogo Factory Records",
+      "verdict": "declined",
+      "lineage": "Identidad de catálogo de Peter Saville",
+      "palette": ["#111111", "#ffffff"],
+      "materials": ["negro mate", "números de catálogo"],
+      "case": "Se funde mal: el fondo negro contradice el blanco fijado y oculta los nombres.",
+      "kept": "Todo lleva número de catálogo en orden estricto: el folio N.º."
+    },
+    {
+      "id": "challenger-emission",
+      "kind": "challenger",
+      "catalogId": "operate-c-emission-line-rail",
+      "label": "Riel de líneas de emisión",
+      "verdict": "declined",
+      "lineage": "Espectrogramas sobre placa de vidrio",
+      "palette": ["#2a2c30", "#e8e2d4"],
+      "materials": ["continuo carbón", "líneas finas"],
+      "case": "Se funde mal: es un mundo oscuro y abstracto, lejos del azul y blanco y del uso móvil.",
+      "kept": "El estado se lee en la forma de la línea (sólida, punteada, tachada) y no solo en el color."
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "canon": true,
+  "canonCard": {
+    "kind": "canon",
+    "label": "El estándar de la categoría",
+    "thesis": "Un panel administrativo SaaS limpio: menú lateral, tarjetas de indicadores y gráficos, ejecutado sin errores.",
+    "palette": ["#ffffff", "#0f172a", "#142a59", "#2563eb"],
+    "materials": ["grilla limpia", "tarjetas KPI"],
+    "viewport": "Menú lateral, cuatro indicadores arriba, barras de avance CNA y lista de pendientes.",
+    "risk": "Es lo que ya tiene el sistema, mejor pulido: no le da identidad propia.",
+    "html": ".impeccable/mocks/decision/canon.html"
+  }
+}

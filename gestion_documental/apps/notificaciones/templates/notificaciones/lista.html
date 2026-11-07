@@ -1,131 +1,49 @@
 {% extends 'base.html' %}
-{% block title %}Notificaciones - SIGEA{% endblock %}
-{% block page_title %}Notificaciones{% endblock %}
+{% load sigea %}
+{% block title %}Notificaciones · SIGEA{% endblock %}
 
 {% block content %}
-
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Notificaciones</h1>
-            <p>Mantente al día con las actividades de tus documentos y flujos de aprobación.</p>
-            
-            <div class="flex-row mt-xl" style="gap: 0.5rem;">
-                <a href="?" class="filter-chip {% if not request.GET.leida %}active{% endif %}">Todas</a>
-                <a href="?leida=false" class="filter-chip {% if request.GET.leida == 'false' %}active{% endif %}">Sin leer</a>
-            </div>
-        </div>
-
-        {% if notificaciones %}
-        <form method="post" action="{% url 'notificaciones:marcar_todas_leidas' %}" style="margin: 0; flex-shrink: 0;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-soft">
-                <i data-lucide="check-check"></i>
-                Marcar todas como leídas
-            </button>
-        </form>
-        {% endif %}
-    </header>
-
-    <!-- Contenedor de la lista -->
-    <div class="section-subtitle">Recientes</div>
-
-    <div class="flex-stack" style="gap: var(--space-md);">
-        {% for notif in page_obj %}
-            <div class="notif-card {% if not notif.leida %}unread{% endif %}">
-                
-                <!-- Icono -->
-                <div class="notif-icon" 
-                    {% if notif.tipo == 'APROBADO' %}style="background: var(--emerald-50); color: var(--emerald-600);"
-                    {% elif notif.tipo == 'RECHAZO' %}style="background: var(--rose-50); color: var(--rose-600);"
-                    {% elif notif.tipo == 'ALERTA' %}style="background: var(--amber-50); color: var(--amber-600);"
-                    {% else %}style="background: var(--sky-50); color: var(--sky-600);"{% endif %}>
-                    
-                    {% if notif.tipo == 'APROBADO' %}
-                        <i data-lucide="check-circle-2"></i>
-                    {% elif notif.tipo == 'RECHAZO' %}
-                        <i data-lucide="x-circle"></i>
-                    {% elif notif.tipo == 'ALERTA' %}
-                        <i data-lucide="alert-triangle"></i>
-                    {% else %}
-                        <i data-lucide="info"></i>
-                    {% endif %}
-                </div>
-                
-                <!-- Contenido -->
-                <div style="flex: 1; min-width: 0;">
-                    <div class="flex-between" style="flex-wrap: wrap; gap: 0.5rem;">
-                        <h3 class="text-sm font-bold text-brand truncate" style="margin: 0;">
-                            {% if notif.tipo == 'APROBADO' %}Documento Aprobado
-                            {% elif notif.tipo == 'RECHAZO' %}Documento Rechazado
-                            {% elif notif.tipo == 'ALERTA' %}Alerta de Sistema
-                            {% else %}Aviso de SIGEA{% endif %}
-                        </h3>
-                        <span class="text-xxs font-bold text-light uppercase tracking-wide shrink-0" style="font-family: monospace;">
-                            HACE {{ notif.fecha_creacion|timesince|upper }}
-                        </span>
-                    </div>
-                    
-                    <p class="text-sm text-muted leading-relaxed mt-sm" style="margin: 0;">{{ notif.mensaje|safe }}</p>
-                    
-                    <div class="flex-between mt-md" style="gap: var(--space-md);">
-                        {% if notif.documento %}
-                            <a href="{% url 'notificaciones:marcar_leida' notif.id %}?next={% url 'documentos:detalle' notif.documento.id %}" class="flex-row text-xs font-bold" style="color: var(--brand-600); gap: 0.4rem;">
-                                Ver documento
-                                <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
-                            </a>
-                        {% else %}
-                            <span></span>
-                        {% endif %}
-                        
-                        <div class="flex-row" style="gap: 0.75rem;">
-                            {% if not notif.leida %}
-                                <div style="width: 10px; height: 10px; background: var(--brand-500); border-radius: var(--radius-full); box-shadow: var(--shadow-xs);" title="Sin leer"></div>
-                                <form method="post" action="{% url 'notificaciones:marcar_leida' notif.id %}" style="margin: 0;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-icon btn-ghost" style="width: 28px; height: 28px;" title="Marcar como leída">
-                                        <i data-lucide="check" style="width: 14px; height: 14px;"></i>
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% empty %}
-            <div class="card" style="border: 2px dashed var(--slate-300);">
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i data-lucide="bell-off"></i>
-                    </div>
-                    <h3 class="section-title">Nada por aquí</h3>
-                    <p class="text-sm text-muted">No tienes notificaciones pendientes por ahora.</p>
-                </div>
-            </div>
-        {% endfor %}
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "bell" %}</span>
+      <h1>Notificaciones</h1>
+      <p>Revisiones de tus evidencias, solicitudes de acceso y cambios importantes.</p>
     </div>
-
-    <!-- Paginación -->
-    {% if page_obj.has_other_pages %}
-    <div class="pagination mt-2xl">
-        <div class="pagination-info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
-        <div class="pagination-buttons">
-            {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.leida %}&leida={{ request.GET.leida }}{% endif %}" class="pagination-btn"><i data-lucide="chevron-left"></i></a>
-            {% endif %}
-            
-            {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-                <span class="pagination-btn active">{{ num }}</span>
-            {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-                <a href="?page={{ num }}{% if request.GET.leida %}&leida={{ request.GET.leida }}{% endif %}" class="pagination-btn">{{ num }}</a>
-            {% endif %}
-            {% endfor %}
-            
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.leida %}&leida={{ request.GET.leida }}{% endif %}" class="pagination-btn"><i data-lucide="chevron-right"></i></a>
-            {% endif %}
-        </div>
+    {% if notificaciones_no_leidas_count %}
+    <div class="sg-cabecera__acciones">
+      <form method="post" action="{% url 'notificaciones:marcar_todas_leidas' %}">{% csrf_token %}
+        <button type="submit" class="sg-btn">{% icono "check-check" %}<span>Marcar todas como leídas</span></button>
+      </form>
     </div>
     {% endif %}
+  </header>
 
+  <section class="sg-hoja">
+    {% if page_obj %}
+    <ul class="sg-lista">
+      {% for notif in page_obj %}
+      <li class="sg-notif{% if not notif.leida %} es-nueva{% endif %}">
+        <span class="sg-notif__punto" aria-hidden="true"></span>
+        <div class="sg-lista__cuerpo">
+          <span>{% if not notif.leida %}<span class="sg-oculto">Sin leer: </span>{% endif %}{{ notif.mensaje }}</span>
+          <span class="sg-lista__meta">hace {{ notif.fecha_creacion|timesince }}</span>
+        </div>
+        {% if notif.documento %}
+        {% url 'documentos:detalle' notif.documento.id as url_doc %}
+        <a class="sg-btn" href="{% url 'notificaciones:marcar_leida' notif.id %}?next={{ url_doc|urlencode }}">Ver evidencia</a>
+        {% elif not notif.leida %}
+        <form method="post" action="{% url 'notificaciones:marcar_leida' notif.id %}">{% csrf_token %}
+          <button type="submit" class="sg-btn sg-btn--fantasma">Marcar como leída</button>
+        </form>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% include "partials/paginacion.html" %}
+    {% else %}
+      {% include "componentes/estado_vacio.html" with icono="bell-off" titulo="No tienes notificaciones" texto="Te avisaremos aquí cuando revisen tus evidencias o te den acceso a un documento." %}
+    {% endif %}
+  </section>
+</div>
 {% endblock %}

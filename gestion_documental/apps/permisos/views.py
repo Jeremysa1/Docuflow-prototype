@@ -4,14 +4,19 @@ Vistas del módulo de permisos.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponseForbidden
+from django.core.exceptions import PermissionDenied
 
 from apps.permisos.services import PermisoService
 from apps.permisos.models import SolicitudAcceso, VotoAccesoSensible
 from apps.documentos.models import Documento
 from apps.usuarios.models import Usuario
 from core.decorators.role_required import role_required
+from core.utils.helpers import ReglaNegocioError
 from django.core.paginator import Paginator
+import logging
+
+logger = logging.getLogger(__name__)
+MSG_ERROR_GENERICO = 'No se pudo completar la acción. Inténtalo de nuevo o contacta a soporte.'
 
 
 @login_required
@@ -25,16 +30,17 @@ def gestionar_accesos_view(request, doc_id):
     )
 
     # Verificar permisos de acceso a esta pantalla
+    # Regla facultad: autor, COORDINADOR (única de facultad) o DECANA.
     user = request.user
     es_autor = (user == documento.autor)
-    es_coordinador_programa = (
-        user.rol == 'COORDINADOR' and
-        user.programa_academico == documento.programa
-    )
+    es_coordinador = (user.rol == 'COORDINADOR')
     es_decana = (user.rol == 'DECANA')
 
-    if not (es_autor or es_coordinador_programa or es_decana):
-        return HttpResponseForbidden("No tienes permiso para gestionar accesos de este documento.")
+    if not (es_autor or es_coordinador or es_decana):
+        from core.services.audit_service import AuditService
+        AuditService.log(usuario=user, accion='ACCESO_DENEGADO', documento=documento, request=request,
+                         detalle='Intento de gestionar accesos sin permiso')
+        raise PermissionDenied('No tienes permiso para gestionar accesos de este documento.')
 
     # Obtener estado de accesos
     estado_accesos = PermisoService.obtener_estado_accesos_documento(doc_id, user)
@@ -77,8 +83,12 @@ def responder_solicitud_view(request, solicitud_id):
 
     try:
         solicitud = SolicitudAcceso.objects.select_related('documento').get(pk=solicitud_id)
-        documento = solicitud.documento
+    except SolicitudAcceso.DoesNotExist:
+        messages.error(request, 'La solicitud no existe.')
+        return redirect('documentos:busqueda')
+    documento = solicitud.documento
 
+    try:
         if documento.es_sensible:
             # Normalizar decision: el formulario envía APROBADA/RECHAZADA,
             # pero VotoAccesoSensible usa APROBADO/RECHAZADO
@@ -90,7 +100,8 @@ def responder_solicitud_view(request, solicitud_id):
                 solicitud_id=solicitud_id,
                 votante=request.user,
                 voto=voto_normalizado,
-                motivo_rechazo=motivo_rechazo if voto_normalizado == 'RECHAZADO' else None
+                motivo_rechazo=motivo_rechazo if voto_normalizado == 'RECHAZADO' else None,
+                request=request,
             )
             messages.success(request, f'Tu voto fue registrado exitosamente.')
         else:
@@ -99,21 +110,18 @@ def responder_solicitud_view(request, solicitud_id):
                 solicitud_id=solicitud_id,
                 respondedor=request.user,
                 decision=decision,
-                motivo_rechazo=motivo_rechazo if decision == 'RECHAZADA' else None
+                motivo_rechazo=motivo_rechazo if decision == 'RECHAZADA' else None,
+                request=request,
             )
             msg = 'aprobada' if decision == 'APROBADA' else 'rechazada'
             messages.success(request, f'Solicitud {msg} exitosamente.')
-
-        return redirect('permisos:gestionar_accesos', doc_id=documento.id)
-
-    except Exception as e:
+    except ReglaNegocioError as e:
         messages.error(request, str(e))
-        # Try to redirect back to the document
-        try:
-            solicitud = SolicitudAcceso.objects.select_related('documento').get(pk=solicitud_id)
-            return redirect('permisos:gestionar_accesos', doc_id=solicitud.documento.id)
-        except SolicitudAcceso.DoesNotExist:
-            return redirect('documentos:busqueda')
+    except Exception:
+        logger.exception('Error al responder la solicitud %s', solicitud_id)
+        messages.error(request, MSG_ERROR_GENERICO)
+
+    return redirect('permisos:gestionar_accesos', doc_id=documento.id)
 
 
 @login_required
@@ -121,10 +129,15 @@ def revocar_acceso_view(request, doc_id, usuario_id):
     """Revoca el acceso de un usuario a un documento (POST)."""
     if request.method == 'POST':
         try:
-            PermisoService.revocar_acceso(doc_id, usuario_id, request.user)
+            PermisoService.revocar_acceso(doc_id, usuario_id, request.user, request=request)
             messages.success(request, 'Acceso revocado exitosamente.')
-        except Exception as e:
+        except ReglaNegocioError as e:
             messages.error(request, str(e))
+        except (Documento.DoesNotExist, Usuario.DoesNotExist):
+            messages.error(request, 'El documento o el usuario no existe.')
+        except Exception:
+            logger.exception('Error al revocar acceso doc=%s usuario=%s', doc_id, usuario_id)
+            messages.error(request, MSG_ERROR_GENERICO)
     return redirect('permisos:gestionar_accesos', doc_id=doc_id)
 
 
@@ -139,13 +152,18 @@ def solicitar_acceso_view(request, doc_id):
             return redirect('documentos:busqueda')
 
         try:
-            PermisoService.solicitar_acceso(request.user, doc_id, motivo)
+            PermisoService.solicitar_acceso(request.user, doc_id, motivo, request=request)
             messages.success(
                 request,
                 'Tu solicitud fue enviada. Recibirás una notificación cuando sea respondida.'
             )
-        except Exception as e:
+        except ReglaNegocioError as e:
             messages.error(request, str(e))
+        except Documento.DoesNotExist:
+            messages.error(request, 'El documento no existe.')
+        except Exception:
+            logger.exception('Error al solicitar acceso al documento %s', doc_id)
+            messages.error(request, MSG_ERROR_GENERICO)
 
     return redirect('documentos:busqueda')
 

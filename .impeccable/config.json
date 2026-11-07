@@ -1,0 +1,53 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-07T14:38:33.798Z",
+        "reason": "Claude: boceto descartado de la ronda de decisión, no se entrega; usa Public Sans, la fuente documentada"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-07T14:38:34.221Z",
+        "reason": "Claude: boceto descartado de la ronda de decisión, no se entrega; usa Public Sans, la fuente documentada"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-wayfinding.html"
+        ],
+        "createdAt": "2026-11-07T14:38:34.712Z",
+        "reason": "Claude: boceto descartado de la ronda de decisión, no se entrega; usa Public Sans, la fuente documentada"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-11-07T14:38:35.184Z",
+        "reason": "Claude: boceto descartado de la ronda de decisión, no se entrega; usa Public Sans, la fuente documentada"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "gestion_documental/static/css/sigea/graficos.css"
+        ],
+        "createdAt": "2026-11-07T18:55:04.494Z",
+        "reason": "Regla vertical de la columna Facultad en la matriz (tabla de informe), no una tarjeta con acento lateral"
+      }
+    ]
+  }
+}

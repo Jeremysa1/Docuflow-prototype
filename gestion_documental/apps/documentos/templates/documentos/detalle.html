@@ -1,448 +1,172 @@
 {% extends 'base.html' %}
-{% block title %}{{ documento.titulo }} - SIGEA{% endblock %}
-{% block page_title %}Detalles del Documento{% endblock %}
+{% load sigea %}
+{% block title %}{{ documento.titulo }} · SIGEA{% endblock %}
 
 {% block content %}
+<div class="sg-pagina">
+  <nav aria-label="Ruta">
+    <ol class="sg-migas">
+      <li><a href="{% if request.user == documento.autor %}{% url 'documentos:mis_documentos' %}{% else %}{% url 'documentos:busqueda' %}{% endif %}">{% if request.user == documento.autor %}Mis evidencias{% else %}Evidencias{% endif %}</a></li>
+      <li aria-current="page">{{ documento.titulo|truncatechars:60 }}</li>
+    </ol>
+  </nav>
 
-    <!-- Breadcrumbs -->
-    <div class="flex-row mb-xl gap-sm">
-        <a href="{% url 'documentos:mis_documentos' %}" class="text-xxs font-bold text-light uppercase tracking-wide transition-color">MIS DOCUMENTOS</a>
-        <span class="text-xxs text-light">&gt;</span>
-        <span class="text-xxs font-bold text-brand uppercase tracking-wide">{{ documento.titulo|truncatechars:50|upper }}</span>
+  <header class="sg-ficha">
+    <div class="sg-ficha__titulo">
+      {% tipo_archivo documento grande=True %}
+      <div class="sg-pila">
+        <h1>{{ documento.titulo }}</h1>
+        <div class="sg-ficha__estados">
+          {% estado_documento documento %}
+          {% if documento.factor_cna %}{% chip_factor_codigo documento.factor_cna %}<span class="sg-texto-2 sg-peque">{{ documento.get_factor_cna_display }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% if not acceso_denegado %}
+    <div class="sg-fila">
+      {% if puede_descargar and documento.archivo %}
+      <a class="sg-btn sg-btn--marca" href="{% url 'documentos:descargar_doc' documento.id %}">{% icono "download" %}<span>Descargar</span></a>
+      {% if documento.archivo.name|lower|slice:'-4:' == '.pdf' %}
+      <a class="sg-btn" href="#vista-previa">{% icono "eye" %}<span>Ver aquí</span></a>
+      {% endif %}
+      {% endif %}
+      {% if request.user == documento.autor or request.user.rol == 'DECANA' or request.user.rol == 'COORDINADOR' %}
+      <a class="sg-btn" href="{% url 'versiones:crear' documento.id %}">{% icono "upload" %}<span>Nueva versión</span></a>
+      <a class="sg-btn" href="{% url 'documentos:editar' documento.id %}">{% icono "pencil" %}<span>Editar datos</span></a>
+      {% endif %}
+      {% if puede_gestionar_accesos %}
+      <a class="sg-btn" href="{% url 'permisos:gestionar_accesos' documento.id %}">{% icono "key-round" %}<span>Accesos</span>{% if solicitudes_pendientes_count %}<span class="sg-contador">{{ solicitudes_pendientes_count }}</span>{% endif %}</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </header>
+
+  {% if acceso_denegado %}
+  <section class="sg-hoja">
+    <div class="sg-vacio">
+      {% icono "lock" "sg-vacio__icono" %}
+      <h2>Esta evidencia necesita permiso</h2>
+      {% if documento.es_sensible %}
+      <p>Es un documento sensible: para verlo deben aprobarlo dos de estas personas: el autor, la Coordinadora o la Decana.</p>
+      {% else %}
+      <p>Pídele acceso al autor. Te avisaremos cuando responda.</p>
+      {% endif %}
+      {% if solicitud_pendiente %}
+        <span class="sg-estado sg-estado--pendiente">{% icono "clock" "sg-icono--sm" %}<span>Ya enviaste una solicitud; está en espera</span></span>
+      {% else %}
+      <form method="post" action="{% url 'permisos:solicitar_acceso' documento.id %}" class="sg-form"
+        {% csrf_token %}
+        <div class="sg-campo"><label for="motivo">¿Para qué la necesitas?</label>
+          <textarea id="motivo" name="motivo" required rows="3" placeholder="Ej.: preparar el informe de autoevaluación del factor"></textarea></div>
+        <button type="submit" class="sg-btn sg-btn--primario">{% icono "send" %}<span>Solicitar acceso</span></button>
+      </form>
+      {% endif %}
+    </div>
+  </section>
+  {% else %}
+
+  {% if documento.estado == 'RECHAZADO' and documento.comentario_rechazo %}
+  <div class="sg-aviso sg-aviso--error" role="note">{% icono "circle-x" %}<span><strong>Motivo del rechazo:</strong> {{ documento.comentario_rechazo }}</span></div>
+  {% endif %}
+
+  {% if puede_aprobar %}
+  <section class="sg-hoja" aria-labelledby="decision-titulo">
+    <header class="sg-hoja__cabeza"><h2 id="decision-titulo">{% icono "stamp" %}Tu revisión</h2><p>{{ documento.fecha_modificacion|dias }} esperando</p></header>
+    <div class="sg-hoja__cuerpo sg-rejilla sg-rejilla--mitades">
+      <form method="post" action="{% url 'documentos:aprobar_doc' documento.id %}" class="sg-pila">
+        {% csrf_token %}
+        <p class="sg-texto-2">Si la evidencia cumple, apruébala para que cuente en el factor.</p>
+        <button type="submit" class="sg-btn sg-btn--aprobar" data-confirmar="La evidencia «{{ documento.titulo }}» contará como aprobada en su factor." data-confirmar-titulo="Aprobar evidencia">{% icono "check" %}<span>Aprobar</span></button>
+      </form>
+      <form method="post" action="{% url 'documentos:rechazar_doc' documento.id %}" class="sg-pila">
+        {% csrf_token %}
+        <div class="sg-campo"><label for="comentario">Motivo del rechazo</label>
+          <textarea id="comentario" name="comentario" rows="3" required placeholder="Explica qué debe corregir el autor"></textarea></div>
+        <button type="submit" class="sg-btn sg-btn--rechazar">{% icono "x" %}<span>Rechazar</span></button>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="sg-rejilla sg-rejilla--principal">
+    <div class="sg-pila">
+      <section class="sg-hoja" aria-labelledby="datos-titulo">
+        <header class="sg-hoja__cabeza"><h2 id="datos-titulo">{% icono "file-text" %}Datos de la evidencia</h2></header>
+        <div class="sg-hoja__cuerpo sg-pila">
+          {% if documento.descripcion %}<p>{{ documento.descripcion|linebreaksbr }}</p>{% endif %}
+          <dl class="sg-datos">
+            <div><dt>Autor</dt><dd>{{ documento.autor.get_full_name|default:documento.autor.email }}</dd></div>
+            <div><dt>Programa</dt><dd>{{ documento.programa.nombre|default:"—" }}</dd></div>
+            <div><dt>Categoría</dt><dd>{{ documento.categoria.nombre|default:"—" }}</dd></div>
+            <div><dt>Visibilidad</dt><dd>{{ documento.get_visibilidad_display }}</dd></div>
+            <div><dt>Subida</dt><dd>{{ documento.fecha_creacion|date:"j M Y, H:i" }}</dd></div>
+            <div><dt>Última modificación</dt><dd>{{ documento.fecha_modificacion|date:"j M Y, H:i" }}</dd></div>
+            {% if documento.fecha_vigencia %}<div><dt>Vigente hasta</dt><dd>{{ documento.fecha_vigencia|date:"j M Y" }}</dd></div>{% endif %}
+            {% if documento.archivo %}<div><dt>Tamaño</dt><dd>{{ documento.archivo.size|filesizeformat }}</dd></div>{% endif %}
+            <div><dt>Descargas</dt><dd>{{ total_descargas|default:0 }}</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      {% if puede_descargar and documento.archivo and documento.archivo.name|lower|slice:'-4:' == '.pdf' %}
+      <section class="sg-hoja" id="vista-previa" aria-labelledby="previa-titulo">
+        <header class="sg-hoja__cabeza"><h2 id="previa-titulo">{% icono "eye" %}Vista previa</h2><a href="{% url 'documentos:vista_previa' documento.id %}" target="_blank" rel="noopener">Abrir en otra pestaña</a></header>
+        <iframe class="sg-visor" src="{% url 'documentos:vista_previa' documento.id %}" title="Vista previa de {{ documento.titulo }}" loading="lazy"></iframe>
+      </section>
+      {% elif puede_descargar and documento.archivo %}
+      <section class="sg-hoja">
+        {% url 'documentos:descargar_doc' documento.id as url_descarga %}
+        {% include "componentes/estado_vacio.html" with icono="file-text" titulo="Este formato no se puede previsualizar" texto="Solo los PDF se ven aquí. Descarga el archivo para abrirlo en tu equipo." accion_url=url_descarga accion_texto="Descargar archivo" accion_clase="sg-btn--marca" %}
+      </section>
+      {% endif %}
     </div>
 
-    <!-- Banner Hero -->
-    <div class="dark-panel mb-2xl hero-banner">
-        <div class="flex-row gap-xl">
-            <!-- Icono Dinámico según extensión -->
-            <div class="hero-icon-container">
-                {% with filename=documento.archivo.name|lower %}
-                    {% if ".pdf" in filename %}
-                        <img src="https://img.icons8.com/papercut/96/pdf.png" alt="PDF" class="icon-fluid">
-                    {% elif ".doc" in filename %}
-                        <img src="https://img.icons8.com/fluency/96/microsoft-word-2019.png" alt="Word" class="icon-fluid">
-                    {% elif ".xls" in filename %}
-                        <img src="https://img.icons8.com/fluency/96/microsoft-excel-2019.png" alt="Excel" class="icon-fluid">
-                    {% elif ".ppt" in filename %}
-                        <img src="https://img.icons8.com/fluency/96/microsoft-powerpoint-2019.png" alt="PPT" class="icon-fluid">
-                    {% else %}
-                        <img src="https://img.icons8.com/fluency/96/file.png" alt="File" class="icon-fluid">
-                    {% endif %}
-                {% endwith %}
-            </div>
-            
-            <div class="flex-stack gap-sm">
-                <div class="flex-row gap-md">
-                    {% if documento.estado == 'APROBADO' %}
-                        <span class="badge badge-success badge-pill">Aprobado</span>
-                    {% elif documento.estado == 'RECHAZADO' %}
-                        <span class="badge badge-danger badge-pill">Rechazado</span>
-                    {% else %}
-                        <span class="badge badge-warning badge-pill">Pendiente</span>
-                    {% endif %}
-                    <span class="version-badge">v{{ versiones.count|default:"1.0" }}</span>
-                </div>
-                
-                <h1 class="hero-title">{{ documento.titulo }}</h1>
-                
-                <div class="flex-row hero-meta">
-                    <div class="flex-row hero-meta-item">
-                        <i data-lucide="calendar" class="icon-sm"></i>
-                        {{ documento.fecha_creacion|date:"d M Y" }}
-                    </div>
-                    {% if documento.archivo %}
-                    <div class="flex-row hero-meta-item">
-                        <i data-lucide="hard-drive" class="icon-sm"></i>
-                        {{ documento.archivo.size|filesizeformat }}
-                    </div>
-                    {% endif %}
-                    <div class="flex-row hero-meta-item">
-                        <i data-lucide="user" class="icon-sm"></i>
-                        {{ documento.autor.get_full_name }}
-                    </div>
-                </div>
-            </div>
+    <div class="sg-pila">
+      <section class="sg-hoja" aria-labelledby="versiones-titulo">
+        <header class="sg-hoja__cabeza"><h2 id="versiones-titulo">{% icono "git-branch" %}Versiones</h2><a href="{% url 'versiones:lista' documento.id %}">Historial completo</a></header>
+        <div class="sg-hoja__cuerpo">
+          {% if versiones %}
+          <ol class="sg-linea">
+            {% for version in versiones|slice:":5" %}
+            <li class="{% if forloop.first %}es-actual{% endif %}">
+              <strong>v{{ version.numero_version }}{% if forloop.first %} · vigente{% endif %}</strong>
+              <span>{{ version.descripcion_cambio|default:"Sin descripción del cambio" }}</span>
+              <span class="sg-linea__meta">{{ version.autor.get_full_name|default:version.autor.email }} · {{ version.fecha_creacion|date:"j M Y" }}{% if puede_descargar and version.archivo %} · <a href="{% url 'documentos:descargar_version' version.id %}">Descargar</a>{% endif %}</span>
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <ol class="sg-linea"><li class="es-actual"><strong>v1 · vigente</strong><span>Versión inicial cargada por el autor.</span><span class="sg-linea__meta">{{ documento.fecha_creacion|date:"j M Y" }}</span></li></ol>
+          {% endif %}
         </div>
+      </section>
 
-        {% if puede_descargar and documento.archivo %}
-        <a href="{% url 'documentos:descargar_doc' documento.id %}" class="btn btn-emerald-glow">
-            <i data-lucide="download" style="width: 20px !important; height: 20px !important; flex-shrink: 0; display: inline-block;"></i>
-            Descargar Documento
-        </a>
-        {% endif %}
-    </div>
-
-    <!-- Layout Dividido -->
-    <div class="grid-main-aside">
-        {% if acceso_denegado %}
-        <div class="col-span-full">
-            <div class="card card-dashed">
-                <div class="empty-state-icon empty-icon-wrapper">
-                    <i data-lucide="lock" class="icon-xl-brand"></i>
-                </div>
-                <h2 class="empty-title">Acceso Restringido</h2>
-                <p class="text-muted empty-desc">
-                    Este documento es de carácter restringido (sensible o de otra unidad académica). 
-                    Para visualizar su contenido y descargar archivos, debe contar con la aprobación del autor o la decanatura.
-                </p>
-
-                {% if solicitud_pendiente %}
-                    <div class="alert alert-warning alert-center-520">
-                        <div class="alert-icon">
-                            <i data-lucide="clock"></i>
-                            Ya tienes una solicitud de acceso pendiente de revisión.
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="card card-center-520">
-                        <div class="card-body">
-                            <form method="post" action="{% url 'permisos:solicitar_acceso' documento.id %}">
-                                {% csrf_token %}
-                                <div class="form-group">
-                                    <label class="form-label">Motivo de la solicitud</label>
-                                    <textarea name="motivo" class="form-textarea" placeholder="Ej: Requiero este documento para el proceso de autoevaluación del factor 3..." required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-full">
-                                    <i data-lucide="send"></i>
-                                    Enviar Solicitud de Acceso
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                {% endif %}
+      <section class="sg-hoja" aria-labelledby="historial-titulo">
+        <header class="sg-hoja__cabeza"><h2 id="historial-titulo">{% icono "history" %}Trazabilidad</h2></header>
+        {% if historial_auditoria %}
+        <ul class="sg-lista">
+          {% for reg in historial_auditoria %}
+          <li>
+            <div class="sg-lista__cuerpo">
+              <span><strong>{{ reg.get_accion_display }}</strong></span>
+              <span class="sg-lista__meta">{{ reg.usuario.get_full_name|default:"Sistema" }} · {{ reg.fecha_hora|date:"j M Y, H:i" }}</span>
             </div>
-        </div>
+          </li>
+          {% endfor %}
+        </ul>
         {% else %}
-        
-        <!-- COLUMNA PRINCIPAL (IZQUIERDA) -->
-        <div class="flex-stack">
-            <!-- Tarjeta 1: Información del Registro -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="section-title mb-2xl section-title-icon">
-                        <i data-lucide="info" class="icon-md"></i>
-                        Información del Registro
-                    </div>
-
-                    <div class="info-grid">
-                        <div class="info-field">
-                            <span class="info-label">Categoría</span>
-                            <span class="info-value text-md-meta">{{ documento.categoria.nombre }}</span>
-                        </div>
-                        <div class="info-field">
-                            <span class="info-label">Programa / Factor</span>
-                            <span class="info-value text-md-meta" style="display:flex; flex-direction:column; gap:0.25rem;">
-    {% if documento.programa %}
-        <strong>{{ documento.programa.nombre }}</strong>
-    {% endif %}
-    {% if documento.factor_cna %}
-        <span>{{ documento.get_factor_cna_display }}</span>
-    {% endif %}
-    {% if not documento.programa and not documento.factor_cna %}
-        --
-    {% endif %}
-</span>
-                        </div>
-                        <div class="info-field">
-                            <span class="info-label">Estado Actual</span>
-                            <span class="info-value text-md-meta">{{ documento.get_estado_display }}</span>
-                        </div>
-                        <div class="info-field">
-                            <span class="info-label">Fecha Carga</span>
-                            <span class="info-value text-md-meta">{{ documento.fecha_creacion|date:"d M Y, H:i A" }}</span>
-                        </div>
-                        <div class="info-field">
-                            <span class="info-label">Última Modificación</span>
-                            <span class="info-value text-md-meta">{{ documento.fecha_modificacion|date:"d M Y, H:i A" }}</span>
-                        </div>
-                        <div class="info-field">
-                            <span class="info-label">Visibilidad</span>
-                            <span class="info-value text-md-meta">{{ documento.get_visibilidad_display }}{% if documento.es_sensible %} · Sensible{% endif %}</span>
-                        </div>
-                    </div>
-
-                    <hr class="divider-lg">
-
-                    <div class="info-field">
-                        <span class="info-label">Descripción Institucional</span>
-                        <p class="text-sm text-muted leading-relaxed">
-                            {{ documento.descripcion|default:"Sin descripción proporcionada para este documento." }}
-                        </p>
-                    </div>
-                </div>
-            </div><!-- Tarjeta 2: Historial de Versiones -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="section-title mb-2xl section-title-icon">
-                        <i data-lucide="history" class="icon-md"></i>
-                        Historial de Versiones
-                    </div>
-
-                    <div class="timeline">
-                        {% for version in versiones %}
-                        <div class="timeline-item">
-                            <div class="timeline-dot {% if forloop.first %}timeline-dot--brand{% else %}timeline-dot--amber{% endif %}" {% if forloop.first %}class="timeline-dot-current"{% endif %}></div> 
-                            <div {% if forloop.first %}class="timeline-panel-current"{% endif %}>
-                                <div class="flex-between mb-sm">
-                                    <div class="flex-row gap-sm">
-                                        <span class="version-text-brand">v{{ version.numero_version }}</span>
-                                        {% if forloop.first %}
-                                            <span class="badge badge-neutral">Actual</span>
-                                        {% endif %}
-                                    </div>
-                                    <span class="version-date">{{ version.fecha_creacion|date:"d M Y" }}</span>
-                                </div>
-                                <p class="text-sm text-muted leading-relaxed mb-md">{{ version.comentario|default:"Actualización de contenidos del documento." }}</p>
-                                
-                                {% if puede_descargar and version.archivo %}
-                                <a href="{% url 'documentos:descargar_version' version.id %}" class="flex-row text-xs font-bold btn-link-brand">
-                                    <i data-lucide="download" style="width: 20px !important; height: 20px !important; flex-shrink: 0; display: inline-block;"></i>
-                                    Descargar versión
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="timeline-item">
-                            <div class="timeline-dot timeline-dot--brand timeline-dot-current"></div>
-                            <div class="timeline-panel-current">
-                                <div class="flex-between mb-sm">
-                                    <div class="flex-row gap-sm">
-                                        <span class="version-text-brand">v1.0</span>
-                                        <span class="badge badge-neutral">Actual</span>
-                                    </div>
-                                    <span class="version-date">{{ documento.fecha_creacion|date:"d M Y" }}</span>
-                                </div>
-                                <p class="text-sm text-muted leading-relaxed">Versión inicial cargada por el autor.</p>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-</div>
-
-        <!-- COLUMNA SIDEBAR (DERECHA) -->
-        <div class="flex-stack">
-            <!-- Acciones de Aprobación -->
-            {% if puede_aprobar %}
-            <div class="card card-warning-outline">
-                <div class="card-body">
-                    <div class="form-label form-label-warning">Acción Requerida</div>
-                    <p class="text-sm text-muted mb-xl">Este documento requiere tu revisión para ser aprobado en el sistema.</p>
-                    
-                    <form method="post" action="{% url 'documentos:aprobar_doc' documento.id %}" class="mb-md">
-                        {% csrf_token %}
-                        <button type="submit" class="btn w-full btn-emerald">
-                            <i data-lucide="check-circle"></i>
-                            Aprobar Documento
-                        </button>
-                    </form>
-
-                    <button type="button" id="show-reject-btn" onclick="document.getElementById('reject-form').classList.remove('hidden'); this.classList.add('hidden');" class="btn btn-reject w-full">
-                        <i data-lucide="x-circle"></i>
-                        Rechazar
-                    </button>
-                    
-                    <form id="reject-form" method="post" action="{% url 'documentos:rechazar_doc' documento.id %}" class="reject-form-anim hidden">
-                        {% csrf_token %}
-                        <textarea name="comentario" class="form-textarea textarea-reject" placeholder="Indique el motivo del rechazo..." required></textarea>
-                        <button type="submit" class="btn w-full btn-rose">
-                            Confirmar Rechazo
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Gestión Rápida -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="form-label mb-lg">Gestión Rápida</div>
-                    <div class="flex-stack gap-xs">
-                        {% if documento.archivo %}
-                        <button type="button" onclick="openDocumentModal('{{ documento.archivo.url }}', '{{ documento.archivo.name|lower }}')" class="quick-action quick-action-btn">
-                            <div class="quick-action-content text-md-meta">
-                                <i data-lucide="external-link" class="icon-brand-md"></i>
-                                Visualizar Archivo
-                            </div>
-                        </button>
-                        {% endif %}
-                        <a href="{% url 'versiones:lista' documento.id %}" class="quick-action quick-action-pad">
-                            <div class="quick-action-content text-md-meta">
-                                <i data-lucide="layers" class="icon-brand-md"></i>
-                                Historial Completo
-                            </div>
-                        </a>
-                        {% if request.user == documento.autor or request.user.rol in 'DECANA,COORDINADOR' %}
-                        <a href="{% url 'documentos:editar' documento.id %}" class="quick-action quick-action-pad">
-                            <div class="quick-action-content text-md-meta">
-                                <i data-lucide="edit-3" class="icon-brand-md"></i>
-                                Editar Metadatos
-                            </div>
-                        </a>
-                        {% endif %}
-                        {% if puede_gestionar_accesos %}
-                        <a href="{% url 'permisos:gestionar_accesos' documento.id %}" class="quick-action quick-action-pad">
-                            <div class="quick-action-content text-md-meta">
-                                <i data-lucide="shield" class="icon-brand-md"></i>
-                                Gestionar Accesos
-                            </div>
-                            {% if solicitudes_pendientes_count > 0 %}
-                                <span class="badge badge-danger badge-pill">{{ solicitudes_pendientes_count }}</span>
-                            {% endif %}
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Metadatos Clave -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="form-label mb-lg">Metadatos Clave</div>
-                    <div class="flex-stack gap-md">
-                        <div class="flex-between">
-                            <span class="text-xs text-muted">Tipo:</span>
-                            <span class="text-xs font-bold text-brand font-mono">
-                                {% if ".pdf" in documento.archivo.name|lower %}PDF{% elif ".doc" in documento.archivo.name|lower %}WORD{% elif ".xls" in documento.archivo.name|lower %}EXCEL{% elif ".ppt" in documento.archivo.name|lower %}POWERPOINT{% else %}DOCUMENTO{% endif %}
-                            </span>
-                        </div>
-                        <div class="flex-between">
-                            <span class="text-xs text-muted">ID Registro:</span>
-                            <span class="text-xs font-bold text-brand font-mono">#{{ documento.id|stringformat:"05d" }}</span>
-                        </div>
-                        <div class="flex-between">
-                            <span class="text-xs text-muted">Versiones:</span>
-                            <span class="text-xs font-bold font-mono-emerald">{{ versiones.count|default:"1" }} registrada(s)</span>
-                        </div>
-                        <div class="flex-between">
-                            <span class="text-xs text-muted">Interacciones:</span>
-                            <span class="text-xs font-bold text-brand font-mono">{{ total_descargas|default:"0" }} descargas</span>
-                        </div>
-                        <div class="flex-between">
-                            <span class="text-xs text-muted">Privacidad:</span>
-                            <span class="text-xs font-bold text-brand font-mono">{{ documento.get_visibilidad_display }}{% if documento.es_sensible %} · Sensible{% endif %}</span>
-                        </div>
-                    </div>
-                </div>
-</div>
-
-            <!-- Boton Eliminar Desktop (Solo Desktop) -->
-            {% if request.user == documento.autor or request.user.rol == 'DECANA' %}
-            <div class="hidden-mobile" style="margin-top: 2rem; margin-bottom: 1.5rem; display: flex; justify-content: flex-start; width: 100%;">
-                <form method="post" action="{% url 'documentos:eliminar' documento.id %}" onsubmit="return confirm('Seguro que deseas eliminar este documento permanentemente? Esta accin es irreversible.');" style="width: 100%; width: 100%;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-rose-solid w-full" style="padding: 0.65rem 1rem; border-radius: var(--radius-md); box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.2); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                        <i data-lucide="trash-2" style="color: white; width: 18px; height: 18px;"></i>
-                        Eliminar Documento
-                    </button>
-                </form>
-            </div>
-            {% endif %}
-
-        </div>
+          {% include "componentes/estado_vacio.html" with icono="history" titulo="Sin movimientos" %}
         {% endif %}
-    </div>
+      </section>
 
-    <!-- Modal Previsualizador de Documentos -->
-    <div class="modal-backdrop" id="documentModal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i data-lucide="file-text" class="icon-lg-brand"></i>
-                    Previsualización de Documento
-                </h3>
-                <button type="button" class="modal-close-btn" onclick="closeDocumentModal()">
-                    <i data-lucide="x" class="icon-md"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="modalBody">
-                <!-- El contenido se inyecta por JS -->
-            </div>
-        </div>
+      {% if request.user == documento.autor or request.user.rol == 'DECANA' or request.user.rol == 'COORDINADOR' %}
+      <form method="post" action="{% url 'documentos:eliminar' documento.id %}">
+        {% csrf_token %}
+        <button type="submit" class="sg-btn sg-btn--peligro sg-btn--bloque" data-confirmar="La evidencia irá a la papelera. Podrás restaurarla desde allí." data-confirmar-titulo="Enviar a la papelera">{% icono "trash-2" %}<span>Enviar a la papelera</span></button>
+      </form>
+      {% endif %}
     </div>
-
-    <!-- Boton Eliminar Movil (Solo Movil) -->
-    {% if request.user == documento.autor or request.user.rol == 'DECANA' %}
-    <div class="hidden-desktop" style="margin-top: 2rem; border-top: 1px solid var(--slate-200); padding-top: 2rem; display: flex; justify-content: center; width: 100%;">
-        <form method="post" action="{% url 'documentos:eliminar' documento.id %}" onsubmit="return confirm('Seguro que deseas eliminar este documento permanentemente? Esta accin es irreversible.');" style="width: 100%; max-width: 300px;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-rose-solid w-full" style="padding: 0.75rem 1rem; border-radius: var(--radius-md); box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.2); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                <i data-lucide="trash-2" style="color: white; width: 18px; height: 18px;"></i>
-                Eliminar Documento
-            </button>
-        </form>
-    </div>
-    {% endif %}
-
+  </div>
+  {% endif %}
+</div>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Forzamos el resaltado de "Mis documentos" en el sidebar global
-        const misDocsUrl = "{% url 'documentos:mis_documentos' %}";
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            if (link.getAttribute('href') === misDocsUrl) {
-                link.classList.add('active');
-            }
-        });
-    });
-
-    // Lógica del Modal
-    const documentModal = document.getElementById('documentModal');
-    const modalBody = document.getElementById('modalBody');
-
-    function openDocumentModal(fileUrl, fileName) {
-        if (fileName.includes('.pdf')) {
-            // Render PDF via iframe
-            modalBody.innerHTML = `<iframe src="${fileUrl}" class="iframe-viewer"></iframe>`;
-        } else {
-            // Fallback for non-PDFs
-            modalBody.innerHTML = `
-                <div class="modal-fallback">
-                    <i data-lucide="file-warning" class="modal-fallback-icon"></i>
-                    <h4 class="modal-fallback-title">Formato no soportado para previsualización</h4>
-                    <p class="modal-fallback-text">
-                        Los navegadores web no pueden renderizar nativamente archivos de Word, Excel o PowerPoint de forma local. 
-                        Por favor, descargue el archivo para visualizarlo en su equipo.
-                    </p>
-                    <a href="${fileUrl}" class="btn btn-brand">
-                        <i data-lucide="download" style="width: 20px !important; height: 20px !important; flex-shrink: 0; display: inline-block;"></i>
-                        Descargar Archivo
-                    </a>
-                </div>
-            `;
-            // Re-render lucide icons inside the new HTML
-            if (window.lucide) {
-                window.lucide.createIcons();
-            }
-        }
-        documentModal.classList.add('show');
-    }
-
-    function closeDocumentModal() {
-        documentModal.classList.remove('show');
-        // Limpiar el src para detener descargas o procesos del iframe
-        setTimeout(() => {
-            modalBody.innerHTML = '';
-        }, 300); // Esperar a que termine la animación
-    }
-
-    // Cerrar al hacer click fuera del modal
-    documentModal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeDocumentModal();
-        }
-    });
-
-    // Cerrar con tecla ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && documentModal.classList.contains('show')) {
-            closeDocumentModal();
-        }
-    });
-</script>
-{% endblock %}
-

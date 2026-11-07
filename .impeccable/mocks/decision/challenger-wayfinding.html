@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#142a59;--panel:#0f2148;--blanco:#fff;--gris:#5b6478;--linea:#dfe4ee}
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;font:15px/1.45 "Public Sans",sans-serif;color:var(--azul);background:#fff;font-variant-numeric:tabular-nums}
+.banda{background:var(--panel);color:#fff;height:132px;display:flex;align-items:center;padding:0 40px;gap:28px}
+.banda .pict{width:68px;height:68px;background:#fff;color:var(--panel);border-radius:6px;display:grid;place-items:center;font-size:36px;font-weight:900}
+.banda h1{font-size:34px;font-weight:700}
+.banda p{color:#c9d3ea;font-size:17px}
+.banda .flecha{margin-left:auto;font-size:56px;font-weight:300}
+nav{display:flex;gap:28px;padding:14px 40px;border-bottom:1px solid var(--linea);font-weight:700}
+nav span{color:var(--gris)}
+nav span.on{color:var(--azul)}
+.puertas{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;padding:26px 40px}
+.puerta{border:2px solid var(--azul);border-radius:6px;padding:16px 18px;height:150px;display:flex;flex-direction:column}
+.puerta b{font-size:52px;font-weight:900;line-height:1}
+.puerta span{font-weight:600;font-size:14px;margin-top:4px}
+.puerta em{margin-top:auto;font-style:normal;font-weight:700}
+.puerta.vacia{border-color:var(--linea);color:var(--gris)}
+.puerta.vacia b{color:#7d88a1}
+.puerta.activa{background:var(--azul);color:#fff}
+.siguiente{margin:0 40px;border-top:4px solid var(--azul);padding-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.siguiente div{font-size:14px;color:var(--gris)}
+.siguiente strong{display:block;color:var(--azul);font-size:20px}
+</style></head><body>
+<div class="banda"><span class="pict">✎</span><div><h1>Siguiente: firmar «po2» · Factor 10</h1><p>Lleva 4 días esperando revisión. Es lo único pendiente en la facultad.</p></div><span class="flecha">→</span></div>
+<nav><span class="on">Avance</span><span>Evidencias</span><span>Por firmar</span><span>Accesos</span><span>Auditoría</span></nav>
+<div class="puertas">
+<div class="puerta vacia"><b>F1</b><span>Proyecto Educativo</span><em>0 / 15</em></div>
+<div class="puerta vacia"><b>F2</b><span>Estudiantes</span><em>0 / 25</em></div>
+<div class="puerta activa"><b>F3</b><span>Profesores</span><em>4 / 20</em></div>
+<div class="puerta vacia"><b>F4</b><span>Egresados</span><em>0 / 10</em></div>
+<div class="puerta vacia"><b>F5</b><span>Aspectos Académicos</span><em>0 / 30</em></div>
+<div class="puerta vacia"><b>F6</b><span>Permanencia</span><em>0 / 15</em></div>
+<div class="puerta"><b>F7</b><span>Entorno</span><em>2 / 10</em></div>
+<div class="puerta vacia"><b>F8</b><span>Investigación</span><em>0 / 20</em></div>
+<div class="puerta vacia"><b>F9</b><span>Bienestar</span><em>0 / 15</em></div>
+<div class="puerta"><b>F10</b><span>Medios Educativos</span><em>0 / 15 · 1 →</em></div>
+<div class="puerta vacia"><b>F11</b><span>Organización</span><em>0 / 20</em></div>
+<div class="puerta vacia"><b>F12</b><span>Recursos</span><em>0 / 10</em></div>
+</div>
+<div class="siguiente"><div><strong>6 de 205</strong>evidencias aprobadas · 2 %</div><div><strong>1 por firmar</strong>la más antigua: 4 días</div><div><strong>0 accesos denegados</strong>últimos 7 días</div></div>
+</body></html>

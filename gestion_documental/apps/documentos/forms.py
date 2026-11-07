@@ -7,7 +7,35 @@ from django.conf import settings
 from .models import Documento
 
 
-class DocumentoForm(forms.ModelForm):
+class _OpcionesVaciasEnEspanol:
+    """La opción vacía de cada lista dice qué elegir, en español."""
+    VACIAS = {
+        'programa': 'Elige el programa',
+        'categoria': 'Elige la categoría',
+        'factor_cna': 'Elige el factor CNA',
+    }
+
+    def __init__(self, *args, usuario=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # M7: un docente con programa asignado solo sube o edita evidencias de su programa
+        programa = getattr(usuario, 'programa_academico', None)
+        if usuario is not None and getattr(usuario, 'rol', None) == 'DOCENTE_PLANTA' and programa and 'programa' in self.fields:
+            self.fields['programa'].queryset = self.fields['programa'].queryset.filter(pk=programa.pk)
+            self.fields['programa'].initial = programa.pk
+            self.fields['programa'].empty_label = None
+        for nombre, texto in self.VACIAS.items():
+            campo = self.fields.get(nombre)
+            if campo is None:
+                continue
+            if hasattr(campo, 'empty_label'):
+                campo.empty_label = texto
+                continue
+            opciones = list(getattr(campo, 'choices', []))
+            if opciones and opciones[0][0] in ('', None):
+                campo.choices = [('', texto)] + opciones[1:]
+
+
+class DocumentoForm(_OpcionesVaciasEnEspanol, forms.ModelForm):
     """Formulario para crear/editar documentos."""
 
     visibilidad = forms.ChoiceField(
@@ -41,20 +69,12 @@ class DocumentoForm(forms.ModelForm):
         """Valida extensión y tamaño del archivo."""
         archivo = self.cleaned_data.get('archivo')
         if archivo:
-            # Validar extensión
-            import os
-            ext = os.path.splitext(archivo.name)[1].lower()
-            if ext not in settings.ALLOWED_DOCUMENT_EXTENSIONS:
-                raise forms.ValidationError(
-                    f'Extensión no permitida. Extensiones válidas: {", ".join(settings.ALLOWED_DOCUMENT_EXTENSIONS)}'
-                )
-            # Validar tamaño
-            if archivo.size > settings.MAX_UPLOAD_SIZE:
-                max_mb = settings.MAX_UPLOAD_SIZE // (1024 * 1024)
-                raise forms.ValidationError(f'El archivo excede el tamaño máximo de {max_mb}MB.')
+            # Extensión, tamaño y firma real del contenido (una sola regla en todo SIGEA)
+            from core.utils.helpers import validar_archivo_subido
+            validar_archivo_subido(archivo)
         return archivo
 
-class DocumentoEditForm(forms.ModelForm):
+class DocumentoEditForm(_OpcionesVaciasEnEspanol, forms.ModelForm):
     """Formulario para editar metadatos de documentos existentes (sin archivo)."""
     visibilidad = forms.ChoiceField(
         choices=[

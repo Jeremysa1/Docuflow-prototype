@@ -1,0 +1,129 @@
+/* Tokens: los únicos valores permitidos en el CSS de SIGEA (contracts/tokens.md). */
+@font-face {
+  font-family: "Public Sans";
+  src: url("../../fonts/public-sans/public-sans-latin-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Public Sans";
+  src: url("../../fonts/public-sans/public-sans-latin-600.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Public Sans";
+  src: url("../../fonts/public-sans/public-sans-latin-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Public Sans";
+  src: url("../../fonts/public-sans/public-sans-latin-800.woff2") format("woff2");
+  font-weight: 800; font-style: normal; font-display: swap;
+}
+
+:root {
+  /* Marca y superficies */
+  --sg-marca: #142a59;
+  --sg-marca-2: #1c3a78;
+  --sg-marca-3: #2a4b8f;
+  --sg-blanco: #ffffff;
+  --sg-papel: #f5f7fb;
+  --sg-renglon: #d6dcea;
+  --sg-renglon-2: #b3bdd2;
+  --sg-borde-campo: #8792ad; /* 3:1 sobre blanco: borde de campos y botones secundarios */
+  --sg-fila-alterna: #fafbfd;
+
+  /* Texto */
+  --sg-texto: #142a59;
+  --sg-texto-2: #4d5871;
+  --sg-texto-3: #636d86; /* placeholders: 5,1:1 sobre blanco */
+  --sg-texto-inverso: #ffffff;
+  --sg-texto-inverso-2: #c9d3ea;
+
+  /* Acción reservada: la acción pendiente del usuario y el foco */
+  --sg-accion: #1f4fd1;
+  --sg-accion-2: #1a43b3;
+
+  /* Estados (siempre acompañados de una forma) */
+  --sg-ok: #1f6f4a;
+  --sg-ok-fondo: #e6f2ec;
+  --sg-pendiente: #1f4fd1;
+  --sg-pendiente-fondo: #e8eefc;
+  --sg-alerta: #9a5b00;
+  --sg-alerta-fondo: #fbf1e1;
+  --sg-error: #b3261e;
+  --sg-error-fondo: #fbe9e7;
+  --sg-sensible: #5b2a86;
+  --sg-sensible-fondo: #f1eaf7;
+
+  /* Decisiones: verde y rojo apagados, en la misma familia fría del azul (texto blanco 5:1 o más) */
+  --sg-aprobar: #2f7a5f;
+  --sg-aprobar-2: #276951;
+  --sg-rechazar: #b3423b;
+  --sg-rechazar-2: #9a3731;
+  --sg-salir-oscuro: #ffa59d; /* cerrar sesión sobre el azul del menú: 7:1 */
+
+  /* Tipos de archivo: color convencional de cada formato (texto blanco 4,5:1 o más) */
+  --sg-tipo-pdf: #b3261e;
+  --sg-tipo-word: #2b579a;
+  --sg-tipo-excel: #1d6f42;
+  --sg-tipo-ppt: #c43e1c;
+  --sg-tipo-otro: #4d5871;
+
+  /* Gradación CNA: escala única del sistema */
+  --sg-grad-0: #eef1f6;
+  --sg-grad-1: #d6e0f3;
+  --sg-grad-2: #a9bde6;
+  --sg-grad-3: #4a6cc0;
+  --sg-grad-4: #2f56b0;
+  --sg-grad-5: #142a59;
+  --sg-grad-borde: rgba(255, 255, 255, 0.55);
+
+  /* Tipografía */
+  --sg-fuente: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sg-t-1: 0.75rem;
+  --sg-t-2: 0.875rem;
+  --sg-t-3: 1rem;
+  --sg-t-4: 1.25rem;
+  --sg-t-5: 2rem;
+  --sg-t-6: clamp(2.5rem, 5vw, 3.5rem);
+  --sg-interlineado: 1.5;
+  --sg-interlineado-titulo: 1.2;
+
+  /* Espacio */
+  --sg-e-1: 0.25rem;
+  --sg-e-2: 0.5rem;
+  --sg-e-3: 0.75rem;
+  --sg-e-4: 1rem;
+  --sg-e-5: 1.5rem;
+  --sg-e-6: 2rem;
+  --sg-e-7: 3rem;
+
+  /* Forma */
+  --sg-r-1: 4px;
+  --sg-r-2: 8px;
+  --sg-r-3: 14px; /* solo superficies que flotan sobre el fondo institucional */
+  --sg-sombra-hoja: 0 12px 32px -8px rgba(20, 42, 89, 0.28), 0 2px 6px rgba(20, 42, 89, 0.12);
+  --sg-sombra-flotante: 0 24px 48px -20px rgba(20, 42, 89, 0.28), 0 4px 12px -4px rgba(20, 42, 89, 0.10);
+  --sg-sombra-suave: 0 1px 0 rgba(20, 42, 89, 0.05), 0 10px 24px -16px rgba(20, 42, 89, 0.45);
+  --sg-anillo: 0 0 0 3px rgba(31, 79, 209, 0.22);
+  --sg-borde: 1.5px;
+  --sg-borde-fuerte: 2px;
+  --sg-toque: 44px;
+
+  /* Movimiento */
+  --sg-dur: 200ms;
+  --sg-dur-larga: 300ms;
+  --sg-curva: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Shell */
+  --sg-riel: 248px;
+  --sg-riel-corto: 72px;
+  --sg-barra-movil: 64px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sg-dur: 0ms;
+    --sg-dur-larga: 0ms;
+  }
+}

@@ -1,420 +1,144 @@
 {% extends 'base.html' %}
-{% load static %}
-{% block title %}Dashboard - SIGEA{% endblock %}
-{% block page_title %}Dashboard{% endblock %}
+{% load sigea %}
+{% block title %}Panel · SIGEA{% endblock %}
 
 {% block content %}
+<div class="sg-pagina">
 
-  {# === DECANA: BANNER VENCIDOS === #}
-  {% if user.rol == 'DECANA' and hay_docs_vencidos %}
-  <div class="alert-banner alert-banner-warning">
-    <div class="alert-banner-content">
-      <div class="alert-banner-icon alert-banner-icon-warning">
-        <i data-lucide="alert-triangle"></i>
-      </div>
-      <div>
-        <strong class="alert-banner-title">Atención: Documentos Vencidos</strong>
-        <span class="alert-banner-desc">Hay documentos de auditoría que requieren su revisión inmediata antes del cierre trimestral.</span>
-      </div>
-    </div>
-    <a href="{% url 'documentos:lista' %}?estado=PENDIENTE" class="btn btn-sm btn-amber-dark">
-      Revisar ahora
-    </a>
-  </div>
-  {% endif %}
+  {% if rol == 'DECANA' or rol == 'COORDINADOR' %}
+    {% include "componentes/banner_huella.html" with modo="facultad" huella=huella titular=banner_titular cifra=banner_cifra cifra_detalle=banner_detalle nota=banner_nota acciones=banner_acciones %}
 
-    {# === CABECERA HERO BANNER === #}
-  <header class="dashboard-hero" style="background-image: url('{% static 'img/sas1.png' %}');">
-    <div class="dashboard-hero-content">
-      <h1>Bienvenido de nuevo, {{ user.first_name|default:user.username }}.</h1>
-      <p>
-        {% if user.rol == 'DECANA' %}
-        Gestión integral de calidad y monitoreo documental.
-        {% else %}
-        Gestión y estado de tu documentación.
-        {% endif %}
-      </p>
-            <a href="{% url 'documentos:subir' %}" class="btn-banner-upload">         <i data-lucide="upload-cloud" class="icon-banner-upload"></i>         <span>Subir nuevo documento</span>       </a>
-    </div>
-  </header>
-
-
-  {# ════════════════════ ROL: DOCENTE ════════════════════ #}
-  {% if user.rol == 'DOCENTE_PLANTA' %}
-  
-  <div class="stats-grid">
-    <a href="{% url 'documentos:mis_documentos' %}" class="stat-card stat-card--brand">
-      <div class="stat-card-icon"><i data-lucide="folder"></i></div>
-      <div class="stat-card-label">Mis documentos</div>
-      <div class="stat-card-value">{{ mis_docs_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-    
-    <a href="{% url 'documentos:mis_documentos' %}?estado=PENDIENTE" class="stat-card stat-card--amber">
-      <div class="stat-card-icon"><i data-lucide="clock"></i></div>
-      <div class="stat-card-label">Pendientes</div>
-      <div class="stat-card-value">{{ pendientes_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-    
-    <a href="{% url 'documentos:mis_documentos' %}?estado=APROBADO" class="stat-card stat-card--emerald">
-      <div class="stat-card-icon"><i data-lucide="check-circle-2"></i></div>
-      <div class="stat-card-label">Aprobados</div>
-      <div class="stat-card-value">{{ aprobados_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-    
-    <a href="{% url 'documentos:mis_documentos' %}?estado=RECHAZADO" class="stat-card stat-card--rose">
-      <div class="stat-card-icon"><i data-lucide="x-circle"></i></div>
-      <div class="stat-card-label">Rechazados</div>
-      <div class="stat-card-value">{{ rechazados_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-  </div>
-
-  <div class="grid-main-aside">
-    
-    <div class="card">
-      <div class="card-body">
-        <div class="section-header">
-          <h2 class="section-title">Actividad Reciente</h2>
-          <a href="{% url 'documentos:lista' %}" class="section-link">Ver historial &rarr;</a>
-        </div>
-        
-        <div class="table-scroll">
-          <div class="table-responsive"> <table class="data-table">
-            <thead>
-              <tr>
-                <th>Documento</th>
-                <th>Categoría</th>
-                <th>Factor</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for doc in actividad_reciente %}
-              <tr>
-                <td>
-                  <div class="flex-row font-semibold text-brand">
-                    <div class="doc-icon">
-                      {% if ".pdf" in doc.archivo.name|lower %}
-                        <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
-                      {% elif ".doc" in doc.archivo.name|lower %}
-                        <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word">
-                      {% elif ".xls" in doc.archivo.name|lower %}
-                        <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel">
-                      {% elif ".ppt" in doc.archivo.name|lower %}
-                        <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT">
-                      {% else %}
-                        <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc">
-                      {% endif %}
-                    </div>
-                    {{ doc.titulo|truncatechars:35 }}
-                  </div>
-                </td>
-                <td class="text-muted font-semibold">{{ doc.categoria.nombre }}</td>
-                <td class="text-xs font-bold text-light">{{ doc.factor_cna|default:"--" }}</td>
-                <td class="text-muted">{{ doc.fecha_creacion|date:"d/m/y" }}</td>
-                <td>
-                  {% if doc.estado == 'APROBADO' %}
-                    <span class="badge badge-success">Aprobado</span>
-                  {% elif doc.estado == 'RECHAZADO' %}
-                    <span class="badge badge-danger">Rechazado</span>
-                  {% else %}
-                    <span class="badge badge-warning">Pendiente</span>
-                  {% endif %}
-                </td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="5" class="text-center text-light mt-xl mb-xl">Sin actividad reciente</td></tr>
-              {% endfor %}
-            </tbody>
-          </table> </div>
-        </div>
+    {% if rol == 'COORDINADOR' %}
+    <div class="sg-rejilla sg-rejilla--principal">
+      <section class="sg-hoja" aria-labelledby="cola-titulo">
+        <header class="sg-hoja__cabeza">
+          <h2 id="cola-titulo">{% icono "clipboard-check" %}Por revisar, de la más antigua a la más nueva</h2>
+          <a href="{% url 'documentos:aprobar' %}">Ver la bandeja completa</a>
+        </header>
+        {% include "componentes/cola_revision.html" with cola=cola puede_decidir=True %}
+      </section>
+      <div class="sg-pila">
+        <section class="sg-hoja" aria-labelledby="tiempos-titulo">
+          <header class="sg-hoja__cabeza">
+            <h2 id="tiempos-titulo">{% icono "clock" %}Tiempo de revisión</h2>
+            <p>{% if tiempos.media_horas is not None %}media {{ tiempos.media_horas|floatformat:0 }} h · {{ tiempos.revisados|plural:"revisada,revisadas" }}{% else %}sin revisiones en 4 semanas{% endif %}</p>
+          </header>
+          {% if tiempos.revisados %}<div class="sg-hoja__cuerpo">{% include "componentes/tiempos.html" %}</div>
+          {% else %}{% include "componentes/estado_vacio.html" with icono="clock" titulo="Aún no hay revisiones en 4 semanas" texto="Cuando apruebes o rechaces evidencias verás aquí el tiempo que tarda cada revisión." %}{% endif %}
+        </section>
+        <section class="sg-hoja" aria-labelledby="pulso-titulo">
+          <header class="sg-hoja__cabeza"><h2 id="pulso-titulo">{% icono "activity" %}Actividad y seguridad · 30 días</h2></header>
+          <div class="sg-hoja__cuerpo">{% include "componentes/pulso.html" %}</div>
+        </section>
       </div>
     </div>
+    {% endif %}
 
-    <div>
-      <h2 class="section-subtitle">Acciones Rápidas</h2>
-      
-      <a href="{% url 'documentos:subir' %}" class="quick-action mb-md">
-        <div class="quick-action-content">
-          <div class="quick-action-icon"><i data-lucide="upload-cloud"></i></div>
-          Subir documento
-        </div>
-        <div class="quick-action-arrow"><i data-lucide="chevron-right"></i></div>
-      </a>
+    {% if rol == 'DECANA' %}
+    <div class="sg-rejilla sg-rejilla--principal">
+      <section class="sg-hoja" aria-labelledby="matriz-titulo">
+        <header class="sg-hoja__cabeza">
+          <h2 id="matriz-titulo">{% icono "grid-3x3" %}Matriz de autoevaluación</h2>
+          <p>Evidencias aprobadas frente a la meta, por factor y programa</p>
+        </header>
+        <div class="sg-hoja__cuerpo sg-pila">{% include "componentes/matriz.html" %}</div>
+      </section>
+      <div class="sg-pila">
+        <section class="sg-hoja" aria-labelledby="cola-titulo">
+          <header class="sg-hoja__cabeza">
+            <h2 id="cola-titulo">{% icono "clipboard-check" %}Revisión pendiente</h2>
+            <p>{{ cola_total|plural:"evidencia,evidencias" }}{% if tiempos.media_horas is not None %} · media {{ tiempos.media_horas|floatformat:0 }} h{% endif %}</p>
+          </header>
+          {% include "componentes/cola_revision.html" with cola=cola puede_decidir=True %}
+          {% if cola_total > cola|length %}<div class="sg-hoja__pie"><a href="{% url 'documentos:aprobar' %}">Ver las {{ cola_total }} en la bandeja</a></div>{% endif %}
+        </section>
+        <section class="sg-hoja" aria-labelledby="pulso-titulo">
+          <header class="sg-hoja__cabeza">
+            <h2 id="pulso-titulo">{% icono "activity" %}Actividad · 30 días</h2>
+            <a href="{% url 'auditoria:lista' %}">Auditoría</a>
+          </header>
+          <div class="sg-hoja__cuerpo">{% include "componentes/pulso.html" %}</div>
+        </section>
+      </div>
+    </div>
+    {% else %}
+    <section class="sg-hoja" aria-labelledby="matriz-titulo">
+      <header class="sg-hoja__cabeza">
+        <h2 id="matriz-titulo">{% icono "grid-3x3" %}Matriz de autoevaluación</h2>
+        <p>Evidencias aprobadas frente a la meta, por factor y programa</p>
+      </header>
+      <div class="sg-hoja__cuerpo sg-pila">{% include "componentes/matriz.html" %}</div>
+    </section>
+    {% endif %}
 
-      <a href="{% url 'documentos:mis_documentos' %}" class="quick-action mb-md">
-        <div class="quick-action-content">
-          <div class="quick-action-icon"><i data-lucide="folder"></i></div>
-          Mis documentos
-        </div>
-        <div class="quick-action-arrow"><i data-lucide="chevron-right"></i></div>
-      </a>
+  {% else %}
+    {% include "componentes/banner_huella.html" with modo="personal" personal=personal titular=banner_titular cifra=banner_cifra cifra_detalle=banner_detalle nota=banner_nota acciones=banner_acciones %}
 
-      <a href="{% url 'notificaciones:lista' %}" class="quick-action mb-xl">
-        <div class="quick-action-content">
-          <div class="quick-action-icon"><i data-lucide="bell"></i></div>
-          Notificaciones
-        </div>
-        <div class="quick-action-arrow"><i data-lucide="chevron-right"></i></div>
-      </a>
-
-      <h2 class="section-subtitle">Notificaciones</h2>
-      <div class="timeline">
-        {% for notif in notificaciones %}
-        <div class="timeline-item">
-          <div class="timeline-dot 
-            {% if notif.tipo == 'APROBADO' %}timeline-dot--emerald
-            {% elif notif.tipo == 'RECHAZADO' %}timeline-dot--rose
-            {% elif notif.tipo == 'ACTUALIZADO' %}timeline-dot--amber
-            {% else %}timeline-dot--brand{% endif %}">
+    {% if rechazadas_recientes %}
+    <section class="sg-hoja" aria-labelledby="rechazos-titulo">
+      <header class="sg-hoja__cabeza"><h2 id="rechazos-titulo">{% icono "file-x" %}Necesitan tu corrección</h2></header>
+      <ul class="sg-lista">
+        {% for doc in rechazadas_recientes %}
+        <li>
+          {% tipo_archivo doc %}
+          <div class="sg-lista__cuerpo">
+            <a class="sg-lista__titulo" href="{% url 'documentos:detalle' doc.id %}">{{ doc.titulo }}</a>
+            <span class="sg-lista__meta">Motivo: {{ doc.comentario_rechazo|default:"sin motivo registrado" }}</span>
           </div>
-          <div class="timeline-time">{{ notif.fecha_creacion|timesince }} atrás</div>
-          <div class="timeline-title">{{ notif.mensaje }}</div>
-          {% if notif.documento %}
-          <div class="timeline-subtitle">Doc: {{ notif.documento.titulo|truncatechars:35 }}</div>
-          {% endif %}
-        </div>
-        {% empty %}
-        <div class="text-xs text-light mt-md">No hay notificaciones nuevas.</div>
+          <a class="sg-btn" href="{% url 'versiones:crear' doc.id %}">Subir corrección</a>
+        </li>
         {% endfor %}
-      </div>
-    </div>
-    
-  </div>
+      </ul>
+    </section>
+    {% endif %}
 
-
-  {# ════════════════════ ROL: COORDINADOR ════════════════════ #}
-  {% elif user.rol == 'COORDINADOR' %}
-  
-  <div class="stats-grid">
-    <a href="{% url 'documentos:mis_documentos' %}" class="stat-card stat-card--brand">
-      <div class="stat-card-icon"><i data-lucide="folder"></i></div>
-      <div class="stat-card-label">Mis documentos</div>
-      <div class="stat-card-value">{{ mis_docs_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-    
-    <a href="{% url 'documentos:aprobar' %}" class="stat-card stat-card--amber">
-      <div class="stat-card-icon"><i data-lucide="inbox"></i></div>
-      <div class="stat-card-label">Por aprobar</div>
-      <div class="stat-card-value">{{ por_aprobar_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-    
-    <a href="{% url 'documentos:aprobar' %}?estado=APROBADO" class="stat-card stat-card--emerald">
-      <div class="stat-card-icon"><i data-lucide="check-square"></i></div>
-      <div class="stat-card-label">Aprobados hoy</div>
-      <div class="stat-card-value">{{ aprobados_hoy_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-    
-    <a href="{% url 'documentos:aprobar' %}?estado=RECHAZADO" class="stat-card stat-card--rose">
-      <div class="stat-card-icon"><i data-lucide="x-square"></i></div>
-      <div class="stat-card-label">Rechazados hoy</div>
-      <div class="stat-card-value">{{ rechazados_hoy_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-  </div>
-
-  <div class="grid-main-aside">
-    
-    <div class="card">
-      <div class="card-body">
-        <div class="section-header">
-          <h2 class="section-title">Documentos pendientes de aprobación</h2>
-          <a href="{% url 'documentos:aprobar' %}" class="section-link text-brand-600">Ir al módulo &rarr;</a>
-        </div>
-        
-        <div class="table-scroll">
-          <div class="table-responsive"> <table class="data-table">
-            <thead>
-              <tr>
-                <th>Documento</th>
-                <th>Remitente</th>
-                <th class="text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for doc in docs_pendientes %}
-              <tr class="group">
-                <td>
-                  <div class="flex-row font-semibold text-brand">
-                    <div class="doc-icon">
-                      {% if ".pdf" in doc.archivo.name|lower %}
-                        <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
-                      {% elif ".doc" in doc.archivo.name|lower %}
-                        <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word">
-                      {% elif ".xls" in doc.archivo.name|lower %}
-                        <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel">
-                      {% elif ".ppt" in doc.archivo.name|lower %}
-                        <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT">
-                      {% else %}
-                        <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc">
-                      {% endif %}
-                    </div>
-                    <a href="{% url 'documentos:detalle' doc.id %}" class="link-inherit">{{ doc.titulo|truncatechars:40 }}</a>
-                  </div>
-                </td>
-                <td>
-                  <div class="font-bold text-xs text-brand">{{ doc.autor.get_full_name }}</div>
-                  <div class="meta-text-sm">{{ doc.categoria.nombre }}</div>
-                </td>
-                <td class="text-center">
-                  <div class="flex-row show-on-group-hover flex-center-gap">
-                    <form method="post" action="{% url 'documentos:aprobar_doc' doc.id %}" onsubmit="return confirm('¿Aprobar rápidamente este documento?');">
-                      {% csrf_token %}
-                      <button type="submit" title="Aprobar" class="btn-icon btn-approve">
-                        <i data-lucide="check"></i>
-                      </button>
-                    </form>
-                    <form method="post" action="{% url 'documentos:rechazar_doc' doc.id %}" onsubmit="return confirm('¿Rechazar este documento?');">
-                      {% csrf_token %}
-                      <button type="submit" title="Rechazar" class="btn-icon btn-reject">
-                        <i data-lucide="x"></i>
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="3" class="text-center text-light mt-xl mb-xl">No hay documentos en cola de aprobación</td></tr>
-              {% endfor %}
-            </tbody>
-          </table> </div>
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <h2 class="section-subtitle">Actividad Reciente</h2>
-      <div class="card mb-md">
-        <div class="card-body">
-          <div class="timeline">
-              {% for notif in notificaciones %}
-              <div class="timeline-item">
-                  <div class="timeline-dot 
-                    {% if notif.tipo == 'APROBADO' %}timeline-dot--emerald
-                    {% elif notif.tipo == 'RECHAZADO' %}timeline-dot--rose
-                    {% elif notif.tipo == 'ACTUALIZADO' %}timeline-dot--amber
-                    {% else %}timeline-dot--brand{% endif %}">
-                  </div>
-                  <div class="timeline-time">{{ notif.fecha_creacion|timesince }} atrás</div>
-                  <div class="timeline-title">{{ notif.mensaje }}</div>
-              </div>
-              {% empty %}
-              <div class="text-xs text-light">Sin actividad reciente.</div>
-              {% endfor %}
-          </div>
-        </div>
-      </div>
-      <a href="{% url 'notificaciones:lista' %}" class="btn btn-secondary w-full">
-        Ver historial completo
-      </a>
-    </div>
-  </div>
-
-
-  {# ════════════════════ ROL: DECANA ════════════════════ #}
-  {% elif user.rol == 'DECANA' %}
-  
-  <div class="stats-grid">
-    <a href="{% url 'documentos:lista' %}" class="stat-card stat-card--brand">
-      <div class="stat-card-icon"><i data-lucide="layers"></i></div>
-      <div class="stat-card-label">Total documentos</div>
-      <div class="stat-card-value">{{ total_docs_count|default:"0" }}</div>
-    </a>
-    
-    <a href="{% url 'documentos:aprobar' %}" class="stat-card stat-card--amber">
-      <div class="stat-card-icon"><i data-lucide="inbox"></i></div>
-      <div class="stat-card-label">Por aprobar</div>
-      <div class="stat-card-value">{{ por_aprobar_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-    
-    <a href="{% url 'usuarios:gestion_usuarios' %}" class="stat-card stat-card--emerald">
-      <div class="stat-card-icon"><i data-lucide="users"></i></div>
-      <div class="stat-card-label">Usuarios activos</div>
-      <div class="stat-card-value">{{ usuarios_activos_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-    
-    <a href="{% url 'documentos:lista' %}?vigente=1" class="stat-card stat-card--sky">
-      <div class="stat-card-icon"><i data-lucide="bar-chart-3"></i></div>
-      <div class="stat-card-label">Crecimiento (Mes)</div>
-      <div class="stat-card-value">{{ docs_este_mes_count|default:"0"|stringformat:"02d" }}</div>
-    </a>
-  </div>
-
-  <div class="grid-main-aside">
-    
-    <div class="card">
-      <div class="card-body">
-        <h2 class="section-title mb-xl">Categorías de Documentación</h2>
-        
-        <div class="flex-stack">
-          {% for cat in categorias_conteo %}
-          <a href="{% url 'documentos:lista' %}?categoria={{ cat.id }}" class="link-block">
-              <div class="flex-between mb-sm">
-                  <span class="font-bold text-sm text-brand">{{ cat.nombre }}</span>
-                  <span class="text-xs text-muted font-bold">{{ cat.cantidad }} docs</span>
-              </div>
-              <div class="progress-bar">
-                  {% with total_safe=total_docs_count|default:1 %}
-                  <div class="progress-fill bar-fill progress-initial" data-width="{% widthratio cat.cantidad total_safe 100 %}%"></div>
-                  {% endwith %}
-              </div>
-          </a>
+    <div class="sg-rejilla sg-rejilla--principal">
+      <section class="sg-hoja" aria-labelledby="mis-titulo">
+        <header class="sg-hoja__cabeza">
+          <h2 id="mis-titulo">{% icono "files" %}Tus evidencias recientes</h2>
+          <a href="{% url 'documentos:mis_documentos' %}">Ver todas</a>
+        </header>
+        {% if actividad_reciente %}
+        <ul class="sg-lista">
+          {% for doc in actividad_reciente %}
+          <li>
+            {% tipo_archivo doc %}
+            <div class="sg-lista__cuerpo">
+              <a class="sg-lista__titulo" href="{% url 'documentos:detalle' doc.id %}">{{ doc.titulo }}</a>
+              <span class="sg-lista__meta">{% estado_documento doc %}{% if doc.factor_cna %}{% chip_factor_codigo doc.factor_cna %}{% endif %}<span>{{ doc.fecha_creacion|date:"j M Y" }}</span></span>
+            </div>
+          </li>
           {% endfor %}
-        </div>
-      </div>
-    </div>
+        </ul>
+        {% else %}
+          {% url 'documentos:subir' as url_subir %}
+          {% include "componentes/estado_vacio.html" with icono="file-plus" titulo="Todavía no tienes evidencias" texto="Sube tu primera evidencia y elige el factor CNA al que aporta." accion_url=url_subir accion_texto="Subir evidencia" %}
+        {% endif %}
+      </section>
 
-    <div>
-      <h2 class="section-subtitle">Trazabilidad Reciente</h2>
-      <div class="card mb-md">
-        <div class="card-body">
-          <div class="timeline">
-              {% for reg in trazabilidad_reciente %}
-              <div class="timeline-item">
-                  <div class="timeline-dot 
-                    {% if reg.accion == 'APROBO' %}timeline-dot--emerald
-                    {% elif reg.accion == 'RECHAZO' %}timeline-dot--rose
-                    {% elif reg.accion == 'SUBIO' %}timeline-dot--brand
-                    {% else %}timeline-dot--amber{% endif %}">
-                  </div>
-                  <div class="timeline-time">{{ reg.fecha_hora|timesince }} atrás</div>
-                  <div class="timeline-title">{{ reg.usuario.get_full_name|default:"Sistema" }} — {{ reg.get_accion_display }}</div>
-                  {% if reg.documento %}
-                  <div class="timeline-subtitle truncate">Doc: {{ reg.documento.titulo }}</div>
-                  {% endif %}
-              </div>
-              {% empty %}
-              <div class="text-xs text-light">Sin actividad registrada.</div>
-              {% endfor %}
-          </div>
-        </div>
-      </div>
-      <a href="{% url 'auditoria:lista' %}" class="btn btn-secondary w-full">
-        Ver auditoría completa
-      </a>
+      <section class="sg-hoja" aria-labelledby="avisos-titulo">
+        <header class="sg-hoja__cabeza">
+          <h2 id="avisos-titulo">{% icono "bell" %}Últimos avisos</h2>
+          <a href="{% url 'notificaciones:lista' %}">Ver todos</a>
+        </header>
+        {% if notificaciones %}
+        <ul class="sg-lista">
+          {% for n in notificaciones %}
+          <li class="sg-notif{% if not n.leida %} es-nueva{% endif %}">
+            <span class="sg-notif__punto" aria-hidden="true"></span>
+            <div class="sg-lista__cuerpo">
+              <span>{{ n.mensaje }}</span>
+              <span class="sg-lista__meta">{{ n.fecha_creacion|timesince }}{% if not n.leida %} · sin leer{% endif %}</span>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+          {% include "componentes/estado_vacio.html" with icono="bell-off" titulo="Sin avisos" texto="Te avisaremos aquí cuando revisen tus evidencias o te den acceso a un documento." %}
+        {% endif %}
+      </section>
     </div>
-    
-  </div>
   {% endif %}
 
+</div>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(() => {
-            document.querySelectorAll('.bar-fill').forEach(el => {
-                const width = el.getAttribute('data-width');
-                if (width) {
-                    el.style.width = width;
-                }
-            });
-        }, 150);
-    });
-</script>
-{% endblock %}
-
-
-
-
-
-

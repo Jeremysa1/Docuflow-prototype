@@ -1,189 +1,78 @@
 {% extends 'base.html' %}
-{% block title %}Mis documentos - SIGEA{% endblock %}
-{% block page_title %}Mis Documentos{% endblock %}
-{% block navbar_search %}{% endblock %}
+{% load sigea %}
+{% block title %}Mis evidencias · SIGEA{% endblock %}
 
 {% block content %}
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "folder-open" %}</span>
+      <h1>Mis evidencias</h1>
+      <p>Todo lo que has subido, con su estado de revisión y el factor CNA al que aporta.</p>
+    </div>
+    <div class="sg-cabecera__acciones">
+      <a class="sg-btn sg-btn--primario" href="{% url 'documentos:subir' %}">{% icono "upload" %}<span>Subir evidencia</span></a>
+    </div>
+  </header>
 
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Mis Documentos</h1>
-            <p>Gestiona los documentos que has subido al sistema.</p>
-        </div>
-        <a href="{% url 'documentos:subir' %}" class="btn btn-primary">
-            <i data-lucide="upload-cloud"></i>
-            Subir documento
-        </a>
-    </header>
+  <nav class="sg-pestanas" aria-label="Filtrar por estado">
+    <a href="{% querystring estado=None page=None %}"{% if not request.GET.estado %} aria-current="page"{% endif %}>Todas</a>
+    <a href="{% querystring estado='PENDIENTE' page=None %}"{% if request.GET.estado == 'PENDIENTE' %} aria-current="page"{% endif %}>{% icono "clock" "sg-icono--sm" %}En revisión</a>
+    <a href="{% querystring estado='APROBADO' page=None %}"{% if request.GET.estado == 'APROBADO' %} aria-current="page"{% endif %}>{% icono "circle-check" "sg-icono--sm" %}Aprobadas</a>
+    <a href="{% querystring estado='RECHAZADO' page=None %}"{% if request.GET.estado == 'RECHAZADO' %} aria-current="page"{% endif %}>{% icono "circle-x" "sg-icono--sm" %}Rechazadas</a>
+  </nav>
 
-    <form id="filter-form" method="get" class="filter-bar">
-        <input type="hidden" name="estado" id="id_estado" value="{{ request.GET.estado|default:'' }}">
-        
-        <div class="filter-tabs-wrapper">
-            <button type="button" onclick="setEstado('')" class="filter-chip {% if not request.GET.estado %}active{% endif %}">Todos</button>
-            <button type="button" onclick="setEstado('APROBADO')" class="filter-chip {% if request.GET.estado == 'APROBADO' %}active{% endif %}">Aprobados</button>
-            <button type="button" onclick="setEstado('PENDIENTE')" class="filter-chip {% if request.GET.estado == 'PENDIENTE' %}active{% endif %}">Pendientes</button>
-            <button type="button" onclick="setEstado('RECHAZADO')" class="filter-chip {% if request.GET.estado == 'RECHAZADO' %}active{% endif %}">Rechazados</button>
-        </div>
-
-        <div class="form-group flex-2">
-            <label class="form-label">Buscar</label>
-            <div class="select-wrapper">
-                <input type="text" name="q" placeholder="Filtrar por nombre o ID..." value="{{ request.GET.q|default:'' }}" class="form-input">
-                <i data-lucide="search"></i>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Categoría</label>
-            <div class="select-wrapper">
-                <select name="categoria" onchange="this.form.submit()" class="form-select">
-                    <option value="">Todas</option>
-                    {% for cat in categorias %}
-                        <option value="{{ cat.id }}" {% if request.GET.categoria == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.nombre }}</option>
-                    {% endfor %}
-                </select>
-                <i data-lucide="chevron-down"></i>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Factor CNA</label>
-            <div class="select-wrapper">
-                <select name="factor" onchange="this.form.submit()" class="form-select">
-                    <option value="">Todos</option>
-                    {% for code, label in factores_cna %}
-                        <option value="{{ code }}" {% if request.GET.factor == code %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-                <i data-lucide="chevron-down"></i>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Ordenar por</label>
-            <div class="select-wrapper">
-                <select name="orden" onchange="this.form.submit()" class="form-select">
-                    <option value="-fecha_creacion" {% if request.GET.orden == '-fecha_creacion' %}selected{% endif %}>Recientes primero</option>
-                    <option value="antiguo" {% if request.GET.orden == 'antiguo' %}selected{% endif %}>Antiguos primero</option>
-                    <option value="nombre" {% if request.GET.orden == 'nombre' %}selected{% endif %}>Nombre (A-Z)</option>
-                </select>
-                <i data-lucide="chevron-down"></i>
-            </div>
-        </div>
+  <section class="sg-hoja" aria-label="Listado de mis evidencias">
+    <form method="get" class="sg-hoja__cuerpo">
+      {% if request.GET.estado %}<input type="hidden" name="estado" value="{{ request.GET.estado }}">{% endif %}
+      <div class="sg-filtros">
+        <div class="sg-campo"><label for="m-q">Título</label><input id="m-q" name="q" type="search" value="{{ request.GET.q }}" placeholder="Buscar en mis evidencias"></div>
+        <div class="sg-campo"><label for="m-factor">Factor CNA</label>
+          <select id="m-factor" name="factor"><option value="">Todos</option>{% for code, label in factores_cna %}<option value="{{ code }}"{% if request.GET.factor == code %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div class="sg-campo"><label for="m-cat">Categoría</label>
+          <select id="m-cat" name="categoria"><option value="">Todas</option>{% for cat in categorias %}<option value="{{ cat.id }}"{% if request.GET.categoria == cat.id|stringformat:"i" %} selected{% endif %}>{{ cat.nombre }}</option>{% endfor %}</select></div>
+        <div class="sg-campo"><label for="m-orden">Orden</label>
+          <select id="m-orden" name="orden" data-enviar-al-cambiar>
+            <option value="-fecha_creacion"{% if request.GET.orden == '-fecha_creacion' or not request.GET.orden %} selected{% endif %}>Más recientes</option>
+            <option value="antiguo"{% if request.GET.orden == 'antiguo' %} selected{% endif %}>Más antiguas</option>
+            <option value="nombre"{% if request.GET.orden == 'nombre' %} selected{% endif %}>Título A–Z</option>
+          </select></div>
+        <div class="sg-filtros__acciones"><button type="submit" class="sg-btn sg-btn--marca">Filtrar</button></div>
+      </div>
     </form>
 
-    <div class="table-container">
-        <div class="table-scroll">
-            <div class="table-responsive"> <table class="data-table">
-                <thead>
-                    <tr>
-                        <th class="w-40-center">
-                            <input type="checkbox" id="check-all" class="checkbox-brand">
-                        </th>
-                        <th>Documento</th>
-                        <th>Categoría</th>
-                        <th>Factor CNA</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for doc in page_obj %}
-                    <tr>
-                        <td class="text-center">
-                            <input type="checkbox" class="doc-check checkbox-brand">
-                        </td>
-                        <td>
-                            <div class="flex-row">
-                                <div class="doc-icon">
-                                    {% with filename=doc.archivo.name|lower %}
-                                        {% if '.pdf' in filename %}
-                                            <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
-                                        {% elif '.doc' in filename %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word">
-                                        {% elif '.xls' in filename %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel">
-                                        {% elif '.ppt' in filename %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT">
-                                        {% else %}
-                                            <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc">
-                                        {% endif %}
-                                    {% endwith %}
-                                </div>
-                                <a href="{% url 'documentos:detalle' doc.id %}" class="font-semibold text-brand">{{ doc.titulo|truncatechars:45 }}</a>
-                            </div>
-                        </td>
-                        <td class="font-semibold text-muted">{{ doc.categoria.nombre }}</td>
-                        <td class="text-xs font-bold text-light">{{ doc.get_factor_cna_display|default:"-" }}</td>
-                        <td class="text-muted text-xs">{{ doc.fecha_creacion|date:"d/m/Y" }}</td>
-                        <td>
-                            {% if doc.estado == 'APROBADO' %}
-                                <span class="badge badge-success">Aprobado</span>
-                            {% elif doc.estado == 'RECHAZADO' %}
-                                <span class="badge badge-danger">Rechazado</span>
-                            {% else %}
-                                <span class="badge badge-warning">Pendiente</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">
-                                    <i data-lucide="folder-search"></i>
-                                </div>
-                                <p>No se encontraron documentos en su repositorio.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table> </div>
-        </div>
+    {% if page_obj %}
+    <div class="sg-tabla-marco">
+      <table class="sg-tabla">
+        <thead><tr><th scope="col">Evidencia</th><th scope="col">Factor</th><th scope="col">Estado</th><th scope="col">Subida</th><th scope="col"><span class="sg-oculto">Acciones</span></th></tr></thead>
+        <tbody>
+        {% for doc in page_obj %}
+          <tr>
+            <td class="sg-tabla__titulo"><div class="sg-doc">{% tipo_archivo doc %}<div>
+              <a class="sg-tabla__principal" href="{% url 'documentos:detalle' doc.id %}">{{ doc.titulo }}</a>
+              <span class="sg-tabla__secundario">{{ doc.categoria.nombre|default:"Sin categoría" }}{% if doc.estado == 'RECHAZADO' and doc.comentario_rechazo %} · Motivo: {{ doc.comentario_rechazo|truncatechars:80 }}{% endif %}</span>
+            </div></div></td>
+            <td data-label="Factor">{% chip_factor_codigo doc.factor_cna %}</td>
+            <td data-label="Estado">{% estado_documento doc %}</td>
+            <td data-label="Subida">{{ doc.fecha_creacion|date:"j M Y" }}</td>
+            <td class="sg-tabla__acciones">
+              {% if doc.estado == 'RECHAZADO' %}<a class="sg-btn" href="{% url 'versiones:crear' doc.id %}">{% icono "upload" %}<span>Subir corrección</span></a>
+              {% else %}<a class="sg-btn sg-btn--fantasma" href="{% url 'documentos:detalle' doc.id %}">Ver</a>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
     </div>
-
-    {% if page_obj.has_other_pages %}
-    <div class="pagination">
-        <div class="pagination-info">
-            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-        </div>
-        <div class="pagination-buttons">
-            {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-btn">
-                <i data-lucide="chevron-left"></i>
-            </a>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                    <span class="pagination-btn active">{{ num }}</span>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-btn">{{ num }}</a>
-                {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-btn">
-                <i data-lucide="chevron-right"></i>
-            </a>
-            {% endif %}
-        </div>
-    </div>
+    {% include "partials/paginacion.html" %}
+    {% else %}
+      {% url 'documentos:subir' as url_subir %}
+      {% if request.GET.q or request.GET.estado or request.GET.factor or request.GET.categoria %}
+        {% include "componentes/estado_vacio.html" with icono="file-search" titulo="Ninguna evidencia coincide" texto="Quita algún filtro para ver más resultados." %}
+      {% else %}
+        {% include "componentes/estado_vacio.html" with icono="file-plus" titulo="Todavía no tienes evidencias" texto="Sube tu primera evidencia y elige el factor CNA al que aporta." accion_url=url_subir accion_texto="Subir evidencia" %}
+      {% endif %}
     {% endif %}
-
-<script>
-    function setEstado(estado) {
-        document.getElementById('id_estado').value = estado;
-        document.getElementById('filter-form').submit();
-    }
-
-    document.getElementById('check-all')?.addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.doc-check');
-        checkboxes.forEach(cb => cb.checked = this.checked);
-    });
-</script>
-
+  </section>
+</div>
 {% endblock %}
-

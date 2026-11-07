@@ -31,13 +31,11 @@ class AuditService:
             accion=accion,
             documento=documento,
             ip_address=ip_address,
-            detalle=detalle,
+            detalle=detalle or '',
         )
 
     @staticmethod
     def _get_client_ip(request):
-        """Obtiene la dirección IP del cliente desde el request."""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            return x_forwarded_for.split(',')[0].strip()
-        return request.META.get('REMOTE_ADDR')
+        """IP confiable y validada (C3): ver core.utils.helpers.obtener_ip_cliente."""
+        from core.utils.helpers import obtener_ip_cliente
+        return obtener_ip_cliente(request)

@@ -1,0 +1,449 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-07T14:39:46.288884+00:00",
+  "title": "Design System: SIGEA",
+  "extensions": {
+    "colorMeta": {
+      "marca": {
+        "role": "primary",
+        "displayName": "Azul marca SIGEA",
+        "tonalRamp": [
+          "#0b1734",
+          "#142a59",
+          "#1c3a78",
+          "#2a4b8f",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "marca-2": {
+        "role": "primary",
+        "displayName": "Azul marca medio",
+        "tonalRamp": [
+          "#0b1734",
+          "#142a59",
+          "#1c3a78",
+          "#2a4b8f",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "marca-3": {
+        "role": "primary",
+        "displayName": "Azul marca claro",
+        "tonalRamp": [
+          "#0b1734",
+          "#142a59",
+          "#1c3a78",
+          "#2a4b8f",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "accion": {
+        "role": "secondary",
+        "displayName": "Azul de acción reservado",
+        "tonalRamp": [
+          "#0f2a73",
+          "#1a43b3",
+          "#1f4fd1",
+          "#4a72de",
+          "#7d9ae8",
+          "#b0c3f2",
+          "#d6e1f8",
+          "#e8eefc"
+        ]
+      },
+      "accion-2": {
+        "role": "secondary",
+        "displayName": "Azul de acción, hover",
+        "tonalRamp": [
+          "#0f2a73",
+          "#1a43b3",
+          "#1f4fd1",
+          "#4a72de",
+          "#7d9ae8",
+          "#b0c3f2",
+          "#d6e1f8",
+          "#e8eefc"
+        ]
+      },
+      "grad-0": {
+        "role": "tertiary",
+        "displayName": "Gradación 0 · Sin evidencia",
+        "tonalRamp": [
+          "#142a59",
+          "#2f56b0",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "grad-1": {
+        "role": "tertiary",
+        "displayName": "Gradación 1 · No se cumple",
+        "tonalRamp": [
+          "#142a59",
+          "#2f56b0",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "grad-2": {
+        "role": "tertiary",
+        "displayName": "Gradación 2 · Insatisfactorio",
+        "tonalRamp": [
+          "#142a59",
+          "#2f56b0",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "grad-3": {
+        "role": "tertiary",
+        "displayName": "Gradación 3 · Aceptable",
+        "tonalRamp": [
+          "#142a59",
+          "#2f56b0",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "grad-4": {
+        "role": "tertiary",
+        "displayName": "Gradación 4 · Alto grado",
+        "tonalRamp": [
+          "#142a59",
+          "#2f56b0",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "grad-5": {
+        "role": "tertiary",
+        "displayName": "Gradación 5 · Pleno",
+        "tonalRamp": [
+          "#142a59",
+          "#2f56b0",
+          "#4a6cc0",
+          "#a9bde6",
+          "#d6e0f3",
+          "#eef1f6"
+        ]
+      },
+      "ok": {
+        "role": "status",
+        "displayName": "Aprobado (verde bosque)"
+      },
+      "ok-fondo": {
+        "role": "status",
+        "displayName": "Fondo aprobado"
+      },
+      "pendiente": {
+        "role": "status",
+        "displayName": "Pendiente (azul de acción)"
+      },
+      "pendiente-fondo": {
+        "role": "status",
+        "displayName": "Fondo pendiente"
+      },
+      "alerta": {
+        "role": "status",
+        "displayName": "Envejecido (ámbar)"
+      },
+      "alerta-fondo": {
+        "role": "status",
+        "displayName": "Fondo envejecido"
+      },
+      "error": {
+        "role": "status",
+        "displayName": "Rechazado (rojo)"
+      },
+      "error-fondo": {
+        "role": "status",
+        "displayName": "Fondo rechazado"
+      },
+      "sensible": {
+        "role": "status",
+        "displayName": "Sensible (morado)"
+      },
+      "sensible-fondo": {
+        "role": "status",
+        "displayName": "Fondo sensible"
+      },
+      "blanco": {
+        "role": "neutral",
+        "displayName": "Blanco"
+      },
+      "papel": {
+        "role": "neutral",
+        "displayName": "Papel"
+      },
+      "renglon": {
+        "role": "neutral",
+        "displayName": "Renglón"
+      },
+      "renglon-2": {
+        "role": "neutral",
+        "displayName": "Renglón fuerte"
+      },
+      "texto": {
+        "role": "neutral",
+        "displayName": "Texto (azul marca)"
+      },
+      "texto-2": {
+        "role": "neutral",
+        "displayName": "Texto secundario"
+      },
+      "texto-3": {
+        "role": "neutral",
+        "displayName": "Placeholder"
+      },
+      "texto-inverso-2": {
+        "role": "neutral",
+        "displayName": "Texto inverso secundario"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Solo la cifra del banner huella y el código de las páginas de error."
+      },
+      "headline": {
+        "displayName": "Titular",
+        "purpose": "h1 de página."
+      },
+      "title": {
+        "displayName": "Título",
+        "purpose": "h2, titular del banner, total del pulso, marca del riel."
+      },
+      "body": {
+        "displayName": "Cuerpo",
+        "purpose": "Texto corriente y campos de formulario, con cifras tabulares."
+      },
+      "body-sm": {
+        "displayName": "Cuerpo pequeño",
+        "purpose": "Tablas, botones, enlaces del riel, etiquetas de campo, avisos."
+      },
+      "label": {
+        "displayName": "Etiqueta",
+        "purpose": "Chips de factor, estados, metadatos y ayudas; en mayúsculas con 0.04em solo para cabeceras de tabla y grupos del riel."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sombra-hoja",
+        "value": "0 12px 32px -8px rgba(20, 42, 89, 0.28), 0 2px 6px rgba(20, 42, 89, 0.12)",
+        "purpose": "Solo lo que flota: diálogos, hoja 'Más' móvil, resultados del buscador, enlace de salto."
+      },
+      {
+        "name": "velo",
+        "value": "rgba(20, 42, 89, 0.45)",
+        "purpose": "Fondo detrás de diálogos y de la hoja móvil."
+      },
+      {
+        "name": "foco",
+        "value": "outline: 2px solid #1f4fd1; outline-offset: 2px",
+        "purpose": "Anillo de foco visible; blanco sobre superficies de marca."
+      }
+    ],
+    "motion": [
+      {
+        "name": "dur",
+        "value": "200ms",
+        "purpose": "Transiciones de fondo, borde y color."
+      },
+      {
+        "name": "dur-larga",
+        "value": "300ms",
+        "purpose": "Aparición de diálogos y hoja móvil; crecimiento de las barras de la huella, escalonado 40 ms."
+      },
+      {
+        "name": "curva",
+        "value": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "Curva única de salida."
+      },
+      {
+        "name": "movimiento-reducido",
+        "value": "0ms",
+        "purpose": "Con prefers-reduced-motion todas las duraciones van a 0."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1100px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón primario (acción pendiente)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Única acción rellena en azul de acción: la acción pendiente del usuario.",
+      "html": "<button class=\"ds-btn ds-btn--primario\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg><span>Aprobar evidencia</span></button>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--sg-renglon-2);background:var(--sg-blanco);color:var(--sg-marca);font:700 0.875rem/1.2 'Public Sans',system-ui,sans-serif;cursor:pointer;transition:background 200ms cubic-bezier(0.2,0.8,0.2,1),border-color 200ms cubic-bezier(0.2,0.8,0.2,1)} .ds-btn:focus-visible{outline:2px solid var(--sg-accion);outline-offset:2px} .ds-btn--primario{background:var(--sg-accion);border-color:var(--sg-accion);color:#fff} .ds-btn--primario:hover{background:var(--sg-accion-2);border-color:var(--sg-accion-2)}"
+    },
+    {
+      "name": "Botón secundario",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Botón por defecto: blanco con borde y texto azul marca.",
+      "html": "<button class=\"ds-btn\">Ver historial</button>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--sg-renglon-2);background:var(--sg-blanco);color:var(--sg-marca);font:700 0.875rem/1.2 'Public Sans',system-ui,sans-serif;cursor:pointer;transition:background 200ms cubic-bezier(0.2,0.8,0.2,1),border-color 200ms cubic-bezier(0.2,0.8,0.2,1)} .ds-btn:focus-visible{outline:2px solid var(--sg-accion);outline-offset:2px} .ds-btn:hover{background:var(--sg-papel);border-color:var(--sg-marca)}"
+    },
+    {
+      "name": "Botón de marca",
+      "kind": "button",
+      "refersTo": "button-marca",
+      "description": "Acción institucional que no es la pendiente.",
+      "html": "<button class=\"ds-btn ds-btn--marca\">Exportar a Excel</button>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--sg-renglon-2);background:var(--sg-blanco);color:var(--sg-marca);font:700 0.875rem/1.2 'Public Sans',system-ui,sans-serif;cursor:pointer;transition:background 200ms cubic-bezier(0.2,0.8,0.2,1),border-color 200ms cubic-bezier(0.2,0.8,0.2,1)} .ds-btn:focus-visible{outline:2px solid var(--sg-accion);outline-offset:2px} .ds-btn--marca{background:var(--sg-marca);border-color:var(--sg-marca);color:#fff} .ds-btn--marca:hover{background:var(--sg-marca-2)}"
+    },
+    {
+      "name": "Botón de peligro",
+      "kind": "button",
+      "refersTo": "button-peligro",
+      "description": "Rechazar o eliminar: blanco con texto rojo; fondo de error al pasar el puntero.",
+      "html": "<button class=\"ds-btn ds-btn--peligro\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m15 9-6 6M9 9l6 6\"/></svg><span>Rechazar</span></button>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--sg-renglon-2);background:var(--sg-blanco);color:var(--sg-marca);font:700 0.875rem/1.2 'Public Sans',system-ui,sans-serif;cursor:pointer;transition:background 200ms cubic-bezier(0.2,0.8,0.2,1),border-color 200ms cubic-bezier(0.2,0.8,0.2,1)} .ds-btn:focus-visible{outline:2px solid var(--sg-accion);outline-offset:2px} .ds-btn--peligro{color:var(--sg-error)} .ds-btn--peligro:hover{background:var(--sg-error-fondo);border-color:var(--sg-error)}"
+    },
+    {
+      "name": "Chip de factor en su gradación",
+      "kind": "chip",
+      "refersTo": "chip-factor-grad-2",
+      "description": "La firma: 'F3 · 4 / 20' pintado con el grado CNA, igual en todas las pantallas.",
+      "html": "<div><a href=\"#\" class=\"ds-chip ds-g0\"><span>F1</span><b>· 0 / 20</b></a><a href=\"#\" class=\"ds-chip ds-g1\"><span>F2</span><b>· 3 / 20</b></a><a href=\"#\" class=\"ds-chip ds-g2\"><span>F3</span><b>· 6 / 20</b></a><a href=\"#\" class=\"ds-chip ds-g3\"><span>F4</span><b>· 11 / 20</b></a><a href=\"#\" class=\"ds-chip ds-g4\"><span>F5</span><b>· 16 / 20</b></a><a href=\"#\" class=\"ds-chip ds-g5\"><span>F6</span><b>· 20 / 20</b></a></div>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-chip{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 8px;border-radius:4px;font:700 0.75rem/1 'Public Sans',system-ui,sans-serif;border:1px solid transparent;margin:0 4px 4px 0;text-decoration:none} .ds-chip b{font-weight:600} .ds-chip:hover{box-shadow:0 0 0 2px var(--sg-accion)} .ds-chip:focus-visible{outline:2px solid var(--sg-accion);outline-offset:2px} .ds-g0{background:var(--sg-grad-0);color:var(--sg-texto-2);border-color:var(--sg-renglon)} .ds-g1{background:var(--sg-grad-1);color:var(--sg-marca)} .ds-g2{background:var(--sg-grad-2);color:var(--sg-marca)} .ds-g3{background:var(--sg-grad-3);color:#fff} .ds-g4{background:var(--sg-grad-4);color:#fff} .ds-g5{background:var(--sg-grad-5);color:#fff}"
+    },
+    {
+      "name": "Estados de documento",
+      "kind": "chip",
+      "refersTo": "estado-aprobado",
+      "description": "Estado por forma más color: sólido, punteado, tachado, reloj de arena, candado.",
+      "html": "<div><span class=\"ds-estado ds-estado--aprobado\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg><span>Aprobado</span></span><span class=\"ds-estado ds-estado--pendiente\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/></svg><span>Pendiente</span></span><span class=\"ds-estado ds-estado--envejecido\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\"/></svg><span>Pendiente · más de 3 días</span></span><span class=\"ds-estado ds-estado--rechazado\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m15 9-6 6M9 9l6 6\"/></svg><span>Rechazado</span></span><span class=\"ds-estado ds-estado--sensible\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/></svg><span>Sensible</span></span></div>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-estado{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 8px;border-radius:4px;font:700 0.75rem/1 'Public Sans',system-ui,sans-serif;border:1.5px solid currentColor;margin:0 4px 4px 0} .ds-estado--aprobado{color:var(--sg-ok);background:var(--sg-ok-fondo)} .ds-estado--pendiente{color:var(--sg-pendiente);background:var(--sg-pendiente-fondo);border-style:dashed} .ds-estado--rechazado{color:var(--sg-error);background:var(--sg-error-fondo)} .ds-estado--rechazado span{text-decoration:line-through;text-decoration-thickness:1.5px} .ds-estado--envejecido{color:var(--sg-alerta);background:var(--sg-alerta-fondo);border-style:dashed} .ds-estado--sensible{color:var(--sg-sensible);background:var(--sg-sensible-fondo)}"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Etiqueta azul marca encima, campo de 44 px con foco azul de acción.",
+      "html": "<label class=\"ds-campo\"><span class=\"ds-campo__etiqueta\">Título de la evidencia</span><input class=\"ds-input\" placeholder=\"Ej. Plan de mejoramiento 2025\"><span class=\"ds-campo__ayuda\">Máximo 200 caracteres.</span></label>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-campo{display:grid;gap:8px;font-family:'Public Sans',system-ui,sans-serif} .ds-campo__etiqueta{font-size:0.875rem;font-weight:700;color:var(--sg-marca)} .ds-campo__ayuda{font-size:0.75rem;color:var(--sg-texto-2)} .ds-input{width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--sg-renglon-2);border-radius:8px;background:#fff;color:var(--sg-texto);font:400 1rem/1.5 'Public Sans',system-ui,sans-serif} .ds-input::placeholder{color:var(--sg-texto-3)} .ds-input:hover{border-color:var(--sg-texto-2)} .ds-input:focus-visible{outline:2px solid var(--sg-accion);outline-offset:0;border-color:var(--sg-accion)}"
+    },
+    {
+      "name": "Riel lateral",
+      "kind": "nav",
+      "refersTo": "riel-enlace",
+      "description": "Navegación azul marca; la página actual se invierte a blanco.",
+      "html": "<nav class=\"ds-riel\"><span class=\"ds-riel__marca\">SIGEA</span><span class=\"ds-riel__titulo\">Trabajo</span><a href=\"#\" class=\"ds-riel__enlace\" aria-current=\"page\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 10.5 12 3l9 7.5V21H3z\"/></svg><span>Panel</span></a><a href=\"#\" class=\"ds-riel__enlace\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 12h-6l-2 3h-4l-2-3H2\"/><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"/></svg><span>Por aprobar</span><span class=\"ds-contador\">4</span></a><a href=\"#\" class=\"ds-riel__enlace\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/></svg><span>Accesos</span></a></nav>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-riel{display:grid;gap:2px;width:248px;padding:24px 12px;background:var(--sg-marca);font-family:'Public Sans',system-ui,sans-serif} .ds-riel__marca{color:#fff;font-size:1.25rem;font-weight:800;letter-spacing:0.06em;padding:0 8px 16px} .ds-riel__titulo{font-size:0.75rem;font-weight:700;color:var(--sg-texto-inverso-2);padding:8px 12px;letter-spacing:0.04em;text-transform:uppercase} .ds-riel__enlace{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:var(--sg-texto-inverso-2);font-size:0.875rem;font-weight:600;text-decoration:none;transition:background 200ms cubic-bezier(0.2,0.8,0.2,1),color 200ms cubic-bezier(0.2,0.8,0.2,1)} .ds-riel__enlace:hover{background:var(--sg-marca-2);color:#fff} .ds-riel__enlace:focus-visible{outline:2px solid #fff;outline-offset:2px} .ds-riel__enlace[aria-current=page]{background:#fff;color:var(--sg-marca);font-weight:700} .ds-contador{margin-left:auto;display:inline-grid;place-items:center;min-width:1.5rem;height:1.5rem;padding:0 4px;border-radius:999px;background:var(--sg-marca-3);color:#fff;font-size:0.75rem;font-weight:800} .ds-riel__enlace[aria-current=page] .ds-contador{background:var(--sg-grad-1);color:var(--sg-marca)}"
+    },
+    {
+      "name": "Hoja de trabajo",
+      "kind": "card",
+      "refersTo": "hoja",
+      "description": "Contenedor plano con borde de renglón, cabeza y cuerpo; sin sombra. Ejemplo con barra cantidad frente a meta.",
+      "html": "<section class=\"ds-hoja\"><header class=\"ds-hoja__cabeza\"><h2>Avance por factor</h2><a href=\"#\">Ver matriz</a></header><div class=\"ds-hoja__cuerpo\"><div class=\"ds-meta\"><span>F3 · Profesores</span><b>4 <small>/ 20</small></b><span class=\"ds-meta__pista\"><span style=\"width:20%\"></span></span></div></div></section>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-hoja{background:#fff;border:1px solid var(--sg-renglon);border-radius:8px;font-family:'Public Sans',system-ui,sans-serif} .ds-hoja__cabeza{display:flex;justify-content:space-between;align-items:baseline;padding:16px 24px;border-bottom:1px solid var(--sg-renglon)} .ds-hoja__cabeza h2{margin:0;font-size:1rem;font-weight:700} .ds-hoja__cabeza a{font-size:0.875rem;color:var(--sg-accion)} .ds-hoja__cabeza a:hover{color:var(--sg-accion-2)} .ds-hoja__cuerpo{padding:24px} .ds-meta{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:0.875rem} .ds-meta b small{color:var(--sg-texto-2);font-weight:600} .ds-meta__pista{grid-column:1/-1;height:8px;border-radius:999px;background:var(--sg-grad-0);overflow:hidden} .ds-meta__pista span{display:block;height:100%;background:var(--sg-grad-2);border-radius:999px}"
+    },
+    {
+      "name": "Banner huella",
+      "kind": "custom",
+      "refersTo": "banner-huella",
+      "description": "Firma: cifra display y 12 columnas (factores o meses) con altura = avance frente a meta y tono = grado.",
+      "html": "<section class=\"ds-banner\"><div class=\"ds-banner__texto\"><p class=\"ds-banner__saludo\">Hola, Decana</p><h1 class=\"ds-banner__titular\">Matriz de autoevaluación</h1><p class=\"ds-banner__cifra\"><strong>6</strong><span>/ 205 evidencias aprobadas</span></p></div><ul class=\"ds-huella\"><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h1\" style=\"height:max(12%,3px)\"></span></span><span class=\"ds-huella__cod\">F1</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h3\" style=\"height:max(64%,3px)\"></span></span><span class=\"ds-huella__cod\">F2</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h4\" style=\"height:max(82%,3px)\"></span></span><span class=\"ds-huella__cod\">F3</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h2\" style=\"height:max(30%,3px)\"></span></span><span class=\"ds-huella__cod\">F4</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h0\" style=\"height:max(0%,3px)\"></span></span><span class=\"ds-huella__cod\">F5</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h5\" style=\"height:max(100%,3px)\"></span></span><span class=\"ds-huella__cod\">F6</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h3\" style=\"height:max(60%,3px)\"></span></span><span class=\"ds-huella__cod\">F7</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h1\" style=\"height:max(15%,3px)\"></span></span><span class=\"ds-huella__cod\">F8</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h2\" style=\"height:max(35%,3px)\"></span></span><span class=\"ds-huella__cod\">F9</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h4\" style=\"height:max(80%,3px)\"></span></span><span class=\"ds-huella__cod\">F10</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h3\" style=\"height:max(55%,3px)\"></span></span><span class=\"ds-huella__cod\">F11</span></li><li class=\"ds-huella__col\"><span class=\"ds-huella__pozo\"><span class=\"ds-huella__barra ds-h2\" style=\"height:max(40%,3px)\"></span></span><span class=\"ds-huella__cod\">F12</span></li></ul></section>",
+      "css": ":host{--sg-marca:#142a59;--sg-marca-2:#1c3a78;--sg-marca-3:#2a4b8f;--sg-blanco:#fff;--sg-papel:#f5f7fb;--sg-renglon:#dfe4ee;--sg-renglon-2:#c5cddd;--sg-texto:#142a59;--sg-texto-2:#4d5871;--sg-texto-3:#636d86;--sg-texto-inverso-2:#c9d3ea;--sg-accion:#1f4fd1;--sg-accion-2:#1a43b3;--sg-ok:#1f6f4a;--sg-ok-fondo:#e6f2ec;--sg-pendiente:#1f4fd1;--sg-pendiente-fondo:#e8eefc;--sg-alerta:#9a5b00;--sg-alerta-fondo:#fbf1e1;--sg-error:#b3261e;--sg-error-fondo:#fbe9e7;--sg-sensible:#5b2a86;--sg-sensible-fondo:#f1eaf7;--sg-grad-0:#eef1f6;--sg-grad-1:#d6e0f3;--sg-grad-2:#a9bde6;--sg-grad-3:#4a6cc0;--sg-grad-4:#2f56b0;--sg-grad-5:#142a59;font-family:'Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--sg-texto)} .ds-banner{display:grid;gap:24px;padding:32px 32px 24px;background:var(--sg-marca);color:#fff;border-radius:8px;font-family:'Public Sans',system-ui,sans-serif} .ds-banner p,.ds-banner h1{margin:0} .ds-banner__texto{display:grid;gap:12px} .ds-banner__saludo{font-size:0.875rem;font-weight:600;color:var(--sg-texto-inverso-2)} .ds-banner__titular{font-size:1.25rem;font-weight:700;line-height:1.3} .ds-banner__cifra{display:flex;align-items:baseline;gap:8px} .ds-banner__cifra strong{font-size:clamp(2.5rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.03em;line-height:1} .ds-banner__cifra span{color:var(--sg-texto-inverso-2);font-weight:600} .ds-huella{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;height:9rem;margin:0;padding:0;list-style:none} .ds-huella__col{display:grid;grid-template-rows:1fr auto;height:100%;min-width:0} .ds-huella__pozo{display:flex;align-items:flex-end;border:1px dashed rgba(255,255,255,.4);border-radius:4px 4px 0 0;background:rgba(255,255,255,.04)} .ds-huella__col:hover .ds-huella__pozo{border-color:#fff;background:rgba(255,255,255,.1)} .ds-huella__barra{width:100%;border:1px solid rgba(255,255,255,.55);border-bottom:0;border-radius:4px 4px 0 0} .ds-h0{background:transparent;border:0} .ds-h1{background:var(--sg-grad-1)} .ds-h2{background:var(--sg-grad-2)} .ds-h3{background:var(--sg-grad-3)} .ds-h4{background:var(--sg-grad-4)} .ds-h5{background:#fff} .ds-huella__cod{font-size:0.75rem;font-weight:800;text-align:center;padding-top:8px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Matriz de autoevaluación",
+    "overview": "SIGEA se lee como la matriz del informe de autoevaluación CNA. Cada número es cantidad frente a meta (\"4 / 20\", \"6 / 205\"), y la gradación de cumplimiento del CNA (sin evidencia, no se cumple, insatisfactorio, aceptable, alto grado, pleno) es la única escala de azules del sistema: la misma en las celdas de la matriz, en los chips de factor, en las barras y en la huella del banner. Si un azul aparece, significa un grado.\n\nEl mundo es azul institucional y blanco. Un riel lateral azul marca (#142a59) con texto blanco sostiene la navegación; el trabajo ocurre sobre blanco, separado por renglones finos, en hojas planas con borde de 1 px y no en tarjetas decorativas. La densidad es de documento de trabajo: tablas, listas de filas, metadatos en definición, todo con cifras tabulares. Un único azul vivo (#1f4fd1) se reserva para la acción pendiente del usuario y para el foco.\n\nEl estado nunca depende solo del color: aprobado es sólido, pendiente lleva borde punteado, rechazado va tachado, el envejecido (más de 3 días) es ámbar punteado con reloj de arena y el sensible lleva candado en morado. Las directivas y los docentes leen lo mismo en escritorio y en móvil, donde las tablas se vuelven fichas y la matriz se vuelve lista por factor.",
+    "keyCharacteristics": [
+      "Una sola escala de azules (gradación CNA de 6 niveles) con significado fijo.",
+      "Cantidad frente a meta en toda cifra de avance.",
+      "Un azul de acción reservado; el resto de los botones son neutros o de marca.",
+      "Estado por forma más color.",
+      "Una familia (Public Sans, local) con cifras tabulares y escala de 6 pasos.",
+      "Plano: renglones y bordes en lugar de sombras; la sombra solo para lo que flota.",
+      "Iconos Lucide de trazo 1,75 desde un sprite local, sin recuadros de color."
+    ],
+    "rules": [
+      {
+        "name": "The Una Escala Rule",
+        "body": "Los azules de grad-0 a grad-5 significan grado de cumplimiento CNA y nada más. No se introducen azules nuevos para decorar, agrupar o distinguir categorías.",
+        "section": "colors"
+      },
+      {
+        "name": "The Acción Reservada Rule",
+        "body": "El azul de acción rellena un solo botón por contexto: la acción pendiente del usuario (aprobar, subir, guardar). Las acciones restantes usan el botón secundario blanco o el de marca.",
+        "section": "colors"
+      },
+      {
+        "name": "The Forma Antes Que Color Rule",
+        "body": "Ningún estado se comunica solo con color: sólido, punteado, tachado, icono de reloj, reloj de arena o candado acompañan siempre al tono.",
+        "section": "colors"
+      },
+      {
+        "name": "The Seis Pasos Rule",
+        "body": "Solo existen 12, 14, 16, 20 y 32 px y el display fluido de 40 a 56 px. El display se reserva para una cifra por pantalla.",
+        "section": "typography"
+      },
+      {
+        "name": "The Cifra Tabular Rule",
+        "body": "Toda cifra se compone con tabular-nums (heredado del body); no se desactiva.",
+        "section": "typography"
+      },
+      {
+        "name": "The Plano Por Defecto Rule",
+        "body": "Si no flota, no tiene sombra. Las hojas se separan con borde de renglón, no con elevación.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** expresar todo avance como cantidad frente a meta (\"4 / 20\") y pintarlo con el grado que le corresponde (grad-0 a grad-5).",
+      "**Do** usar el chip de factor del sistema cada vez que aparezca un factor CNA, en cualquier pantalla.",
+      "**Do** acompañar cada estado con su forma: sólido, punteado, tachado, reloj, reloj de arena o candado.",
+      "**Do** separar contenedores con renglón de 1 px (renglon) y esquinas de 8 px; reservar la sombra de hoja flotante a diálogos, menús y hojas móviles.",
+      "**Do** mantener todo objetivo táctil en 44 px o más y el foco visible en 2 px azul de acción (blanco sobre superficies de marca).",
+      "**Do** usar solo los tamaños de la escala (12, 14, 16, 20, 32 px y el display fluido) y los pesos 400, 600, 700 y 800 de Public Sans."
+    ],
+    "donts": [
+      "**Don't** usar los azules de la gradación para decorar o para categorías que no sean grado de cumplimiento.",
+      "**Don't** rellenar con azul de acción más de un botón por contexto ni usarlo para acciones que no son la pendiente del usuario.",
+      "**Don't** construir paneles de tarjetas KPI con icono en recuadro de color, ilustraciones isométricas ni colores sueltos fuera de los tokens.",
+      "**Don't** comunicar un estado solo con color.",
+      "**Don't** añadir una segunda familia tipográfica ni fuentes remotas; Public Sans se sirve localmente.",
+      "**Don't** mostrar la identidad visual de la universidad: la marca es solo SIGEA."
+    ]
+  }
+}

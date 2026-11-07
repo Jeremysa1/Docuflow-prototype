@@ -3,9 +3,7 @@ Configuración de URLs principales del proyecto.
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings
 from django.views.generic import RedirectView
-from django.conf.urls.static import static
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/login/', permanent=False), name='index'),
@@ -24,4 +22,7 @@ urlpatterns = [
     path('notificaciones/', include('apps.notificaciones.urls')),
     path('auditoria/', include('apps.auditoria.urls')),
 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+# A4 (Zero-Trust): MEDIA_ROOT no se sirve nunca por URL directa, ni en DEBUG.
+# Los archivos solo salen por las vistas de descarga y vista previa, que validan permisos.

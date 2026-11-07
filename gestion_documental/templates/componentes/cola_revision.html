@@ -1,0 +1,33 @@
+{% load sigea %}
+{# Cola de revisión (contexto: cola, puede_decidir) #}
+{% if cola %}
+<ul class="sg-lista" aria-label="Evidencias por revisar, de la más antigua a la más nueva">
+  {% for doc in cola %}
+  <li>
+    {% tipo_archivo doc %}
+    <div class="sg-lista__cuerpo">
+      <a class="sg-lista__titulo" href="{% url 'documentos:detalle' doc.id %}">{{ doc.titulo }}</a>
+      <span class="sg-lista__meta">
+        <span>{{ doc.autor.get_full_name|default:doc.autor.email }}</span>
+        {% if doc.programa %}<span>{{ doc.programa.nombre }}</span>{% endif %}
+        {% chip_factor_codigo doc.factor_cna %}
+      </span>
+      {% if puede_decidir %}
+      <div class="sg-cola__acciones">
+        {% if doc.autor_id != request.user.id %}<form method="post" action="{% url 'documentos:aprobar_doc' doc.id %}">{% csrf_token %}
+          <button type="submit" class="sg-btn sg-btn--aprobar" data-confirmar="¿Aprobar «{{ doc.titulo }}»? Quedará como evidencia aprobada." data-confirmar-titulo="Aprobar evidencia">{% icono "check" %}<span>Aprobar</span></button>
+        </form>{% else %}<span class="sg-peque sg-texto-2">Es tuya: la revisa otra persona</span>{% endif %}
+        <a class="sg-btn" href="{% url 'documentos:detalle' doc.id %}">Revisar</a>
+      </div>
+      {% endif %}
+    </div>
+    <span class="sg-cola__dias{% if doc.envejecido %} es-envejecido{% endif %}">
+      {% if doc.envejecido %}{% icono "hourglass" "sg-icono--sm" %}{% endif %}
+      {% if doc.dias_esperando == 0 %}Hoy{% else %}{{ doc.dias_esperando|plural:"día,días" }}{% endif %}
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+{% include "componentes/estado_vacio.html" with icono="check-check" titulo="No hay evidencias por revisar" texto="Cuando un docente suba una evidencia, aparecerá aquí ordenada por antigüedad." %}
+{% endif %}

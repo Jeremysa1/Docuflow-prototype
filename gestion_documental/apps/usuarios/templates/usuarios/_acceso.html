@@ -1,0 +1,44 @@
+{% load static sigea %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#142a59">
+  <title>{% block title %}Ingresar{% endblock %} · SIGEA</title>
+  <link rel="icon" type="image/png" href="{% static 'img/sigea_logo_p2.png' %}">
+  <link rel="preload" href="{% static 'fonts/public-sans/public-sans-latin-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/sigea/main.css' %}?v=005">
+</head>
+<body>
+  <div class="sg-acceso">
+    <aside class="sg-acceso__marca">
+      <div class="sg-acceso__logo" role="img" aria-label="SIGEA">
+        <span class="sg-emblema" aria-hidden="true"></span><span aria-hidden="true">IGEA</span>
+      </div>
+
+      <div class="sg-acceso__lema">
+        <h1>Sistema Integrado de Gestión de Evidencias para la <em>Acreditación</em></h1>
+        <p>Centraliza, organiza y protege las evidencias de cada factor CNA en un solo lugar.</p>
+      </div>
+    </aside>
+
+    <main class="sg-acceso__formulario">
+      <div class="sg-acceso__marca-movil">
+        <div class="sg-acceso__logo" role="img" aria-label="SIGEA"><span class="sg-emblema" aria-hidden="true"></span><span aria-hidden="true">IGEA</span></div>
+        <p>Sistema Integrado de Gestión de Evidencias para la Acreditación</p>
+      </div>
+      <div class="sg-acceso__caja">
+        {% if messages %}
+        <div class="sg-avisos" role="status">
+          {% for message in messages %}
+          <div class="sg-aviso sg-aviso--{{ message.tags|default:'info' }}">{% if message.tags == 'success' %}{% icono "circle-check" %}{% elif message.tags == 'error' %}{% icono "circle-alert" %}{% else %}{% icono "info" %}{% endif %}<span>{{ message }}</span></div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% block caja %}{% endblock %}
+      </div>
+    </main>
+  </div>
+  <script defer src="{% static 'js/sigea.js' %}"></script>
+</body>
+</html>

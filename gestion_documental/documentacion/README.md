@@ -2,22 +2,36 @@
 
 SIGEA es una plataforma integral de gestión documental de alto rendimiento, diseñada específicamente para entornos universitarios. El sistema centraliza, asegura y audita la documentación institucional con un enfoque riguroso en la **Acreditación de Calidad (Factores CNA)** y un modelo de seguridad **Zero-Trust**.
 
+## 🗂️ Dónde está cada cosa
+
+| Qué | Dónde |
+|---|---|
+| Manual técnico | `gestion_documental/documentacion/manual_tecnico.md` |
+| Especificaciones por funcionalidad (spec-kit) | `specs/` (raíz del repositorio) |
+| Principios del proyecto | `.specify/memory/constitution.md` |
+| Revisiones de seguridad | `gestion_documental/informes/` |
+| Sistema de diseño | `DESIGN.md` y `PRODUCT.md` (raíz) |
+| Referencias externas | `gestion_documental/documentacion/referencias/` |
+| Scripts de QA manual | `gestion_documental/scripts/qa/` |
+
+---
+
 ---
 
 ## 💎 Visión General y Estética
 SIGEA v2.0 no es solo una herramienta administrativa; es una experiencia de usuario **Premium**. El sistema ha sido refinado para ofrecer una interfaz limpia, moderna y altamente funcional que emula la eficiencia de las mejores suites de productividad del mercado.
 
 - **Diseño Moderno**: Paleta de colores institucional (`#142a59`) con acentos esmeralda y una estética de "90% zoom" para máxima densidad de información sin sacrificar legibilidad.
-- **Iconografía Dinámica**: Integración de **Icons8 Fluency** y **Lucide SVGs** para una identificación visual instantánea de tipos de archivo (PDF, Word, Excel) y estados de documentos.
+- **Iconografía**: un solo juego de iconos de línea (Lucide, servidos localmente) y estados que se distinguen por forma y color.
 - **UX Fluida**: Micro-animaciones, estados activos persistentes en la navegación y transiciones suaves que mejoran la retención del usuario.
 
 ---
 
 ## 🛠️ Stack Tecnológico
-- **Core**: Django 4.2+ (Python)
+- **Core**: Django 6.1 (Python 3.12)
 - **Base de Datos**: PostgreSQL (Optimizado para auditoría masiva).
-- **Frontend**: HTML5, Vanilla CSS3 (Custom Design System), JavaScript ES6+.
-- **Seguridad**: Autenticación robusta, Bloqueo de Fuerza Bruta, Sesiones de 15 min.
+- **Frontend**: plantillas Django, sistema de diseño propio en `static/css/sigea/` (ver `DESIGN.md`), JavaScript sin framework.
+- **Seguridad**: límites de intentos por IP, una sola política de contraseñas, CSP, sesiones de 15 min y usuario de base de datos con permisos mínimos.
 - **Almacenamiento**: Gestión segura de archivos (`media/`) con validación de acceso a nivel de aplicación.
 
 ---

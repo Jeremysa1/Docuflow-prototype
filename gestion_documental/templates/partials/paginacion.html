@@ -1,20 +1,11 @@
-{% if page_obj.has_other_pages %}
-  <div class="paginacion pagination-wrapper">
-    <div>
-    {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-link">Anterior</a>
-    {% endif %}
-    </div>
-
-    <div class="pagination-center">
-      <span>Página <strong>{{ page_obj.number }}</strong> de {{ page_obj.paginator.num_pages }}</span><br>
-      <span class="pagination-results">Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} resultados</span>
-    </div>
-
-    <div>
-    {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-link">Siguiente  </a>
-    {% endif %}
-    </div>
-  </div>
+{% load sigea %}{% if page_obj.has_other_pages %}
+<div class="sg-paginacion">
+  <span>{{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</span>
+  <nav aria-label="Páginas">
+    {% if page_obj.has_previous %}<a href="{% querystring page=page_obj.previous_page_number %}" aria-label="Página anterior">{% icono "chevron-left" %}</a>{% endif %}
+    <span aria-current="page">{{ page_obj.number }}</span>
+    {% if page_obj.has_next %}<a href="{% querystring page=page_obj.next_page_number %}" aria-label="Página siguiente">{% icono "chevron-right" %}</a>{% endif %}
+  </nav>
+  <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+</div>
 {% endif %}

@@ -1,241 +1,75 @@
 {% extends 'base.html' %}
-{% block title %}Auditoría - SIGEA{% endblock %}
-{% block page_title %}Auditoría y Trazabilidad{% endblock %}
+{% load sigea %}
+{% block title %}Auditoría · SIGEA{% endblock %}
 
 {% block content %}
-
-    <!-- Banner Admin -->
-    <div class="dark-panel mb-2xl" style="padding: var(--space-md) var(--space-xl); display: flex; align-items: center; gap: 0.75rem; font-size: 0.867rem; font-weight: 700;">
-        <i data-lucide="shield" style="width: 20px; height: 20px; color: var(--brand-300);"></i>
-        Nivel de Acceso Administrativo - SIGEA Auditoría
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "shield" %}</span>
+      <h1>Auditoría</h1>
+      <p>Registro inalterable de quién hizo qué, cuándo y desde dónde. {{ stats.total|plural:"registro,registros" }} con los filtros actuales.</p>
     </div>
-
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Trazabilidad de Actividades</h1>
-            <p>Registro centralizado de cada movimiento institucional.</p>
-        </div>
-        <a href="{% url 'auditoria:exportar' %}?{{ request.GET.urlencode }}" class="btn btn-primary">
-            <i data-lucide="download"></i>
-            Exportar Logs
-        </a>
-    </header>
-
-    <!-- Layout Grid -->
-    <div class="grid-main-aside">
-        
-        <!-- Columna Principal -->
-        <div class="flex-stack">
-            
-            <!-- Buscador y Filtros -->
-            <div class="card">
-                <div class="card-body">
-                    <form method="get" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-md); align-items: end;">
-                        
-                        <div class="form-group">
-                            <label class="form-label">Usuario</label>
-                            <div class="select-wrapper">
-                                <input type="text" name="usuario" placeholder="Nombre o ID..." value="{{ request.GET.usuario|default:'' }}" class="form-input" style="padding-left: 2.75rem;">
-                                <i data-lucide="user" style="left: 1rem; right: auto;"></i>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Documento</label>
-                            <div class="select-wrapper">
-                                <input type="text" name="documento" placeholder="Título o ID..." value="{{ request.GET.documento|default:'' }}" class="form-input" style="padding-left: 2.75rem;">
-                                <i data-lucide="file-text" style="left: 1rem; right: auto;"></i>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Acción</label>
-                            <div class="select-wrapper">
-                                <select name="accion" class="form-select">
-                                    <option value="">Todas</option>
-                                    <option value="SUBIO" {% if request.GET.accion == 'SUBIO' %}selected{% endif %}>Subida</option>
-                                    <option value="APROBO" {% if request.GET.accion == 'APROBO' %}selected{% endif %}>Aprobación</option>
-                                    <option value="RECHAZO" {% if request.GET.accion == 'RECHAZO' %}selected{% endif %}>Rechazo</option>
-                                    <option value="ELIMINO" {% if request.GET.accion == 'ELIMINO' %}selected{% endif %}>Eliminación</option>
-                                </select>
-                                <i data-lucide="chevron-down"></i>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Desde</label>
-                            <input type="date" name="fecha_inicio" value="{{ request.GET.fecha_inicio|default:'' }}" class="form-input">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Hasta</label>
-                            <div class="flex-row" style="gap: 0.5rem;">
-                                <input type="date" name="fecha_fin" value="{{ request.GET.fecha_fin|default:'' }}" class="form-input">
-                                <button type="submit" class="btn-icon btn-primary" style="width: 38px; height: 38px; border-radius: var(--radius-md); flex-shrink: 0;">
-                                    <i data-lucide="search"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-            </div>
-
-            <!-- Tabla de Registros -->
-            <div class="table-container">
-                <div class="table-scroll">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Fecha y Hora</th>
-                                <th>Usuario</th>
-                                <th>Acción</th>
-                                <th>Documento</th>
-                                <th>IP</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for registro in page_obj %}
-                            <tr>
-                                <td style="white-space: nowrap;">
-                                    <div class="font-bold text-sm text-brand">{{ registro.fecha_hora|date:"d M, Y" }}</div>
-                                    <div class="text-xs text-light mt-sm" style="font-family: monospace;">{{ registro.fecha_hora|date:"H:i:s" }}</div>
-                                </td>
-                                <td>
-                                    <div class="flex-row">
-                                        <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--brand-900), var(--brand-700)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.667rem; font-weight: 700; flex-shrink: 0; box-shadow: var(--shadow-xs);">
-                                            {% if registro.usuario %}{{ registro.usuario.first_name|first|upper }}{{ registro.usuario.last_name|first|upper }}{% else %}SYS{% endif %}
-                                        </div>
-                                        <div>
-                                            <div class="font-bold text-xs text-brand">{{ registro.usuario.get_full_name|default:"Sistema" }}</div>
-                                            <div class="text-xxs text-light mt-sm">{{ registro.usuario.email|default:"automático" }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if registro.accion == 'APROBO' %}
-                                        <span class="badge badge-success"><i data-lucide="check"></i> {{ registro.get_accion_display }}</span>
-                                    {% elif registro.accion == 'RECHAZO' or registro.accion == 'ELIMINO' %}
-                                        <span class="badge badge-danger"><i data-lucide="x"></i> {{ registro.get_accion_display }}</span>
-                                    {% elif registro.accion == 'SUBIO' %}
-                                        <span class="badge badge-brand"><i data-lucide="upload"></i> {{ registro.get_accion_display }}</span>
-                                    {% else %}
-                                        <span class="badge badge-neutral"><i data-lucide="activity"></i> {{ registro.get_accion_display }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if registro.documento %}
-                                        <a href="{% url 'documentos:detalle' registro.documento.id %}" class="font-bold text-xs truncate" style="color: var(--brand-600); max-width: 200px; display: block;" title="{{ registro.documento.titulo }}">
-                                            {{ registro.documento.titulo }}
-                                        </a>
-                                        {% if registro.documento.categoria %}
-                                            <span class="text-xxs font-bold text-light uppercase tracking-wide mt-sm" style="display: block;">{{ registro.documento.categoria.nombre }}</span>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="text-xs text-light" style="font-style: italic;">{{ registro.detalle|default:"-" }}</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-xs text-light" style="font-family: monospace;">
-                                    {{ registro.ip_address|default:"N/A" }}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="5">
-                                    <div class="empty-state">
-                                        <div class="empty-state-icon">
-                                            <i data-lucide="activity"></i>
-                                        </div>
-                                        <p>No se encontraron registros de auditoría.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                {% if page_obj.has_other_pages %}
-                <div class="pagination" style="border-radius: 0; border-top: 1px solid var(--slate-200); border-bottom: none; border-left: none; border-right: none; box-shadow: none;">
-                    <div class="pagination-info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
-                    <div class="pagination-buttons">
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <span class="pagination-btn active">{{ num }}</span>
-                            {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-                                <a href="?page={{ num }}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.accion %}&accion={{ request.GET.accion }}{% endif %}" class="pagination-btn">{{ num }}</a>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-            </div>
-        </div>
-
-        <!-- Sidebar / Widget -->
-        <aside class="flex-stack">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="text-sm font-bold text-brand mb-xl" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i data-lucide="pie-chart" style="width: 16px; height: 16px;"></i>
-                        Resumen de Actividad
-                    </h3>
-                    
-                    <div style="background: var(--slate-50); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-xl); border: 1px solid var(--slate-100);">
-                        <span class="form-label" style="margin-bottom: 0.25rem;">Total Registros</span>
-                        <div style="font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; color: var(--brand-900);">{{ stats.total }}</div>
-                    </div>
-
-                    <div class="flex-stack" style="gap: var(--space-lg);">
-                        <div>
-                            <div class="flex-between mb-sm">
-                                <span class="text-xs font-bold text-brand">Subidas</span>
-                                <span class="text-xxs font-bold text-light">{{ stats.subidas_pct|default:'0' }}%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill bar-fill" style="width: 0%; background: var(--sky-500);" data-width="{{ stats.subidas_pct|default:'0' }}%"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="flex-between mb-sm">
-                                <span class="text-xs font-bold text-brand">Aprobaciones</span>
-                                <span class="text-xxs font-bold text-light">{{ stats.aprobaciones_pct|default:'0' }}%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill bar-fill" style="width: 0%; background: var(--emerald-500);" data-width="{{ stats.aprobaciones_pct|default:'0' }}%"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="flex-between mb-sm">
-                                <span class="text-xs font-bold text-brand">Eliminaciones/Rechazos</span>
-                                <span class="text-xxs font-bold text-light">{{ stats.eliminaciones_pct|default:'0' }}%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill bar-fill" style="width: 0%; background: var(--rose-500);" data-width="{{ stats.eliminaciones_pct|default:'0' }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
+    <div class="sg-cabecera__acciones">
+      <a class="sg-btn" href="{% url 'auditoria:exportar_excel' %}?{{ request.GET.urlencode }}">{% icono "download" %}<span>Excel</span></a>
+      <a class="sg-btn" href="{% url 'auditoria:exportar_pdf' %}?{{ request.GET.urlencode }}">{% icono "download" %}<span>PDF</span></a>
     </div>
-{% endblock %}
+  </header>
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(() => {
-            document.querySelectorAll('.bar-fill').forEach(bar => {
-                const targetWidth = bar.getAttribute('data-width');
-                if (targetWidth) {
-                    bar.style.width = targetWidth;
-                }
-            });
-        }, 150);
-    });
-</script>
+  <form method="get" class="sg-hoja">
+    <div class="sg-hoja__cuerpo sg-filtros">
+      <div class="sg-campo"><label for="a-usuario">Usuario</label><input id="a-usuario" name="usuario" type="text" value="{{ request.GET.usuario|default:'' }}" placeholder="Nombre, correo o ID"></div>
+      <div class="sg-campo"><label for="a-documento">Evidencia</label><input id="a-documento" name="documento" type="text" value="{{ request.GET.documento|default:'' }}" placeholder="Título o ID"></div>
+      <div class="sg-campo"><label for="a-accion">Acción</label>
+        <select id="a-accion" name="accion"><option value="">Todas</option>{% for valor, etiqueta in acciones %}<option value="{{ valor }}"{% if request.GET.accion == valor %} selected{% endif %}>{{ etiqueta }}</option>{% endfor %}</select></div>
+      <div class="sg-campo"><label for="a-desde">Desde</label><input id="a-desde" name="fecha_inicio" type="date" value="{{ request.GET.fecha_inicio|default:'' }}"></div>
+      <div class="sg-campo"><label for="a-hasta">Hasta</label><input id="a-hasta" name="fecha_fin" type="date" value="{{ request.GET.fecha_fin|default:'' }}"></div>
+      <div class="sg-filtros__acciones">
+        <button type="submit" class="sg-btn sg-btn--marca">Filtrar</button>
+        <a class="sg-btn sg-btn--fantasma" href="{% url 'auditoria:lista' %}">Limpiar</a>
+      </div>
+    </div>
+  </form>
+
+  <section class="sg-hoja">
+    {% if page_obj %}
+    <div class="sg-tabla-marco">
+      <table class="sg-tabla">
+        <thead><tr><th scope="col">Fecha y hora</th><th scope="col">Usuario</th><th scope="col">Acción</th><th scope="col">Evidencia o detalle</th><th scope="col">IP</th></tr></thead>
+        <tbody>
+        {% for registro in page_obj %}
+          <tr>
+            <td class="sg-tabla__titulo"><strong>{{ registro.fecha_hora|date:"j M Y" }}</strong> <span class="sg-tabla__secundario">{{ registro.fecha_hora|date:"H:i:s" }}</span></td>
+            <td data-label="Usuario">
+              {% if registro.usuario %}
+              <span class="sg-usuario-celda"><span class="sg-avatar" aria-hidden="true">{{ registro.usuario|iniciales }}</span><span class="sg-recorte">{{ registro.usuario.get_full_name|default:registro.usuario.email }}<span class="sg-tabla__secundario">{{ registro.usuario.email }}</span></span></span>
+              {% else %}<span class="sg-texto-2">Sin usuario</span>{% endif %}
+            </td>
+            <td data-label="Acción">
+              {% if registro.accion == 'ACCESO_DENEGADO' or registro.accion == 'LOGIN_FALLIDO' %}
+                <span class="sg-estado sg-estado--rechazado">{% icono "shield-alert" "sg-icono--sm" %}<span>{{ registro.get_accion_display }}</span></span>
+              {% elif registro.accion == 'APROBO' or registro.accion == 'APROBO_ACCESO' %}
+                <span class="sg-estado sg-estado--aprobado">{% icono "circle-check" "sg-icono--sm" %}<span>{{ registro.get_accion_display }}</span></span>
+              {% elif registro.accion == 'RECHAZO' or registro.accion == 'RECHAZO_ACCESO' or registro.accion == 'REVOCO_ACCESO' or registro.accion == 'ELIMINO' %}
+                <span class="sg-estado sg-estado--envejecido">{% icono "circle-x" "sg-icono--sm" %}<span>{{ registro.get_accion_display }}</span></span>
+              {% else %}
+                <span class="sg-estado sg-estado--neutro">{% icono "activity" "sg-icono--sm" %}<span>{{ registro.get_accion_display }}</span></span>
+              {% endif %}
+            </td>
+            <td data-label="Evidencia">
+              {% if registro.documento %}<a class="sg-tabla__principal" href="{% url 'documentos:detalle' registro.documento.id %}">{{ registro.documento.titulo|truncatechars:60 }}</a>{% if registro.detalle %}<span class="sg-tabla__secundario">{{ registro.detalle|truncatechars:90 }}</span>{% endif %}
+              {% else %}<span class="sg-texto-2">{{ registro.detalle|default:"—"|truncatechars:90 }}</span>{% endif %}
+            </td>
+            <td data-label="IP">{{ registro.ip_address|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/paginacion.html" %}
+    {% else %}
+      {% include "componentes/estado_vacio.html" with icono="shield" titulo="No hay registros con esos filtros" texto="Prueba con un rango de fechas más amplio o quita la acción." %}
+    {% endif %}
+  </section>
+</div>
 {% endblock %}
