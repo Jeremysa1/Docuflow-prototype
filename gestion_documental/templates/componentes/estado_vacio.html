@@ -1,0 +1,7 @@
+{% load sigea %}
+<div class="sg-vacio">
+  {% icono icono|default:"inbox" "sg-vacio__icono" %}
+  <h3>{{ titulo }}</h3>
+  {% if texto %}<p>{{ texto }}</p>{% endif %}
+  {% if accion_url %}<a class="sg-btn {{ accion_clase|default:'sg-btn--primario' }}" href="{{ accion_url }}">{{ accion_texto }}</a>{% endif %}
+</div>

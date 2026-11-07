@@ -1,0 +1,10 @@
+{# Tiempos de revisión de las últimas 4 semanas (contexto: tiempos) #}
+<ul class="sg-tiempos" aria-label="Tiempo medio de revisión por semana">
+  {% for p in tiempos.puntos %}
+  <li class="{% if forloop.last %}es-actual{% endif %}" title="{{ p.etiqueta }}: {{ p.revisados }} revisadas{% if p.media_horas is not None %}, media {{ p.media_horas }} h{% endif %}">
+    <span class="sg-tiempos__barra" style="--altura: {{ p.altura }}%"></span>
+    <span class="sg-tiempos__valor">{% if p.media_horas is not None %}{{ p.media_horas|floatformat:0 }} h{% else %}—{% endif %}</span>
+    <span class="sg-tiempos__semana">{{ p.etiqueta }}</span>
+  </li>
+  {% endfor %}
+</ul>

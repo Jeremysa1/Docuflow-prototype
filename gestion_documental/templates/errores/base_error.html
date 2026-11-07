@@ -1,0 +1,28 @@
+{% load static sigea %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#142a59">
+  <title>{% block titulo %}Error{% endblock %} · SIGEA</title>
+  <link rel="icon" type="image/png" href="{% static 'img/sigea_logo_p2.png' %}">
+  <link rel="stylesheet" href="{% static 'css/sigea/main.css' %}?v=005">
+</head>
+<body>
+  <main class="sg-error">
+    <div class="sg-error__caja">
+      <p class="sg-error__codigo" aria-hidden="true">{% block codigo %}{% endblock %}</p>
+      <h1>{% block encabezado %}{% endblock %}</h1>
+      <p>{% block texto %}{% endblock %}</p>
+      <div class="sg-fila">{% block acciones %}
+        {% if user.is_authenticated %}
+        <a class="sg-btn sg-btn--marca" href="{% url 'documentos:dashboard' %}">{% icono "layout-dashboard" %}<span>Ir a tu panel</span></a>
+        <a class="sg-btn" href="{% url 'documentos:busqueda' %}">{% icono "search" %}<span>Buscar evidencias</span></a>
+        {% else %}
+        <a class="sg-btn sg-btn--marca" href="{% url 'auth:login' %}">{% icono "log-in" %}<span>Iniciar sesión</span></a>
+        {% endif %}
+      {% endblock %}</div>
+    </div>
+  </main>
+</body>
+</html>

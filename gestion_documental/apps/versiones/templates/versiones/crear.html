@@ -1,91 +1,47 @@
 {% extends 'base.html' %}
-{% block title %}Nueva Versión - SIGEA{% endblock %}
-{% block page_title %}Agregar Versión{% endblock %}
+{% load sigea %}
+{% block title %}Nueva versión · {{ documento.titulo }} · SIGEA{% endblock %}
 
 {% block content %}
-
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Nueva versión de: {{ documento.titulo }}</h1>
-            <p>Sube un archivo actualizado para generar una nueva versión.</p>
-        </div>
-        <a href="{% url 'versiones:lista' documento.id %}" class="btn btn-ghost">
-            <i data-lucide="arrow-left"></i>
-            Cancelar
-        </a>
-    </header>
-
-    <div class="card" style="max-width: 640px;">
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label class="form-label">Archivo (Nueva versión)</label>
-                    <div class="upload-zone" id="upload-zone">
-                        <div class="upload-zone-icon">
-                            <i data-lucide="upload-cloud"></i>
-                        </div>
-                        <h3 class="upload-zone-title">Haz clic o arrastra el nuevo archivo aquí</h3>
-                        <p class="upload-zone-subtitle">Formatos soportados: PDF, DOCX, XLSX, PPTX</p>
-                    </div>
-                    <input type="file" name="archivo" id="archivo-input" style="display:none;" required>
-                    <div id="file-name" class="text-sm font-bold text-brand mt-md"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Comentarios sobre el cambio</label>
-                    <textarea name="descripcion_cambio" class="form-textarea" rows="4" placeholder="Describe brevemente qué cambió en esta versión..." required></textarea>
-                    <p class="text-xxs text-muted mt-sm">Esta información ayuda a rastrear la evolución del documento.</p>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-full" style="padding: 1rem;">
-                    <i data-lucide="save"></i>
-                    Guardar Nueva Versión
-                </button>
-            </form>
-        </div>
+<div class="sg-pagina">
+  <nav aria-label="Ruta">
+    <ol class="sg-migas">
+      <li><a href="{% url 'documentos:detalle' documento.id %}">{{ documento.titulo|truncatechars:50 }}</a></li>
+      <li><a href="{% url 'versiones:lista' documento.id %}">Versiones</a></li>
+      <li aria-current="page">Nueva versión</li>
+    </ol>
+  </nav>
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "file-plus" %}</span>
+      <h1>Subir una nueva versión</h1>
+      <p>La nueva versión reemplaza al archivo vigente; las anteriores quedan en el historial.
+        {% if request.user.rol == 'DOCENTE_PLANTA' and documento.estado != 'PENDIENTE' %}<strong>La evidencia volverá a revisión.</strong>{% endif %}</p>
     </div>
+  </header>
 
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const uploadZone = document.getElementById('upload-zone');
-        const fileInput = document.getElementById('archivo-input');
-        const fileNameDisplay = document.getElementById('file-name');
-
-        uploadZone.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                fileNameDisplay.textContent = "📄 Seleccionado: " + this.files[0].name;
-                uploadZone.querySelector('.upload-zone-title').textContent = "Cambiar archivo seleccionado";
-            }
-        });
-
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.style.borderColor = 'var(--brand-900)';
-            uploadZone.style.background = 'var(--brand-50)';
-        });
-
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.style.borderColor = '';
-            uploadZone.style.background = '';
-        });
-
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.style.borderColor = '';
-            uploadZone.style.background = '';
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                const event = new Event('change');
-                fileInput.dispatchEvent(event);
-            }
-        });
-    });
-</script>
+  <form method="post" enctype="multipart/form-data" class="sg-rejilla sg-rejilla--principal">
+    {% csrf_token %}
+    <section class="sg-hoja"><div class="sg-hoja__cuerpo sg-form">
+      <div class="sg-campo">
+        <span class="sg-etiqueta" id="archivo-etiqueta">Archivo</span>
+        <label class="sg-archivo">
+          {% icono "upload" "sg-vacio__icono" %}
+          <strong data-archivo-nombre>Arrastra el archivo o elígelo de tu equipo</strong>
+          <span>PDF, Word, Excel o PowerPoint · máximo 10 MB</span>
+          <input type="file" name="archivo" accept=".pdf,.docx,.xlsx,.pptx" required aria-labelledby="archivo-etiqueta">
+        </label>
+      </div>
+      <div class="sg-campo">
+        <label for="descripcion_cambio">¿Qué cambió?</label>
+        <textarea id="descripcion_cambio" name="descripcion_cambio" rows="4" required placeholder="Ej.: se agregaron las firmas del comité"></textarea>
+        <p class="sg-campo__ayuda">Ayuda a quien revisa a saber qué mirar.</p>
+      </div>
+    </div></section>
+    <aside class="sg-pila">
+      <button type="submit" class="sg-btn sg-btn--primario sg-btn--bloque">{% icono "upload" %}<span>Subir versión</span></button>
+      <a class="sg-btn sg-btn--fantasma sg-btn--bloque" href="{% url 'versiones:lista' documento.id %}">Cancelar</a>
+    </aside>
+  </form>
+</div>
 {% endblock %}

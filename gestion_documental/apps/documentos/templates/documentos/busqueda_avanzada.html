@@ -1,338 +1,158 @@
 {% extends 'base.html' %}
-{% block title %}Búsqueda Avanzada - SIGEA{% endblock %}
-{% block page_title %}Búsqueda Avanzada{% endblock %}
+{% load sigea %}
+{% block title %}Buscar evidencias · SIGEA{% endblock %}
 {% block navbar_search %}{% endblock %}
 
 {% block content %}
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "search" %}</span>
+      <h1>Buscar evidencias</h1>
+      <p>Encuentra evidencias por título, descripción, factor CNA, programa o autor.</p>
+    </div>
+  </header>
 
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Búsqueda Avanzada</h1>
-            <p>Localiza documentos con filtros específicos dentro del sistema.</p>
+  <form id="searchForm" class="sg-hoja" method="get" action="{% url 'documentos:busqueda' %}" role="search">
+    <div class="sg-hoja__cuerpo sg-pila">
+      <div class="sg-fila">
+        <div class="sg-buscador">
+          {% icono "search" %}
+          <label for="q" class="sg-oculto">Texto a buscar</label>
+          <input id="q" name="q" type="search" value="{{ request.GET.q }}" placeholder="Título o descripción de la evidencia">
         </div>
+        <button type="submit" class="sg-btn sg-btn--marca">{% icono "search" %}<span>Buscar</span></button>
+      </div>
+
+      <details class="sg-desplegable"{% if filtros_activos %} open{% endif %}>
+        <summary>{% icono "sliders-horizontal" %}<span>Filtros{% if filtros_activos %} · {{ filtros_activos }} activos{% endif %}</span>{% icono "chevron-down" "sg-icono--sm" %}</summary>
+        <div class="sg-filtros">
+          <div class="sg-campo">
+            <label for="f-factor">Factor CNA</label>
+            <select id="f-factor" name="factor">
+              <option value="">Todos</option>
+              {% for codigo, nombre in factores_cna %}<option value="{{ codigo }}"{% if request.GET.factor == codigo %} selected{% endif %}>{{ nombre }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="sg-campo">
+            <label for="f-programa">Programa</label>
+            <select id="f-programa" name="programa">
+              <option value="">Todos</option>
+              {% for p in programas %}<option value="{{ p.id }}"{% if request.GET.programa == p.id|stringformat:"s" %} selected{% endif %}>{{ p.nombre }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="sg-campo">
+            <label for="f-categoria">Categoría</label>
+            <select id="f-categoria" name="categoria">
+              <option value="">Todas</option>
+              {% for c in categorias %}<option value="{{ c.id }}"{% if request.GET.categoria == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nombre }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="sg-campo">
+            <label for="f-estado">Estado</label>
+            <select id="f-estado" name="estado">
+              <option value="">Todos</option>
+              <option value="APROBADO"{% if request.GET.estado == 'APROBADO' %} selected{% endif %}>Aprobado</option>
+              <option value="PENDIENTE"{% if request.GET.estado == 'PENDIENTE' %} selected{% endif %}>En revisión</option>
+              <option value="RECHAZADO"{% if request.GET.estado == 'RECHAZADO' %} selected{% endif %}>Rechazado</option>
+            </select>
+          </div>
+          <div class="sg-campo">
+            <label for="f-autor">Autor</label>
+            <input id="f-autor" name="autor" type="text" value="{{ request.GET.autor }}" placeholder="Nombre o correo">
+          </div>
+          <div class="sg-campo">
+            <label for="f-desde">Subida desde</label>
+            <input id="f-desde" name="desde" type="date" value="{{ request.GET.desde }}">
+          </div>
+          <div class="sg-campo">
+            <label for="f-hasta">Hasta</label>
+            <input id="f-hasta" name="hasta" type="date" value="{{ request.GET.hasta }}">
+          </div>
+          {% if user.rol == 'DECANA' or user.rol == 'COORDINADOR' %}
+          <div class="sg-campo">
+            <label for="f-visibilidad">Visibilidad</label>
+            <select id="f-visibilidad" name="visibilidad">
+              <option value="">Todas</option>
+              <option value="PROGRAMA"{% if request.GET.visibilidad == 'PROGRAMA' %} selected{% endif %}>Por programa</option>
+              <option value="INSTITUCIONAL"{% if request.GET.visibilidad == 'INSTITUCIONAL' %} selected{% endif %}>Institucional</option>
+            </select>
+          </div>
+          {% endif %}
+          <label class="sg-check"><input type="checkbox" name="vigente" value="1"{% if request.GET.vigente == '1' %} checked{% endif %}><span>Solo vigentes</span></label>
+          <div class="sg-filtros__acciones">
+            <button type="submit" class="sg-btn sg-btn--marca">Aplicar filtros</button>
+            <a class="sg-btn sg-btn--fantasma" href="{% url 'documentos:busqueda' %}">Limpiar</a>
+          </div>
+        </div>
+      </details>
+    </div>
+    <input type="hidden" id="ordenInput" name="orden" value="{{ orden_actual }}">
+  </form>
+
+  {% if hay_busqueda %}
+  <section class="sg-hoja" aria-labelledby="resultados-titulo">
+    <header class="sg-hoja__cabeza">
+      <h2 id="resultados-titulo" aria-live="polite">{% icono "list" %}{{ total_resultados|plural:"resultado,resultados" }}{% if request.GET.q %} para «{{ request.GET.q }}»{% endif %}</h2>
+      <form method="get" class="sg-fila">
+        {% for clave, valor in request.GET.items %}{% if clave != 'orden' and clave != 'page' %}<input type="hidden" name="{{ clave }}" value="{{ valor }}">{% endif %}{% endfor %}
+        <label for="orden" class="sg-oculto">Ordenar</label>
+        <select id="orden" name="orden" class="sg-input" data-enviar-al-cambiar>
+          <option value="recientes"{% if orden_actual == 'recientes' %} selected{% endif %}>Más recientes</option>
+          <option value="antiguos"{% if orden_actual == 'antiguos' %} selected{% endif %}>Más antiguas</option>
+          <option value="az"{% if orden_actual == 'az' %} selected{% endif %}>Título A–Z</option>
+          <option value="za"{% if orden_actual == 'za' %} selected{% endif %}>Título Z–A</option>
+        </select>
+      </form>
     </header>
 
-    <!-- Filtros de Búsqueda -->
-    <div class="card mb-2xl">
-        <div class="card-body">
-            <form method="get" id="searchForm">
-                <input type="hidden" name="orden" id="ordenInput" value="{{ orden_actual|default:'recientes' }}">
-                
-                <!-- Buscador principal -->
-                <div class="flex-row mb-2xl gap-md">
-                    <div class="select-wrapper flex-1">
-                        <input type="text" name="q" class="form-input search-advanced-input" placeholder="Escribe para buscar (título, palabras clave)..." value="{{ request.GET.q|default:'' }}">
-                        <i data-lucide="search" class="icon-search-advanced"></i>
-                    </div>
-                    <button type="submit" class="btn btn-primary shrink-0">
-                        <i data-lucide="filter"></i>
-                        Filtrar
-                    </button>
-                </div>
-
-                <div class="grid-2 mb-2xl gap-3xl">
-                    <!-- Columna 1: Categorización -->
-                    <div class="flex-stack gap-lg">
-                        <div class="section-subtitle section-subtitle-underline">Categorización</div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Categoría</label>
-                            <div class="select-wrapper">
-                                <select name="categoria" class="form-select">
-                                    <option value="">Todos los documentos</option>
-                                    {% for c in categorias %}
-                                        <option value="{{ c.id }}" {% if request.GET.categoria == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nombre }}</option>
-                                    {% endfor %}
-                                </select>
-                                <i data-lucide="chevron-down"></i>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Factor CNA</label>
-                            <div class="select-wrapper">
-                                <select name="factor" class="form-select">
-                                    <option value="">Todos los factores</option>
-                                    {% for cod, nom in factores_cna %}
-                                        <option value="{{ cod }}" {% if request.GET.factor == cod %}selected{% endif %}>{{ nom }}</option>
-                                    {% endfor %}
-                                </select>
-                                <i data-lucide="chevron-down"></i>
-                            </div>
-                        </div>
-
-                        {% if request.user.rol == 'COORDINADOR' or request.user.rol == 'DECANA' %}
-                        <div class="form-group">
-                            <label class="form-label">Visibilidad</label>
-                            <div class="select-wrapper">
-                                <select name="visibilidad" class="form-select">
-                                    <option value="">Todas</option>
-                                    <option value="PROGRAMA" {% if request.GET.visibilidad == 'PROGRAMA' %}selected{% endif %}>Por programa</option>
-                                    <option value="INSTITUCIONAL" {% if request.GET.visibilidad == 'INSTITUCIONAL' %}selected{% endif %}>Institucional</option>
-                                </select>
-                                <i data-lucide="chevron-down"></i>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Columna 2: Temporalidad & Autoría -->
-                    <div class="flex-stack gap-lg">
-                        <div class="section-subtitle section-subtitle-underline">Temporalidad & Autoría</div>
-                        
-                        <div class="grid-2 gap-md">
-                            <div class="form-group">
-                                <label class="form-label">Desde</label>
-                                <input type="date" name="desde" class="form-input" value="{{ request.GET.desde|default:'' }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Hasta</label>
-                                <input type="date" name="hasta" class="form-input" value="{{ request.GET.hasta|default:'' }}">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Cargado por</label>
-                            <div class="select-wrapper">
-                                <input type="text" name="autor" class="form-input search-advanced-input" placeholder="Nombre o correo del docente" value="{{ request.GET.autor|default:'' }}">
-                                <i data-lucide="user" class="icon-search-advanced"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chips de Filtros Activos & Limpiar -->
-                <div class="flex-between filter-chips-container">
-                    <div class="flex-row flex-wrap-gap" id="chipArea">
-                        {% if request.GET.q %}
-                            <span class="badge badge-brand badge-pill">"{{ request.GET.q }}" <button type="button" onclick="clearParam('q')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
-                        {% endif %}
-                        {% if request.GET.categoria %}
-                            <span class="badge badge-neutral badge-pill">Categoría <button type="button" onclick="clearParam('categoria')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
-                        {% endif %}
-                        {% if request.GET.factor %}
-                            <span class="badge badge-neutral badge-pill">Factor CNA <button type="button" onclick="clearParam('factor')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
-                        {% endif %}
-                        {% if request.GET.desde %}
-                            <span class="badge badge-neutral badge-pill">Desde: {{ request.GET.desde }} <button type="button" onclick="clearParam('desde')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
-                        {% endif %}
-                        {% if request.GET.hasta %}
-                            <span class="badge badge-neutral badge-pill">Hasta: {{ request.GET.hasta }} <button type="button" onclick="clearParam('hasta')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
-                        {% endif %}
-                        {% if request.GET.autor %}
-                            <span class="badge badge-neutral badge-pill">Autor: {{ request.GET.autor }} <button type="button" onclick="clearParam('autor')" class="btn-chip-remove"><i data-lucide="x" class="icon-xs"></i></button></span>
-                        {% endif %}
-                    </div>
-                    
-                    <a href="{% url 'documentos:busqueda' %}" class="btn btn-ghost btn-sm">
-                        <i data-lucide="refresh-cw"></i>
-                        Limpiar filtros
-                    </a>
-                </div>
-            </form>
-        </div>
+    {% if page_obj %}
+    <div class="sg-tabla-marco">
+      <table class="sg-tabla">
+        <thead><tr><th scope="col">Evidencia</th><th scope="col">Autor</th><th scope="col">Factor</th><th scope="col">Estado</th><th scope="col">Fecha</th><th scope="col"><span class="sg-oculto">Acciones</span></th></tr></thead>
+        <tbody>
+          {% for doc in page_obj %}
+          <tr>
+            <td class="sg-tabla__titulo"><div class="sg-doc">{% tipo_archivo doc %}<div>
+              <a class="sg-tabla__principal sa-highlight-target" href="{% url 'documentos:detalle' doc.id %}">{{ doc.titulo }}</a>
+              <span class="sg-tabla__secundario">{{ doc.categoria.nombre|default:"Sin categoría" }} · {{ doc.programa.nombre }}</span>
+            </div></div></td>
+            <td data-label="Autor">{% if doc.es_sensible and not doc.tiene_acceso %}<span class="sg-usuario-celda sg-texto-2">{% icono "lock" "sg-icono--sm" %}<span>Reservado</span></span>{% else %}<span class="sg-usuario-celda"><span class="sg-avatar" aria-hidden="true">{{ doc.autor|iniciales }}</span><span class="sg-recorte">{{ doc.autor.get_full_name|default:doc.autor.email }}</span></span>{% endif %}</td>
+            <td data-label="Factor">{% chip_factor_codigo doc.factor_cna %}</td>
+            <td data-label="Estado">{% estado_documento doc %}</td>
+            <td data-label="Fecha">{{ doc.fecha_creacion|date:"j M Y" }}</td>
+            <td class="sg-tabla__acciones">
+              {% if doc.tiene_acceso %}
+                <a class="sg-btn" href="{% url 'documentos:detalle' doc.id %}">Abrir</a>
+              {% elif doc.solicitud_pendiente %}
+                <span class="sg-estado sg-estado--pendiente">{% icono "clock" "sg-icono--sm" %}<span>Solicitud enviada</span></span>
+              {% else %}
+                <details class="sg-desplegable">
+                  <summary class="sg-btn">{% icono "key-round" %}<span>Pedir acceso</span></summary>
+                  <form method="post" action="{% url 'permisos:solicitar_acceso' doc.id %}" class="sg-pila">
+                    {% csrf_token %}
+                    <label class="sg-campo"><span class="sg-etiqueta">¿Para qué lo necesitas?</span>
+                      <textarea name="motivo" required rows="3" placeholder="Ej.: preparar el informe del factor 3"></textarea></label>
+                    <button type="submit" class="sg-btn sg-btn--primario">Enviar solicitud</button>
+                  </form>
+                </details>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-
-    <!-- Resultados -->
-    {% if hay_busqueda %}
-        {% if total_resultados > 0 %}
-        <div class="flex-between mb-lg flex-wrap-gap-md">
-            <div class="flex-row flex-row-baseline-gap">
-                <h2 class="section-title">{{ total_resultados }} resultado{{ total_resultados|pluralize:"s" }}</h2>
-                {% if request.GET.q %}<span class="text-sm text-muted">para "{{ request.GET.q }}"</span>{% endif %}
-            </div>
-            <div class="select-wrapper w-min-180">
-                <select class="form-select select-sort" onchange="changeOrder(this.value)">
-                    <option value="recientes" {% if orden_actual == 'recientes' %}selected{% endif %}>Más recientes</option>
-                    <option value="antiguos" {% if orden_actual == 'antiguos' %}selected{% endif %}>Más antiguos</option>
-                    <option value="az" {% if orden_actual == 'az' %}selected{% endif %}>Nombre A-Z</option>
-                    <option value="za" {% if orden_actual == 'za' %}selected{% endif %}>Nombre Z-A</option>
-                </select>
-                <i data-lucide="arrow-down-up"></i>
-            </div>
-        </div>
-
-        <div class="table-container mb-2xl">
-            <div class="table-scroll">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Documento</th>
-                            <th>Cargado por</th>
-                            <th>Categoría</th>
-                            <th>Factor CNA</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
-                            <th class="text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for doc in page_obj %}
-                        <tr>
-                            <td class="w-min-250">
-                                <div class="flex-row">
-                                    <div class="doc-icon">
-                                        {% if not doc.tiene_acceso %}
-                                            <i data-lucide="lock" class="icon-lock-muted"></i>
-                                        {% elif ".pdf" in doc.archivo.name|lower %}
-                                            <img src="https://img.icons8.com/papercut/48/pdf.png" alt="PDF">
-                                        {% elif ".doc" in doc.archivo.name|lower %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-word-2019.png" alt="Word">
-                                        {% elif ".xls" in doc.archivo.name|lower %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-excel-2019.png" alt="Excel">
-                                        {% elif ".ppt" in doc.archivo.name|lower %}
-                                            <img src="https://img.icons8.com/fluency/48/microsoft-powerpoint-2019.png" alt="PPT">
-                                        {% else %}
-                                            <img src="https://img.icons8.com/fluency/48/file.png" alt="Doc">
-                                        {% endif %}
-                                    </div>
-                                    
-                                    {% if doc.tiene_acceso %}
-                                        <a href="{% url 'documentos:detalle' doc.id %}" class="font-bold text-brand sa-highlight-target">{{ doc.titulo }}</a>
-                                    {% else %}
-                                        <span class="font-semibold text-muted sa-highlight-target">{{ doc.titulo }}</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="flex-row">
-                                    <div class="avatar-initials-brand">{{ doc.autor.get_iniciales }}</div>
-                                    <div>
-                                        <div class="font-bold text-xs text-brand">{{ doc.autor.get_full_name }}</div>
-                                        <div class="text-xxs font-bold text-light uppercase tracking-wide mt-sm">{{ doc.autor.get_rol_display }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="text-xs font-semibold text-muted">{{ doc.categoria.nombre }}</td>
-                            <td>
-                                {% if doc.factor_cna %}
-                                    <span class="font-bold text-brand text-xs">{{ doc.get_factor_cna_display }}</span>
-                                {% else %}
-                                    <span class="text-xs text-rose-500">No asignado</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-muted text-xs font-mono">{{ doc.fecha_creacion|date:"d/m/Y" }}</td>
-                            <td>
-                                {% if not doc.tiene_acceso %}
-                                    <span class="badge badge-neutral"><i data-lucide="lock"></i> Sin acceso</span>
-                                {% else %}
-                                    {% if doc.estado == 'APROBADO' %}
-                                        <span class="badge badge-success">Aprobado</span>
-                                    {% elif doc.estado == 'RECHAZADO' %}
-                                        <span class="badge badge-danger">Rechazado</span>
-                                    {% else %}
-                                        <span class="badge badge-warning">Pendiente</span>
-                                    {% endif %}
-                                {% endif %}
-                            </td>
-                            <td class="text-right">
-                                {% if doc.tiene_acceso %}
-                                    <a href="{% url 'documentos:detalle' doc.id %}" class="btn btn-primary btn-xs">Ver detalle</a>
-                                {% elif doc.solicitud_pendiente %}
-                                    <span class="badge badge-warning badge-pill">Pendiente</span>
-                                {% else %}
-                                    <button type="button" class="btn btn-ghost btn-xs" onclick="toggleSolicitar('{{ doc.id }}')">Solicitar acceso</button>
-                                    
-                                    <form id="solicitar-form-{{ doc.id }}" class="hidden request-access-form" method="post" action="{% url 'permisos:solicitar_acceso' doc.id %}">
-                                        {% csrf_token %}
-                                        <textarea name="motivo" class="form-textarea textarea-request-sm" placeholder="Motivo de la solicitud..." required></textarea>
-                                        <button type="submit" class="btn btn-sm w-full btn-emerald">Enviar solicitud</button>
-                                    </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            
-            {% if page_obj.has_other_pages %}
-            <div class="pagination pagination-flat">
-                <div class="pagination-info">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }} documentos</div>
-                <div class="pagination-buttons">
-                    {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-btn"><i data-lucide="chevron-left"></i></a>
-                    {% endif %}
-                    
-                    {% for num in page_obj.paginator.page_range %}
-                        {% if num == page_obj.number %}
-                            <span class="pagination-btn active">{{ num }}</span>
-                        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                            <a href="?page={{ num }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-btn">{{ num }}</a>
-                        {% endif %}
-                    {% endfor %}
-                    
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-btn"><i data-lucide="chevron-right"></i></a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        {% else %}
-        <div class="card card-dashed-empty">
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i data-lucide="search-x"></i>
-                </div>
-                <h3 class="section-title">Sin resultados</h3>
-                <p class="text-sm text-muted max-w-400">No se encontraron documentos que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda.</p>
-            </div>
-        </div>
-        {% endif %}
+    {% include "partials/paginacion.html" %}
     {% else %}
-    <div class="card text-center">
-        <div class="empty-state">
-            <div class="empty-state-icon empty-state-icon-brand">
-                <i data-lucide="search" class="text-brand-600"></i>
-            </div>
-            <h3 class="section-title">Realiza una búsqueda</h3>
-            <p class="text-sm text-muted max-w-400">Utiliza la barra de búsqueda o los filtros avanzados para localizar documentos específicos dentro del sistema.</p>
-        </div>
-    </div>
+      {% url 'documentos:busqueda' as url_limpia %}
+      {% include "componentes/estado_vacio.html" with icono="file-search" titulo="No hay evidencias con esos filtros" texto="Prueba con menos filtros o con otras palabras del título." accion_url=url_limpia accion_texto="Limpiar la búsqueda" accion_clase="sg-btn--secundario" %}
     {% endif %}
-
-{% endblock %}
-
-{% block extra_js %}
-<script>
-function toggleSolicitar(docId) {
-    const f = document.getElementById('solicitar-form-' + docId);
-    if (f) { 
-        f.classList.toggle('hidden'); 
-        const t = f.querySelector('textarea'); 
-        if (t && !f.classList.contains('hidden')) t.focus(); 
-    }
-}
-
-function clearParam(param) {
-    const url = new URL(window.location);
-    url.searchParams.delete(param);
-    const remaining = ['q','categoria','factor','desde','hasta','autor','visibilidad'].filter(p => url.searchParams.has(p));
-    window.location.href = remaining.length === 0 ? url.pathname : url.toString();
-}
-
-function changeOrder(val) {
-    document.getElementById('ordenInput').value = val;
-    document.getElementById('searchForm').submit();
-}
-
-// Resaltar términos de búsqueda
-document.addEventListener('DOMContentLoaded', function() {
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get('q');
-    if (!q || q.trim() === '') return;
-    
-    const words = q.trim().split(/\s+/);
-    document.querySelectorAll('.sa-highlight-target').forEach(el => {
-        let html = el.textContent;
-        words.forEach(word => {
-            const regex = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-            html = html.replace(regex, '<span class="highlight-amber">$1</span>');
-        });
-        el.innerHTML = html;
-    });
-});
-</script>
+  </section>
+  {% else %}
+  <section class="sg-hoja">
+    {% include "componentes/estado_vacio.html" with icono="search" titulo="Escribe qué buscas o elige un filtro" texto="Los resultados respetan tus permisos: si una evidencia no es tuya, puedes pedir acceso desde aquí." %}
+  </section>
+  {% endif %}
+</div>
 {% endblock %}

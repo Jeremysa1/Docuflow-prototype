@@ -1,0 +1,105 @@
+/* Ajustes propios de cada página (sin colores ni tamaños fuera de tokens). */
+
+/* Panel: zona de alerta bajo el banner */
+.sg-alerta-franja {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sg-e-3);
+  padding: var(--sg-e-3) var(--sg-e-4); border-radius: var(--sg-r-2);
+  background: var(--sg-alerta-fondo); color: var(--sg-alerta); font-weight: 600; font-size: var(--sg-t-2);
+  border: 1px dashed currentColor;
+}
+.sg-alerta-franja a { margin-left: auto; color: inherit; font-weight: 800; }
+
+/* Cola de revisión */
+.sg-cola__dias { font-weight: 800; font-size: var(--sg-t-2); white-space: nowrap; display: inline-flex; gap: var(--sg-e-1); align-items: center; }
+.sg-cola__dias.es-envejecido { color: var(--sg-alerta); }
+.sg-cola__acciones { display: flex; gap: var(--sg-e-2); flex-wrap: nowrap; margin-top: var(--sg-e-1); }
+.sg-cola__acciones .sg-btn { min-height: 2.5rem; padding: 0 var(--sg-e-3); }
+
+/* Detalle de documento */
+.sg-ficha { display: grid; gap: var(--sg-e-4); }
+.sg-ficha__titulo { display: flex; gap: var(--sg-e-4); align-items: flex-start; }
+.sg-ficha__estados { display: flex; flex-wrap: wrap; gap: var(--sg-e-2); }
+
+/* Visor de vista previa */
+.sg-visor { width: 100%; height: min(80vh, 900px); border: 0; display: block; background: var(--sg-papel); }
+
+/* Acceso (login, registro, recuperación) */
+.sg-acceso { min-height: 100vh; display: grid; background: var(--sg-blanco); }
+@media (min-width: 1024px) { .sg-acceso { grid-template-columns: minmax(0, 1.15fr) minmax(460px, 0.85fr); } }
+.sg-acceso__marca {
+  position: relative; display: none; overflow: hidden; isolation: isolate;
+  background: var(--sg-marca) url("../../img/sigea_institutional_background.png") 70% center / cover no-repeat;
+  color: var(--sg-texto-inverso);
+  padding: var(--sg-e-7) clamp(2rem, 5vw, 4.5rem);
+}
+/* Velo azul: más denso a la izquierda, donde vive el texto */
+.sg-acceso__marca::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(90deg, rgba(9, 20, 46, 0.94) 0%, rgba(20, 42, 89, 0.82) 50%, rgba(20, 42, 89, 0.45) 100%);
+}
+@media (min-width: 1024px) { .sg-acceso__marca { display: grid; grid-template-rows: auto 1fr; gap: var(--sg-e-6); } }
+
+/* Logo: la S del emblema hace de primera letra de "SIGEA" */
+.sg-acceso__logo { display: flex; align-items: center; gap: 0.125rem; color: var(--sg-blanco); font-size: 2.75rem; font-weight: 800; letter-spacing: 0.08em; line-height: 1; }
+.sg-acceso__logo .sg-emblema { width: 1.55rem; height: 2.05rem; margin-right: 0.15rem; }
+
+.sg-acceso__lema { align-self: center; display: grid; gap: var(--sg-e-5); max-width: 38rem; }
+.sg-acceso__lema h1 { font-size: clamp(2.25rem, 3.3vw, 3.25rem); line-height: 1.08; letter-spacing: -0.025em; color: var(--sg-blanco); text-wrap: balance; }
+.sg-acceso__lema h1 em { font-style: normal; color: var(--sg-grad-2); }
+.sg-acceso__lema p { color: var(--sg-texto-inverso-2); font-size: var(--sg-t-4); line-height: 1.5; max-width: 34ch; }
+
+.sg-acceso__formulario { display: grid; align-content: center; justify-items: center; padding: var(--sg-e-6) var(--sg-e-4); background: var(--sg-papel); }
+.sg-acceso__caja {
+  width: min(440px, 100%); display: grid; gap: var(--sg-e-5);
+  background: var(--sg-blanco); border: 1px solid var(--sg-renglon); border-radius: var(--sg-r-3);
+  padding: var(--sg-e-6);
+  box-shadow: var(--sg-sombra-flotante);
+  position: relative; overflow: hidden;
+}
+.sg-acceso__caja header { display: grid; gap: var(--sg-e-2); }
+.sg-acceso__caja header h1 { font-size: var(--sg-t-5); }
+.sg-acceso__caja header p { color: var(--sg-texto-2); }
+/* En móvil, la marca va sobre el fondo institucional, encima de la tarjeta */
+.sg-acceso__marca-movil { display: grid; justify-items: center; gap: var(--sg-e-3); text-align: center; color: var(--sg-blanco); width: min(440px, 100%); }
+.sg-acceso__marca-movil .sg-acceso__logo { font-size: 2.5rem; }
+.sg-acceso__marca-movil .sg-acceso__logo .sg-emblema { width: 1.4rem; height: 1.86rem; }
+.sg-acceso__marca-movil p { font-size: var(--sg-t-4); font-weight: 700; line-height: 1.25; }
+@media (min-width: 1024px) { .sg-acceso__marca-movil { display: none; } }
+@media (max-width: 1023px) {
+  /* Mismo velo azul que la portada de escritorio: el fondo queda como textura, no como imagen */
+  .sg-acceso { background: linear-gradient(180deg, rgba(9, 20, 46, 0.94) 0%, rgba(20, 42, 89, 0.88) 45%, rgba(9, 20, 46, 0.96) 100%), var(--sg-marca) url("../../img/sigea_institutional_background.png") 70% center / cover no-repeat; }
+  .sg-acceso__formulario { min-height: 100vh; gap: var(--sg-e-5); align-content: center; background: transparent; }
+}
+.sg-acceso__enlaces { display: grid; gap: var(--sg-e-2); font-size: var(--sg-t-2); color: var(--sg-texto-2); text-align: center; padding-top: var(--sg-e-2); border-top: 1px solid var(--sg-renglon); }
+.sg-campo-icono { position: relative; }
+.sg-campo-icono > .sg-icono { position: absolute; left: var(--sg-e-3); top: 50%; transform: translateY(-50%); color: var(--sg-texto-2); pointer-events: none; }
+.sg-campo .sg-campo-icono input { padding-left: 2.75rem; }
+.sg-campo-clave { position: relative; }
+.sg-campo-clave input { padding-right: 3rem; }
+.sg-campo-clave button { position: absolute; right: 0; top: 0; width: var(--sg-toque); height: var(--sg-toque); display: grid; place-items: center; background: none; border: 0; color: var(--sg-texto-2); cursor: pointer; border-radius: var(--sg-r-2); }
+.sg-codigo-token { letter-spacing: 0.5em; text-align: center; font-size: var(--sg-t-4); font-weight: 800; }
+
+/* Páginas de error */
+.sg-error { min-height: 100vh; display: grid; place-items: center; padding: var(--sg-e-6) var(--sg-e-4); background: var(--sg-papel); }
+.sg-error__caja { width: min(560px, 100%); display: grid; gap: var(--sg-e-4); background: var(--sg-blanco); border: 1px solid var(--sg-renglon); border-radius: var(--sg-r-2); padding: var(--sg-e-6); }
+.sg-error__codigo { font-size: var(--sg-t-6); font-weight: 800; color: var(--sg-grad-3); line-height: 1; letter-spacing: -0.03em; }
+.sg-error__caja p { color: var(--sg-texto-2); }
+.sg-contenido .sg-error { min-height: auto; background: none; padding: var(--sg-e-6) 0; }
+
+/* Usuarios */
+.sg-usuario-celda { display: flex; align-items: center; gap: var(--sg-e-3); min-width: 0; }
+
+/* Notificaciones */
+.sg-notif.es-nueva { background: var(--sg-pendiente-fondo); }
+.sg-notif__punto { width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--sg-accion); flex: none; margin-top: 0.5rem; }
+.sg-notif:not(.es-nueva) .sg-notif__punto { background: transparent; border: 1.5px solid var(--sg-renglon-2); }
+
+/* Votos de acceso sensible */
+.sg-votos { display: inline-flex; gap: 3px; align-items: center; }
+.sg-votos span { width: 0.875rem; height: 0.875rem; border-radius: 2px; border: 1.5px dashed var(--sg-pendiente); }
+.sg-votos span.es-voto { background: var(--sg-ok); border: 1.5px solid var(--sg-ok); }
+
+/* Ojo de la contraseña: cerrado mientras está oculta, abierto cuando se muestra */
+[data-alternar-clave] .sg-clave__visible { display: none; }
+[data-alternar-clave][aria-pressed="true"] .sg-clave__visible { display: block; }
+[data-alternar-clave][aria-pressed="true"] .sg-clave__oculta { display: none; }

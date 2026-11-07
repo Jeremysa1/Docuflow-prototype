@@ -1,82 +1,42 @@
 {% extends 'base.html' %}
-{% block title %}Papelera de Reciclaje - SIGEA{% endblock %}
-{% block page_title %}Papelera de Reciclaje{% endblock %}
+{% load sigea %}
+{% block title %}Papelera · SIGEA{% endblock %}
 
 {% block content %}
-
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Papelera de Reciclaje</h1>
-            <p>Documentos eliminados recientemente.</p>
-        </div>
-        <a href="{% url 'documentos:lista' %}" class="btn btn-secondary">
-            <i data-lucide="arrow-left"></i>
-            Volver a Documentos
-        </a>
-    </header>
-
-    <div class="table-container mt-xl">
-        <div class="table-scroll">
-            <div class="table-responsive"> <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Documento</th>
-                        <th>Categoría / Prog.</th>
-                        <th>Autor</th>
-                        <th>Fecha Eliminación</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for doc in documentos %}
-                    <tr>
-                        <td>
-                            <div class="flex-row">
-                                <div class="doc-icon">
-                                    <img src="https://img.icons8.com/fluency/48/file.png" alt="File">
-                                </div>
-                                <div class="flex-stack gap-xs">
-                                    <span class="font-semibold text-brand">{{ doc.titulo }}</span>
-                                    {% if doc.es_sensible %}
-                                        <span class="badge badge-danger badge-sm w-max">
-                                            <i data-lucide="lock"></i> Sensible
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="font-semibold text-brand">{{ doc.categoria.nombre }}</div>
-                            <div class="text-xxs font-bold text-light uppercase tracking-wide mt-sm">{{ doc.programa.nombre|default:"Institucional" }}</div>
-                        </td>
-                        <td class="font-semibold text-muted">{{ doc.autor.get_full_name }}</td>
-                        <td class="text-muted text-xs">{{ doc.deleted_at|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            <form method="POST" class="inline-block" action="{% url 'documentos:restaurar_doc' doc.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-success btn-sm">
-                                    <i data-lucide="refresh-ccw"></i> Restaurar
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">
-                                    <i data-lucide="trash-2"></i>
-                                </div>
-                                <p>La papelera está vacía.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table> </div>
-        </div>
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "archive" %}</span>
+      <h1>Papelera</h1>
+      <p>Las evidencias enviadas a la papelera no cuentan en los factores ni aparecen en las búsquedas. Puedes restaurarlas cuando quieras.</p>
     </div>
+  </header>
 
+  <section class="sg-hoja">
+    {% if documentos %}
+    <div class="sg-tabla-marco">
+      <table class="sg-tabla">
+        <thead><tr><th scope="col">Evidencia</th><th scope="col">Autor</th><th scope="col">Enviada a la papelera</th><th scope="col"><span class="sg-oculto">Acciones</span></th></tr></thead>
+        <tbody>
+        {% for doc in documentos %}
+          <tr>
+            <td class="sg-tabla__titulo"><div class="sg-doc">{% tipo_archivo doc %}<div><strong>{{ doc.titulo }}</strong>{% if doc.es_sensible %} <span class="sg-estado sg-estado--sensible">{% icono "lock" "sg-icono--sm" %}<span>Sensible</span></span>{% endif %}
+              <span class="sg-tabla__secundario">{{ doc.categoria.nombre|default:"Sin categoría" }} · {{ doc.programa.nombre }}</span></div></div></td>
+            <td data-label="Autor">{{ doc.autor.get_full_name|default:doc.autor.email }}</td>
+            <td data-label="Enviada">{{ doc.deleted_at|date:"j M Y, H:i" }}</td>
+            <td class="sg-tabla__acciones">
+              <form method="post" action="{% url 'documentos:restaurar_doc' doc.id %}">{% csrf_token %}
+                <button type="submit" class="sg-btn">{% icono "archive-restore" %}<span>Restaurar</span></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% include "componentes/estado_vacio.html" with icono="archive" titulo="La papelera está vacía" texto="Aquí aparecerán las evidencias que envíes a la papelera." %}
+    {% endif %}
+  </section>
+</div>
 {% endblock %}
-
-

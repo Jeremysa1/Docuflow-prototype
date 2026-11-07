@@ -1,0 +1,182 @@
+/* Gráficos dibujados en el servidor: huella, matriz, barras frente a meta y pulso. */
+
+/* ── Banner "huella" ───────────────────────────────────── */
+.sg-banner {
+  position: relative;
+  display: grid;
+  gap: var(--sg-e-5);
+  padding: var(--sg-e-5) var(--sg-e-6);
+  background: var(--sg-marca);
+  color: var(--sg-texto-inverso);
+  border-radius: var(--sg-r-2);
+  overflow: hidden;
+  isolation: isolate;
+}
+@media (min-width: 1100px) {
+  .sg-banner { grid-template-columns: minmax(280px, 0.9fr) 1.6fr; align-items: end; }
+}
+.sg-banner__texto { display: grid; gap: var(--sg-e-3); align-content: end; }
+.sg-banner__saludo { font-size: var(--sg-t-2); color: var(--sg-texto-inverso-2); font-weight: 600; }
+.sg-banner__titular { font-size: var(--sg-t-4); font-weight: 700; line-height: 1.3; max-width: 30ch; }
+.sg-banner__nota { font-size: var(--sg-t-2); color: var(--sg-texto-inverso-2); max-width: 44ch; }
+.sg-banner__nota strong { color: var(--sg-blanco); }
+.sg-banner__cifra { display: flex; align-items: baseline; gap: var(--sg-e-2); flex-wrap: wrap; }
+.sg-banner__cifra strong { font-size: var(--sg-t-6); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+.sg-banner__cifra span { font-size: var(--sg-t-3); color: var(--sg-texto-inverso-2); font-weight: 600; }
+.sg-banner__acciones { display: flex; flex-wrap: wrap; gap: var(--sg-e-3); margin-top: var(--sg-e-2); }
+.sg-banner .sg-btn { border-color: rgba(255,255,255,.4); background: transparent; color: var(--sg-blanco); }
+.sg-banner .sg-btn:hover { background: var(--sg-marca-2); border-color: var(--sg-blanco); }
+.sg-banner .sg-btn--primario { background: var(--sg-blanco); border-color: var(--sg-blanco); color: var(--sg-marca); }
+.sg-banner .sg-btn--primario:hover { background: var(--sg-grad-1); color: var(--sg-marca); }
+.sg-banner .sg-btn--alerta { background: var(--sg-alerta-fondo); border-color: var(--sg-alerta-fondo); color: var(--sg-alerta); }
+.sg-banner a:not(.sg-btn) { color: var(--sg-blanco); }
+
+/* Las 12 columnas: altura = avance frente a meta, tono = gradación */
+.sg-huella {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--sg-e-2);
+  align-items: end;
+  height: 9rem;
+  margin: 0; padding: 0; list-style: none;
+}
+.sg-huella__col {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  height: 100%;
+  min-width: 0;
+  text-decoration: none;
+  color: var(--sg-texto-inverso);
+}
+.sg-huella__pozo {
+  position: relative;
+  display: flex; align-items: flex-end;
+  border: var(--sg-borde) dashed rgba(255,255,255,.45);
+  border-radius: var(--sg-r-1) var(--sg-r-1) 0 0;
+  background: rgba(255,255,255,.04);
+}
+.sg-huella__col:hover .sg-huella__pozo, .sg-huella__col:focus-visible .sg-huella__pozo { border-color: var(--sg-blanco); background: rgba(255,255,255,.1); }
+.sg-huella__barra {
+  width: 100%;
+  height: max(var(--altura, 0%), 3px);
+  border: var(--sg-borde) solid var(--sg-blanco);
+  border-bottom: 0;
+  border-radius: var(--sg-r-1) var(--sg-r-1) 0 0;
+  transform-origin: bottom;
+  animation: sg-crecer var(--sg-dur-larga) var(--sg-curva) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+/* Sobre el azul, la gradación es una rampa de blanco en orden: más cumplimiento,
+   más contraste con el fondo. Pleno = blanco puro. */
+.sg-huella__barra.sg-grad-0, .sg-leyenda__muestra--g0 { background: transparent; border: 0; }
+.sg-huella__barra.sg-grad-1, .sg-banner .sg-leyenda__muestra--g1 { background: rgba(255,255,255,.42); }
+.sg-huella__barra.sg-grad-2, .sg-banner .sg-leyenda__muestra--g2 { background: rgba(255,255,255,.58); }
+.sg-huella__barra.sg-grad-3, .sg-banner .sg-leyenda__muestra--g3 { background: rgba(255,255,255,.74); }
+.sg-huella__barra.sg-grad-4, .sg-banner .sg-leyenda__muestra--g4 { background: rgba(255,255,255,.88); }
+.sg-huella__barra.sg-grad-5, .sg-banner .sg-leyenda__muestra--g5 { background: var(--sg-blanco); }
+.sg-banner .sg-leyenda__muestra--g0 { border: 1px dashed rgba(255,255,255,.55); }
+
+.sg-huella__pie { display: grid; gap: 2px; padding-top: var(--sg-e-2); text-align: center; }
+.sg-huella__codigo { font-size: var(--sg-t-1); font-weight: 800; white-space: nowrap; }
+.sg-huella__valor { font-size: var(--sg-t-1); color: var(--sg-texto-inverso-2); white-space: nowrap; }
+@keyframes sg-crecer { from { transform: scaleY(0); } }
+
+/* Huella personal (docente): columnas apiladas por estado */
+.sg-huella--personal .sg-huella__pila {
+  width: 100%;
+  height: max(var(--altura, 0%), 3px);
+  display: flex; flex-direction: column-reverse;
+  transform-origin: bottom;
+  animation: sg-crecer var(--sg-dur-larga) var(--sg-curva) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+.sg-huella__tramo { flex: var(--peso) 1 0; min-height: 0; border: 1px solid var(--sg-grad-borde); border-bottom: 0; }
+.sg-huella__tramo:last-child { border-radius: var(--sg-r-1) var(--sg-r-1) 0 0; }
+.sg-huella__tramo--aprobadas { background: var(--sg-blanco); }
+.sg-huella__tramo--pendientes { background: transparent; border-style: dashed; border-color: var(--sg-blanco); }
+.sg-huella__tramo--rechazadas { background: repeating-linear-gradient(135deg, var(--sg-grad-2) 0 3px, transparent 3px 7px); }
+.sg-huella__vacia { height: 0; }
+
+.sg-leyenda { display: flex; flex-wrap: wrap; gap: var(--sg-e-2) var(--sg-e-4); font-size: var(--sg-t-1); align-items: center; margin: 0; padding: 0; list-style: none; }
+.sg-leyenda li { display: inline-flex; align-items: center; gap: var(--sg-e-2); }
+.sg-leyenda__muestra { width: 0.875rem; height: 0.875rem; border-radius: 2px; border: 1px solid var(--sg-renglon-2); }
+.sg-banner .sg-leyenda { color: var(--sg-texto-inverso-2); }
+.sg-banner .sg-leyenda__muestra { border-color: var(--sg-grad-borde); }
+.sg-leyenda__muestra--vacia { background: rgba(255,255,255,.12); border-style: dashed; }
+.sg-leyenda__muestra--pleno { background: var(--sg-blanco); }
+.sg-huella__item { display: contents; }
+
+@media (max-width: 767px) {
+  .sg-banner { padding: var(--sg-e-5) var(--sg-e-4) var(--sg-e-4); }
+  .sg-huella { height: 6rem; gap: 3px; }
+  .sg-huella__valor { display: none; }
+  .sg-huella__codigo { font-size: var(--sg-t-1); }
+  .sg-huella__f { display: none; }
+}
+
+/* ── Matriz factor × programa: un informe de renglones ─ */
+.sg-matriz-marco { overflow-x: auto; }
+.sg-matriz { border-collapse: collapse; width: 100%; font-size: var(--sg-t-2); }
+.sg-matriz th, .sg-matriz td { border-bottom: var(--sg-borde) solid var(--sg-renglon); }
+.sg-matriz thead th { font-size: var(--sg-t-1); font-weight: 700; color: var(--sg-texto-2); text-align: left; padding: var(--sg-e-2) var(--sg-e-3); white-space: normal; max-width: 7rem; vertical-align: bottom; border-bottom: 3px solid var(--sg-marca); }
+.sg-matriz tbody th { color: var(--sg-marca); font-size: var(--sg-t-2); font-weight: 600; text-align: left; padding: 0 var(--sg-e-3) 0 0; max-width: 15rem; }
+.sg-matriz tbody th > span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; padding: var(--sg-e-1) 0 var(--sg-e-1) 2.75rem; text-indent: -2.75rem; }
+/* Sangría francesa: las líneas que se parten arrancan bajo el nombre, no bajo el código. */
+.sg-matriz__codigo { display: inline-block; min-width: 2.75rem; font-weight: 800; text-indent: 0; }
+.sg-matriz td { padding: 0; min-width: 5.5rem; }
+.sg-matriz .sg-matriz__num { text-align: right; }
+.sg-matriz .sg-matriz__facultad { border-left: 3px solid var(--sg-marca); background: var(--sg-fila-alterna); }
+.sg-matriz__celda {
+  display: block; min-height: 2.75rem; padding: var(--sg-e-2) var(--sg-e-3);
+  text-decoration: none; font-weight: 800; font-size: var(--sg-t-3); line-height: 1.2; text-align: right;
+}
+.sg-matriz__celda.sg-grad-0 { background: transparent; border: 0; color: var(--sg-texto-2); font-weight: 600; }
+.sg-matriz__celda small { font-weight: 600; }
+.sg-matriz__pend, .sg-matriz__grado { display: block; font-size: var(--sg-t-1); font-weight: 600; }
+a.sg-matriz__celda:hover, a.sg-matriz__celda:focus-visible { outline: 2px solid var(--sg-accion); outline-offset: -2px; }
+.sg-matriz tfoot th, .sg-matriz tfoot td { border-top: 2px solid var(--sg-marca); border-bottom: 0; padding: var(--sg-e-2) var(--sg-e-3); font-weight: 800; color: var(--sg-marca); }
+.sg-matriz tfoot th { text-align: left; padding-left: 0; }
+.sg-matriz__total small { font-weight: 600; color: var(--sg-texto-2); }
+
+@media (max-width: 767px) {
+  .sg-matriz--movil-lista thead, .sg-matriz--movil-lista tfoot { display: none; }
+  .sg-matriz--movil-lista, .sg-matriz--movil-lista tbody, .sg-matriz--movil-lista tr { display: block; }
+  .sg-matriz--movil-lista tr { display: grid; grid-template-columns: 1fr auto; gap: var(--sg-e-2); align-items: center; border-bottom: 1px solid var(--sg-renglon); }
+  .sg-matriz--movil-lista th, .sg-matriz--movil-lista td { border: 0; }
+  .sg-matriz--movil-lista td { display: none; }
+  .sg-matriz--movil-lista td.sg-matriz__facultad { display: block; border-left: 0; }
+}
+
+/* ── Barra cantidad frente a meta ──────────────────────── */
+.sg-meta .sg-lista__titulo { white-space: normal; overflow: visible; text-overflow: clip; }
+.sg-meta { display: grid; grid-template-columns: 1fr auto; gap: var(--sg-e-1) var(--sg-e-3); align-items: center; }
+/* Pista de 14 px con regla de 25 %: se lee como instrumento de medida, no como adorno */
+.sg-meta__pista { position: relative; display: block; grid-column: 1 / -1; height: 0.875rem; border-radius: var(--sg-r-1); background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), var(--sg-renglon-2) calc(25% - 1px) 25%) var(--sg-grad-0); box-shadow: inset 0 0 0 var(--sg-borde) var(--sg-renglon-2); overflow: hidden; }
+/* Relleno en el color de su grado; el contorno grad-4 garantiza 3:1 contra la pista
+   aunque el grado sea claro (No se cumple, Insatisfactorio). */
+.sg-meta__relleno { display: block; height: 100%; width: var(--avance, 0%); min-width: 0; border-radius: var(--sg-r-1); box-shadow: inset 0 0 0 var(--sg-borde-fuerte) var(--sg-grad-4); }
+.sg-meta__cifra { font-weight: 800; font-size: var(--sg-t-3); }
+.sg-meta__cifra small { color: var(--sg-texto-2); font-weight: 600; }
+
+/* ── Pulso de 30 días ──────────────────────────────────── */
+.sg-pulso { display: grid; gap: var(--sg-e-2); }
+.sg-pulso__serie { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sg-e-1) var(--sg-e-3); align-items: end; text-decoration: none; color: inherit; padding: var(--sg-e-2); margin: calc(var(--sg-e-2) * -1); border-radius: var(--sg-r-2); }
+a.sg-pulso__serie:hover { background: var(--sg-papel); }
+.sg-pulso__nombre { font-size: var(--sg-t-2); font-weight: 700; color: var(--sg-marca); }
+.sg-pulso__total { font-size: var(--sg-t-4); font-weight: 800; text-align: right; line-height: 1; display: block; }
+.sg-pulso__variacion { font-size: var(--sg-t-1); color: var(--sg-texto-2); text-align: right; display: block; }
+.sg-pulso svg { grid-column: 1 / -1; width: 100%; height: 1.5rem; overflow: visible; }
+.sg-pulso__barras rect { fill: var(--sg-grad-2); }
+.sg-pulso__barras rect.es-alto { fill: var(--sg-marca); }
+.sg-pulso--alerta .sg-pulso__barras rect { fill: var(--sg-error-fondo); }
+.sg-pulso--alerta .sg-pulso__barras rect.es-alto { fill: var(--sg-error); }
+.sg-pulso__base { stroke: var(--sg-renglon-2); stroke-width: 1; }
+
+/* ── Tiempos de revisión (4 semanas) ───────────────────── */
+.sg-tiempos { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sg-e-2); align-items: end; height: 5rem; margin: 0; padding: 0; list-style: none; }
+.sg-tiempos li { display: grid; grid-template-rows: 1fr auto auto; height: 100%; text-align: center; gap: 2px; }
+.sg-tiempos__barra { align-self: end; height: max(var(--altura, 0%), 4px); background: var(--sg-grad-3); border-radius: var(--sg-r-1) var(--sg-r-1) 0 0; }
+.sg-tiempos li.es-actual .sg-tiempos__barra { background: var(--sg-marca); }
+.sg-tiempos__valor { font-size: var(--sg-t-1); font-weight: 800; }
+.sg-tiempos__semana { font-size: var(--sg-t-1); color: var(--sg-texto-2); }

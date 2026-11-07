@@ -1,0 +1,125 @@
+/* Shell: riel lateral azul en escritorio, barra superior + inferior en móvil. */
+.sg-app { min-height: 100vh; display: grid; grid-template-columns: 1fr; background: var(--sg-blanco); }
+
+/* ── Riel lateral ──────────────────────────────────────── */
+.sg-riel {
+  display: none;
+  position: sticky; top: 0; height: 100vh;
+  flex-direction: column; gap: var(--sg-e-5);
+  padding: var(--sg-e-5) var(--sg-e-3);
+  background: var(--sg-marca); color: var(--sg-texto-inverso);
+  overflow-y: auto;
+  scrollbar-color: var(--sg-marca-3) transparent;
+}
+/* Logo: la S del emblema hace de primera letra de "SIGEA", alineada con la columna de iconos */
+.sg-riel__marca { display: flex; align-items: center; gap: 0.1rem; padding: 0 var(--sg-e-3) var(--sg-e-4); color: var(--sg-blanco); text-decoration: none; min-height: 3.5rem; border-bottom: 1px solid var(--sg-marca-3); font-size: 1.625rem; font-weight: 800; letter-spacing: 0.08em; line-height: 1; }
+.sg-emblema { display: block; flex: none; width: 0.92rem; height: 1.2rem; background: currentColor; -webkit-mask: url("../../img/sigea_emblema.png") center / contain no-repeat; mask: url("../../img/sigea_emblema.png") center / contain no-repeat; }
+.sg-riel__marca .sg-emblema { margin-right: 0.1rem; }
+.sg-riel__grupo { display: grid; gap: 2px; }
+.sg-riel__titulo { font-size: var(--sg-t-1); font-weight: 700; color: var(--sg-texto-inverso-2); padding: var(--sg-e-2) var(--sg-e-3); letter-spacing: 0.04em; text-transform: uppercase; }
+.sg-riel__enlace {
+  display: flex; align-items: center; gap: var(--sg-e-3);
+  min-height: var(--sg-toque); padding: 0 var(--sg-e-3);
+  border-radius: var(--sg-r-2); color: var(--sg-texto-inverso-2);
+  font-size: var(--sg-t-2); font-weight: 600; text-decoration: none;
+  transition: background var(--sg-dur) var(--sg-curva), color var(--sg-dur) var(--sg-curva);
+}
+.sg-riel__enlace:hover { background: var(--sg-marca-2); color: var(--sg-blanco); }
+.sg-riel__enlace[aria-current="page"] { background: var(--sg-blanco); color: var(--sg-marca); font-weight: 700; }
+.sg-riel__enlace .sg-contador { margin-left: auto; background: var(--sg-marca-3); color: var(--sg-blanco); }
+.sg-riel__enlace[aria-current="page"] .sg-contador { background: var(--sg-grad-1); color: var(--sg-marca); }
+.sg-riel__enlace:focus-visible { outline-color: var(--sg-blanco); }
+.sg-riel__pie { margin-top: auto; display: grid; gap: var(--sg-e-2); border-top: 1px solid var(--sg-marca-3); padding-top: var(--sg-e-4); }
+.sg-riel__usuario { display: flex; align-items: center; gap: var(--sg-e-3); padding: 0 var(--sg-e-2); text-decoration: none; color: var(--sg-blanco); min-height: var(--sg-toque); border-radius: var(--sg-r-2); }
+.sg-riel__usuario:hover { background: var(--sg-marca-2); }
+.sg-riel__usuario small { display: block; color: var(--sg-texto-inverso-2); font-size: var(--sg-t-1); }
+.sg-riel__usuario strong { font-size: var(--sg-t-2); }
+.sg-riel button.sg-riel__enlace { width: 100%; background: none; border: 0; cursor: pointer; text-align: left; }
+/* Cerrar sesión en rojo: la salida se reconoce sin leer */
+.sg-riel__enlace--salir { color: var(--sg-salir-oscuro); }
+.sg-riel__enlace--salir:hover { background: rgba(255, 165, 157, 0.14); color: var(--sg-salir-oscuro); }
+.sg-hoja-mas nav button.sg-salir { color: var(--sg-error); }
+.sg-hoja-mas nav button.sg-salir:hover { background: var(--sg-error-fondo); }
+
+/* ── Área principal ────────────────────────────────────── */
+.sg-principal { min-width: 0; display: grid; grid-template-rows: auto 1fr; background: var(--sg-papel); }
+.sg-barra {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: var(--sg-e-3);
+  min-height: 4rem; padding: var(--sg-e-2) var(--sg-e-4);
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: var(--sg-borde) solid var(--sg-renglon);
+  backdrop-filter: saturate(1.4) blur(8px);
+}
+.sg-barra__marca { display: flex; align-items: center; gap: var(--sg-e-2); text-decoration: none; color: var(--sg-marca); font-weight: 800; letter-spacing: 0.06em; }
+.sg-barra__marca { gap: 0.1rem; font-size: var(--sg-t-4); line-height: 1; }
+.sg-barra__marca .sg-emblema { width: 0.72rem; height: 0.95rem; margin-right: 0.08rem; }
+.sg-buscador { position: relative; flex: 1; max-width: 32rem; }
+.sg-buscador input {
+  width: 100%; min-height: var(--sg-toque); padding: 0 var(--sg-e-3) 0 2.5rem;
+  border: var(--sg-borde) solid var(--sg-renglon-2); border-radius: var(--sg-r-2); background: var(--sg-papel);
+  font-size: var(--sg-t-2);
+}
+.sg-buscador input:focus-visible { background: var(--sg-blanco); outline: 2px solid var(--sg-accion); outline-offset: 0; }
+.sg-buscador > .sg-icono { position: absolute; left: var(--sg-e-3); top: 50%; transform: translateY(-50%); color: var(--sg-texto-2); pointer-events: none; }
+.sg-buscador__resultados {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30;
+  background: var(--sg-blanco); border: 1px solid var(--sg-renglon); border-radius: var(--sg-r-2);
+  box-shadow: var(--sg-sombra-hoja); padding: var(--sg-e-1); display: none;
+}
+.sg-buscador__resultados.es-visible { display: grid; }
+.sg-buscador__resultados a { display: flex; gap: var(--sg-e-2); align-items: center; min-height: var(--sg-toque); padding: 0 var(--sg-e-3); border-radius: var(--sg-r-1); color: var(--sg-marca); text-decoration: none; font-size: var(--sg-t-2); }
+.sg-buscador__resultados a:hover, .sg-buscador__resultados a:focus-visible { background: var(--sg-papel); }
+.sg-buscador__resultados mark { background: var(--sg-grad-1); color: inherit; font-weight: 800; }
+.sg-buscador__vacio { padding: var(--sg-e-3); font-size: var(--sg-t-2); color: var(--sg-texto-2); }
+.sg-barra__acciones { margin-left: auto; display: flex; align-items: center; gap: var(--sg-e-1); }
+.sg-campana { position: relative; }
+.sg-campana__punto { position: absolute; top: 9px; right: 9px; width: 9px; height: 9px; border-radius: 50%; background: var(--sg-error); border: 2px solid var(--sg-blanco); }
+
+.sg-contenido { width: 100%; max-width: 1360px; margin: 0 auto; padding: var(--sg-e-5) var(--sg-e-4) calc(var(--sg-barra-movil) + var(--sg-e-6)); display: grid; gap: var(--sg-e-5); align-content: start; }
+
+/* ── Barra inferior móvil ──────────────────────────────── */
+.sg-movil {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+  height: calc(var(--sg-barra-movil) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--sg-marca);
+  box-shadow: 0 -4px 16px -8px rgba(20, 42, 89, 0.4);
+}
+.sg-movil a, .sg-movil button {
+  display: grid; place-items: center; align-content: center; gap: 2px;
+  min-height: var(--sg-toque); color: var(--sg-texto-inverso-2);
+  font-size: var(--sg-t-1); font-weight: 700; text-decoration: none; background: none; border: 0; cursor: pointer;
+}
+.sg-movil [aria-current="page"] { color: var(--sg-blanco); }
+.sg-movil [aria-current="page"] .sg-icono { stroke-width: 2.25; }
+.sg-movil a:focus-visible, .sg-movil button:focus-visible { outline-color: var(--sg-blanco); outline-offset: -4px; }
+
+/* Hoja "Más" */
+.sg-hoja-mas { border: 0; padding: 0; margin: auto 0 0; width: 100%; max-width: 100%; border-radius: var(--sg-r-2) var(--sg-r-2) 0 0; box-shadow: var(--sg-sombra-hoja); }
+.sg-hoja-mas::backdrop { background: rgba(20, 42, 89, 0.45); }
+.sg-hoja-mas[open] { animation: sg-subir var(--sg-dur-larga) var(--sg-curva); }
+@keyframes sg-subir { from { transform: translateY(24px); opacity: 0; } }
+.sg-hoja-mas__cabeza { display: flex; align-items: center; justify-content: space-between; padding: var(--sg-e-3) var(--sg-e-4); border-bottom: 1px solid var(--sg-renglon); }
+.sg-hoja-mas nav { display: grid; padding: var(--sg-e-2) var(--sg-e-2) calc(var(--sg-e-4) + env(safe-area-inset-bottom)); }
+.sg-hoja-mas nav a, .sg-hoja-mas nav button { display: flex; align-items: center; gap: var(--sg-e-3); min-height: 3rem; padding: 0 var(--sg-e-3); border-radius: var(--sg-r-2); color: var(--sg-marca); font-weight: 600; text-decoration: none; background: none; border: 0; font-size: var(--sg-t-3); width: 100%; cursor: pointer; }
+.sg-hoja-mas nav a:hover { background: var(--sg-papel); }
+
+/* ── Escritorio ────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .sg-app { grid-template-columns: var(--sg-riel) minmax(0, 1fr); }
+  .sg-app.es-riel-corto { grid-template-columns: var(--sg-riel-corto) minmax(0, 1fr); }
+  .sg-riel { display: flex; }
+  .sg-movil, .sg-barra__marca, .sg-solo-movil { display: none; }
+  .sg-contenido { padding: var(--sg-e-6) var(--sg-e-6) var(--sg-e-7); }
+  .es-riel-corto .sg-riel__marca span:not(.sg-emblema), .es-riel-corto .sg-riel__enlace span,
+  .es-riel-corto .sg-riel__titulo, .es-riel-corto .sg-riel__usuario div, .es-riel-corto .sg-riel__enlace .sg-contador { display: none; }
+  .es-riel-corto .sg-riel__enlace, .es-riel-corto .sg-riel__marca, .es-riel-corto .sg-riel__usuario { justify-content: center; padding: 0; }
+  /* Con el menú contraído la S queda sola: se agranda para que se reconozca */
+  .es-riel-corto .sg-riel__marca { padding-bottom: var(--sg-e-4); }
+  .es-riel-corto .sg-riel__marca .sg-emblema { width: 1.7rem; height: 2.25rem; margin: 0; }
+}
+@media (max-width: 1023px) {
+  .sg-solo-escritorio { display: none; }
+}

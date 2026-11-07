@@ -1,112 +1,36 @@
 {% extends 'base.html' %}
-{% block title %}Solicitudes de Acceso - SIGEA{% endblock %}
-{% block page_title %}Solicitudes de Acceso{% endblock %}
+{% load sigea %}
+{% block title %}Solicitudes de acceso · SIGEA{% endblock %}
 
 {% block content %}
-
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Solicitudes Pendientes</h1>
-            <p>Revisa y responde a las peticiones de acceso a documentos privados.</p>
-        </div>
-    </header>
-
-    <div class="grid-3 mb-3xl">
-        {% for sol in page_obj %}
-            <div class="card card-solicitud">
-                
-                <!-- Badge -->
-                <div class="badge-absolute-tr">
-                    {% if sol.documento.es_sensible %}
-                        <span class="badge badge-danger badge-pill"><i data-lucide="shield-alert"></i> Sensible</span>
-                    {% else %}
-                        <span class="badge badge-neutral badge-pill"><i data-lucide="file-text"></i> Estándar</span>
-                    {% endif %}
-                </div>
-
-                <!-- Header usuario -->
-                <div class="card-solicitud-header">
-                    <div class="avatar-text-lg">
-                        {{ sol.solicitante.first_name|first|upper }}{{ sol.solicitante.last_name|first|upper }}
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-brand m-0">{{ sol.solicitante.get_full_name }}</h3>
-                        <p class="text-xxs font-bold text-muted uppercase tracking-wide mt-sm m-0">{{ sol.solicitante.programa_academico.nombre|default:"Usuario Institucional" }}</p>
-                    </div>
-                </div>
-
-                <div class="card-body card-solicitud-body">
-                    <div>
-                        <div class="info-label flex-row-center-gap-sm">
-                            <i data-lucide="file" class="icon-xxs"></i>
-                            Documento Solicitado
-                        </div>
-                        <a href="{% url 'documentos:detalle' sol.documento.id %}" class="text-sm font-semibold text-brand flex-row-start-gap-sm">
-                            {{ sol.documento.titulo|truncatechars:45 }}
-                            <i data-lucide="external-link" class="icon-xxs-faded"></i>
-                        </a>
-                    </div>
-
-                    <div>
-                        <div class="info-label">Motivo de la Solicitud</div>
-                        <div class="text-sm text-muted reason-box-light">"{{ sol.motivo }}"</div>
-                    </div>
-
-                    <div class="mt-auto">
-                        <div class="info-label">Fecha de Solicitud</div>
-                        <div class="text-xs text-muted font-mono">
-                            {{ sol.fecha_solicitud|date:"d M, Y" }} a las {{ sol.fecha_solicitud|date:"H:i" }}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-solicitud-footer">
-                    <form action="{% url 'permisos:responder_solicitud' sol.id %}" method="post" class="flex-1 m-0">
-                        {% csrf_token %}
-                        <input type="hidden" name="decision" value="APROBADA">
-                        <button type="submit" onclick="return confirm('¿Aprobar el acceso de {{ sol.solicitante.get_full_name }} a este documento?');" 
-                                class="btn w-full btn-emerald-sm">
-                            <i data-lucide="check"></i> Aprobar
-                        </button>
-                    </form>
-
-                    <form action="{% url 'permisos:responder_solicitud' sol.id %}" method="post" class="flex-1 m-0">
-                        {% csrf_token %}
-                        <input type="hidden" name="decision" value="RECHAZADA">
-                        <button type="submit" onclick="return confirm('¿Rechazar esta solicitud de acceso?');" 
-                                class="btn btn-ghost w-full btn-ghost-rose-sm">
-                            <i data-lucide="x"></i> Rechazar
-                        </button>
-                    </form>
-                </div>
-            </div>
-        {% empty %}
-            <div class="col-span-full">
-                <div class="card border-dashed">
-                    <div class="empty-state">
-                        <div class="empty-state-icon bg-emerald-50">
-                            <i data-lucide="check-circle-2" class="text-emerald-500"></i>
-                        </div>
-                        <h3 class="section-title">No hay solicitudes pendientes</h3>
-                        <p class="text-sm text-muted">Todo está al día. Las nuevas peticiones de acceso aparecerán aquí.</p>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "key-round" %}</span>
+      <h1>Solicitudes de acceso</h1>
+      <p>Docentes que pidieron ver evidencias de otros. Las sensibles necesitan dos votos a favor.</p>
     </div>
+  </header>
 
-    {% if page_obj.has_other_pages %}
-    <div class="pagination">
-        <div class="pagination-info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
-        <div class="pagination-buttons">
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                    <span class="pagination-btn active">{{ num }}</span>
-                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-                    <a href="?page={{ num }}" class="pagination-btn">{{ num }}</a>
-                {% endif %}
-            {% endfor %}
+  <section class="sg-hoja">
+    {% if page_obj %}
+    <ul class="sg-lista">
+      {% for sol in page_obj %}
+      <li>
+        <span class="sg-avatar" aria-hidden="true">{{ sol.solicitante|iniciales }}</span>
+        <div class="sg-lista__cuerpo">
+          <strong>{{ sol.solicitante.get_full_name|default:sol.solicitante.email }}</strong>
+          <span class="sg-lista__meta">pide <a href="{% url 'documentos:detalle' sol.documento.id %}">{{ sol.documento.titulo }}</a>{% if sol.documento.es_sensible %} <span class="sg-estado sg-estado--sensible">{% icono "lock" "sg-icono--sm" %}<span>Sensible</span></span>{% endif %} · hace {{ sol.fecha_solicitud|timesince }}</span>
+          <p>«{{ sol.motivo }}»</p>
         </div>
-    </div>
+        <a class="sg-btn sg-btn--marca" href="{% url 'permisos:gestionar_accesos' sol.documento.id %}">Responder</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% include "partials/paginacion.html" %}
+    {% else %}
+      {% include "componentes/estado_vacio.html" with icono="key-round" titulo="No hay solicitudes pendientes" texto="Cuando un docente pida acceso a una evidencia, aparecerá aquí." %}
     {% endif %}
+  </section>
+</div>
 {% endblock %}

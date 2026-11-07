@@ -1,0 +1,33 @@
+/* Misma letra que la aplicación (Public Sans servida localmente). */
+@font-face { font-family: "Public Sans"; src: url("../fonts/public-sans/public-sans-latin-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Public Sans"; src: url("../fonts/public-sans/public-sans-latin-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Public Sans"; src: url("../fonts/public-sans/public-sans-latin-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+body, input, select, textarea, button { font-family: "Public Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SIGEA Admin — Respiro visual sobre Unfold (carga vía UNFOLD["STYLES"])
+   Solo aire: laterales del contenido y filas de tabla más altas.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --admin-respiro-lateral: 12px;
+  --admin-respiro-fila: 14px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --admin-respiro-lateral: 24px;
+  }
+}
+
+/* Aire lateral del contenido */
+#content {
+  padding-left: var(--admin-respiro-lateral);
+  padding-right: var(--admin-respiro-lateral);
+}
+
+/* Filas de la tabla de registros más aireadas */
+#result_list th,
+#result_list td {
+  padding-top: var(--admin-respiro-fila);
+  padding-bottom: var(--admin-respiro-fila);
+}

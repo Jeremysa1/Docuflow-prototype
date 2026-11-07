@@ -1,0 +1,26 @@
+{% extends "usuarios/_acceso.html" %}
+{% load sigea %}
+{% block title %}Crea tu contraseña{% endblock %}
+{% block caja %}
+{% if invalido %}
+<header>
+  <h1>Este enlace ya no sirve</h1>
+  <p>Puede que ya lo hayas usado o que haya vencido. Pídele a la Decana que te envíe una invitación nueva, o recupera tu contraseña.</p>
+</header>
+<a class="sg-btn sg-btn--marca sg-btn--bloque" href="{% url 'auth:recuperar_contrasena' %}">Recuperar contraseña</a>
+{% else %}
+<header>
+  <h1>Hola, {{ invitado.first_name }}</h1>
+  <p>Crea tu contraseña para entrar a SIGEA. Usa al menos 8 caracteres, una mayúscula y un símbolo (!@#$%^&amp;*).</p>
+</header>
+{% if error %}<div class="sg-aviso sg-aviso--error" role="alert">{% icono "circle-alert" %}<span>{{ error }}</span></div>{% endif %}
+<form method="post" class="sg-form">
+  {% csrf_token %}
+  <div class="sg-campo"><label for="nueva">Contraseña</label>
+    <div class="sg-campo-clave"><input id="nueva" name="nueva_contrasena" type="password" autocomplete="new-password" minlength="8" required>
+      <button type="button" data-alternar-clave aria-controls="nueva" aria-pressed="false" aria-label="Mostrar contraseña">{% icono "eye-off" "sg-clave__oculta" %}{% icono "eye" "sg-clave__visible" %}</button></div></div>
+  <div class="sg-campo"><label for="confirmar">Repítela</label><input id="confirmar" name="confirmar_contrasena" type="password" autocomplete="new-password" required></div>
+  <button type="submit" class="sg-btn sg-btn--marca sg-btn--bloque">Crear contraseña</button>
+</form>
+{% endif %}
+{% endblock %}

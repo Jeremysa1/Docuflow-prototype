@@ -1,377 +1,107 @@
 {% extends 'base.html' %}
-{% block title %}Gestión de Usuarios - SIGEA{% endblock %}
-{% block page_title %}Gestión de Usuarios{% endblock %}
+{% load sigea %}
+{% block title %}Usuarios · SIGEA{% endblock %}
 
 {% block content %}
-
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Gestión de Usuarios</h1>
-            <p>Administra los accesos y roles de los usuarios del sistema.</p>
-        </div>
-    </header>
-
-    <!-- Stats Summary -->
-    <div class="stats-grid">
-        <div class="stat-card stat-card-brand">
-            <div class="stat-card-label">Total usuarios</div>
-            <div class="stat-card-value">{{ total_usuarios|default:"0"|stringformat:"02d" }}</div>
-        </div>
-        <div class="stat-card stat-card--emerald">
-            <div class="stat-card-label">Docentes activos</div>
-            <div class="stat-card-value">{{ docentes_activos|default:"0"|stringformat:"02d" }}</div>
-        </div>
-        <div class="stat-card stat-card-sky">
-            <div class="stat-card-label">Coordinadores</div>
-            <div class="stat-card-value">{{ coordinadores|default:"0"|stringformat:"02d" }}</div>
-        </div>
-        <div class="stat-card stat-card--amber">
-            <div class="stat-card-label">Pendientes habilitación</div>
-            <div class="stat-card-value">{{ pendientes_habilitacion|default:"0"|stringformat:"02d" }}</div>
-        </div>
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-cabecera__texto">
+      <span class="sg-titulo-icono" aria-hidden="true">{% icono "users" %}</span>
+      <h1>Usuarios</h1>
+      <p>{{ total_usuarios|plural:"persona,personas" }} · {{ docentes_activos|plural:"docente habilitado,docentes habilitados" }}{% if pendientes_habilitacion %} · <strong>{{ pendientes_habilitacion|plural:"espera,esperan" }} habilitación</strong>{% endif %}</p>
     </div>
+    <div class="sg-cabecera__acciones">
+      <details class="sg-desplegable">
+        <summary class="sg-btn sg-btn--primario">{% icono "user-plus" %}<span>Agregar usuario</span></summary>
+        <form method="post" action="{% url 'usuarios:agregar_usuario' %}" class="sg-hoja sg-hoja__cuerpo sg-form">
+          {% csrf_token %}
+          <div class="sg-form__fila sg-form__fila--2">
+            <div class="sg-campo"><label for="n-nombre">Nombre</label><input id="n-nombre" name="nombre" required></div>
+            <div class="sg-campo"><label for="n-apellido">Apellido</label><input id="n-apellido" name="apellido" required></div>
+          </div>
+          <div class="sg-campo"><label for="n-email">Correo institucional</label><input id="n-email" name="email" type="email" required></div>
+          <div class="sg-form__fila sg-form__fila--2">
+            <div class="sg-campo"><label for="n-rol">Rol</label>
+              <select id="n-rol" name="rol"><option value="DOCENTE_PLANTA">Docente de planta</option><option value="COORDINADOR">Coordinadora</option></select></div>
+            <div class="sg-campo"><label for="n-programa">Programa</label>
+              <select id="n-programa" name="programa_id"><option value="">Sin programa</option>{% for p in programas %}<option value="{{ p.id }}">{{ p.nombre }}</option>{% endfor %}</select></div>
+          </div>
+          <p class="sg-campo__ayuda">La persona entra con "¿Olvidaste tu contraseña?" para crear su clave.</p>
+          <button type="submit" class="sg-btn sg-btn--primario">Crear usuario</button>
+        </form>
+      </details>
+    </div>
+  </header>
 
-    <!-- Filter Toolbar -->
-    <form method="get" id="filterForm" class="card mb-2xl">
-        <div class="card-body filter-toolbar-body">
-            
-            <div class="filter-input-wrapper">
-                <div class="select-wrapper">
-                    <input type="text" name="q" placeholder="Filtrar por nombre o email..." value="{{ request.GET.q|default:'' }}" class="form-input filter-search-input">
-                    <i data-lucide="search" class="filter-search-icon"></i>
-                </div>
-            </div>
+  <nav class="sg-pestanas" aria-label="Filtrar por estado">
+    <a href="{% querystring habilitado=None page=None %}"{% if not request.GET.habilitado %} aria-current="page"{% endif %}>Todos</a>
+    <a href="{% querystring habilitado='0' page=None %}"{% if request.GET.habilitado == '0' %} aria-current="page"{% endif %}>Por habilitar <span class="sg-contador">{{ pendientes_habilitacion }}</span></a>
+    <a href="{% querystring habilitado='1' page=None %}"{% if request.GET.habilitado == '1' %} aria-current="page"{% endif %}>Habilitados</a>
+  </nav>
 
-            <div class="filter-select-wrapper">
-                <div class="select-wrapper">
-                    <select name="rol" onchange="this.form.submit()" class="form-select">
-                        <option value="">Rol: Todos</option>
-                        <option value="DOCENTE_PLANTA" {% if request.GET.rol == 'DOCENTE_PLANTA' %}selected{% endif %}>Docente de Planta</option>
-                        <option value="COORDINADOR" {% if request.GET.rol == 'COORDINADOR' %}selected{% endif %}>Coordinador</option>
-                        <option value="DECANA" {% if request.GET.rol == 'DECANA' %}selected{% endif %}>Decana</option>
-                    </select>
-                    <i data-lucide="chevron-down"></i>
-                </div>
-            </div>
-
-            <div class="filter-select-wrapper">
-                <div class="select-wrapper">
-                    <select name="habilitado" onchange="this.form.submit()" class="form-select">
-                        <option value="">Estado: Todos</option>
-                        <option value="1" {% if request.GET.habilitado == '1' %}selected{% endif %}>Habilitado</option>
-                        <option value="0" {% if request.GET.habilitado == '0' %}selected{% endif %}>Inhabilitado</option>
-                    </select>
-                    <i data-lucide="chevron-down"></i>
-                </div>
-            </div>
-
-            <div class="filter-select-wrapper">
-                <div class="select-wrapper">
-                    <select name="programa" onchange="this.form.submit()" class="form-select">
-                        <option value="">Programa: Todos</option>
-                        {% for p in programas %}
-                            <option value="{{ p.id }}" {% if request.GET.programa == p.id|stringformat:"d" %}selected{% endif %}>{{ p.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                    <i data-lucide="chevron-down"></i>
-                </div>
-            </div>
-
-            <div class="view-toggle-container">
-                <button type="button" title="Vista de lista" class="view-toggle-btn view-btn-active">
-                    <i data-lucide="list" class="icon-sm"></i>
-                </button>
-                <button type="button" title="Vista de cuadrícula" class="view-toggle-btn view-btn-inactive">
-                    <i data-lucide="grid" class="icon-sm"></i>
-                </button>
-            </div>
-        </div>
+  <section class="sg-hoja">
+    <form method="get" class="sg-hoja__cuerpo sg-filtros">
+      {% if request.GET.habilitado %}<input type="hidden" name="habilitado" value="{{ request.GET.habilitado }}">{% endif %}
+      <div class="sg-campo"><label for="u-rol">Rol</label>
+        <select id="u-rol" name="rol" data-enviar-al-cambiar><option value="">Todos</option>
+          <option value="DECANA"{% if request.GET.rol == 'DECANA' %} selected{% endif %}>Decana</option>
+          <option value="COORDINADOR"{% if request.GET.rol == 'COORDINADOR' %} selected{% endif %}>Coordinadora</option>
+          <option value="DOCENTE_PLANTA"{% if request.GET.rol == 'DOCENTE_PLANTA' %} selected{% endif %}>Docente de planta</option></select></div>
+      <div class="sg-campo"><label for="u-programa">Programa</label>
+        <select id="u-programa" name="programa" data-enviar-al-cambiar><option value="">Todos</option>{% for p in programas %}<option value="{{ p.id }}"{% if request.GET.programa == p.id|stringformat:"s" %} selected{% endif %}>{{ p.nombre }}</option>{% endfor %}</select></div>
     </form>
 
-    <!-- Table View -->
-    <div id="listView" class="table-container mb-2xl">
-        <div class="table-scroll">
-            <div class="table-responsive"> <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Usuario</th>
-                        <th>Rol / Programa</th>
-                        <th>Estado de Acceso</th>
-                        <th>Registro</th>
-                        <th class="text-right">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for u in page_obj %}
-                    <tr>
-                        <td>
-                            <div class="flex-row">
-                                <img src="https://ui-avatars.com/api/?name={{ u.get_full_name|urlencode }}&background=0D1B2A&color=fff&size=40" class="avatar-sm" alt="Avatar">
-                                <div>
-                                    <div class="font-bold text-sm text-brand">{{ u.get_full_name }}</div>
-                                    <div class="text-xxs text-muted mt-sm">{{ u.email }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="mb-xs">
-                                {% if u.rol == 'DECANA' %}
-                                    <span class="badge badge-purple">{{ u.get_rol_display }}</span>
-                                {% elif u.rol == 'COORDINADOR' %}
-                                    <span class="badge badge-brand">{{ u.get_rol_display }}</span>
-                                {% else %}
-                                    <span class="badge badge-neutral">{{ u.get_rol_display }}</span>
-                                {% endif %}
-                            </div>
-                            <div class="text-xxs font-semibold text-muted">{{ u.programa_academico.nombre|default:"Institucional" }}</div>
-                        </td>
-                        <td>
-                            {% if u.esta_habilitado %}
-                                <span class="badge badge-success"><span class="status-dot status-dot-success"></span> Habilitado</span>
-                            {% else %}
-                                <span class="badge badge-danger"><span class="status-dot status-dot-danger"></span> Inhabilitado</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-xs text-muted font-mono">{{ u.date_joined|date:"d/m/Y" }}</td>
-                        <td>
-                            <div class="flex-row actions-wrapper">
-                                <button onclick="openEditModal('{{ u.id }}', '{{ u.get_full_name|escapejs }}', '{{ u.rol }}', '{{ u.programa_academico.id }}')" 
-                                        class="btn-icon btn-ghost" title="Editar">
-                                    <i data-lucide="edit-2"></i>
-                                </button>
-
-                                {% if not u.esta_habilitado %}
-                                <form method="post" action="{% url 'usuarios:habilitar_usuario' u.id %}" class="m-0">
-                                    {% csrf_token %}
-                                    <button type="submit" onclick="return confirm('¿Habilitar acceso al sistema para {{ u.get_full_name }}?');" 
-                                            class="btn-icon btn-approve" title="Habilitar">
-                                        <i data-lucide="user-check"></i>
-                                    </button>
-                                </form>
-                                {% elif u.rol != 'DECANA' %}
-                                <form method="post" action="{% url 'usuarios:deshabilitar_usuario' u.id %}" class="m-0">
-                                    {% csrf_token %}
-                                    <button type="submit" onclick="return confirm('¿Seguro que deseas inhabilitar a {{ u.get_full_name }}? No podrá iniciar sesión.');" 
-                                            class="btn-icon btn-warning" title="Inhabilitar">
-                                        <i data-lucide="user-minus"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-
-                                {% if u.rol != 'DECANA' %}
-                                <form method="post" action="{% url 'usuarios:eliminar_usuario' u.id %}" class="m-0">
-                                    {% csrf_token %}
-                                    <button type="submit" onclick="return confirm('¿Eliminar a {{ u.get_full_name }} permanentemente?');" 
-                                            class="btn-icon btn-reject" title="Eliminar">
-                                        <i data-lucide="trash-2"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5">
-                            <div class="empty-state">
-                                <p>No hay usuarios registrados o que coincidan con la búsqueda.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table> </div>
-        </div>
-    </div>
-
-    <!-- Grid View -->
-    <div id="gridView" class="hidden grid-4 mb-2xl">
+    {% if page_obj %}
+    <div class="sg-tabla-marco">
+      <table class="sg-tabla">
+        <thead><tr><th scope="col">Persona</th><th scope="col">Rol</th><th scope="col">Programa</th><th scope="col">Estado</th><th scope="col"><span class="sg-oculto">Acciones</span></th></tr></thead>
+        <tbody>
         {% for u in page_obj %}
-        <div class="card user-grid-card">
-            <div class="card-body">
-                <div class="flex-between mb-md">
-                    <div class="relative-container">
-                        <img src="https://ui-avatars.com/api/?name={{ u.get_full_name|urlencode }}&background=random&size=60" class="avatar-md" alt="Avatar">
-                        <div {% if u.esta_habilitado %}class="status-indicator status-indicator-success"{% else %}class="status-indicator status-indicator-offline"{% endif %}></div>
-                    </div>
-                    <button onclick="openEditModal('{{ u.id }}', '{{ u.get_full_name|escapejs }}', '{{ u.rol }}', '{{ u.programa_academico.id }}')" class="btn-icon btn-ghost">
-                        <i data-lucide="edit-2"></i>
-                    </button>
-                </div>
-                
-                <h3 class="text-sm font-bold text-brand m-0">{{ u.get_full_name }}</h3>
-                <p class="text-xxs text-muted mb-md">{{ u.email }}</p>
-                
-                <div class="flex-row role-badges-wrapper">
-                    {% if u.rol == 'DECANA' %}
-                        <span class="badge badge-purple">{{ u.get_rol_display }}</span>
-                    {% elif u.rol == 'COORDINADOR' %}
-                        <span class="badge badge-brand">{{ u.get_rol_display }}</span>
-                    {% else %}
-                        <span class="badge badge-neutral">{{ u.get_rol_display }}</span>
-                    {% endif %}
-                    <span class="badge badge-neutral badge-bordered">{{ u.programa_academico.nombre|default:"Institucional" }}</span>
-                </div>
-            </div>
-            
-            <div class="user-card-footer">
-                <span class="text-xxs text-muted">Unido: {{ u.date_joined|date:"M Y" }}</span>
-                <div class="flex-row gap-xs">
-                    {% if not u.esta_habilitado %}
-                    <form method="post" action="{% url 'usuarios:habilitar_usuario' u.id %}" class="m-0">{% csrf_token %}
-                        <button type="submit" class="btn btn-xs btn-success-light">Habilitar</button>
-                    </form>
-                    {% elif u.rol != 'DECANA' %}
-                    <form method="post" action="{% url 'usuarios:deshabilitar_usuario' u.id %}" class="m-0">{% csrf_token %}
-                        <button type="submit" class="btn btn-xs btn-warning-light">Bloquear</button>
-                    </form>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <div class="pagination">
-        <div class="pagination-info">Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</div>
-        <div class="pagination-buttons">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="pagination-btn"><i data-lucide="chevron-left"></i></a>
-            {% endif %}
-            
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                    <span class="pagination-btn active">{{ num }}</span>
-                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-                    <a href="?page={{ num }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="pagination-btn">{{ num }}</a>
+          <tr>
+            <td class="sg-tabla__titulo"><span class="sg-usuario-celda"><span class="sg-avatar" aria-hidden="true">{{ u|iniciales }}</span><span class="sg-recorte"><strong>{{ u.get_full_name|default:u.username }}</strong><span class="sg-tabla__secundario">{{ u.email }}</span></span></span></td>
+            <td data-label="Rol">{{ u.get_rol_display }}</td>
+            <td data-label="Programa">{{ u.programa_academico.nombre|default:"—" }}</td>
+            <td data-label="Estado">
+              {% if not u.is_active %}<span class="sg-estado sg-estado--rechazado"><span class="sg-estado__texto">Eliminado</span></span>
+              {% elif u.esta_habilitado %}<span class="sg-estado sg-estado--aprobado">{% icono "circle-check" "sg-icono--sm" %}<span>Habilitado</span></span>
+              {% else %}<span class="sg-estado sg-estado--pendiente">{% icono "clock" "sg-icono--sm" %}<span>Por habilitar</span></span>{% endif %}
+            </td>
+            <td class="sg-tabla__acciones">
+              {% if u.is_active and u.rol != 'DECANA' %}
+                {% if u.esta_habilitado %}
+                <form method="post" action="{% url 'usuarios:deshabilitar_usuario' u.id %}">{% csrf_token %}
+                  <button type="submit" class="sg-btn" data-confirmar="{{ u.get_full_name }} no podrá entrar y su sesión se cerrará." data-confirmar-titulo="Deshabilitar acceso">Deshabilitar</button></form>
+                {% else %}
+                <form method="post" action="{% url 'usuarios:habilitar_usuario' u.id %}">{% csrf_token %}
+                  <button type="submit" class="sg-btn sg-btn--primario">Habilitar</button></form>
                 {% endif %}
-            {% endfor %}
-            
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.rol %}&rol={{ request.GET.rol }}{% endif %}{% if request.GET.habilitado %}&habilitado={{ request.GET.habilitado }}{% endif %}{% if request.GET.programa %}&programa={{ request.GET.programa }}{% endif %}" class="pagination-btn"><i data-lucide="chevron-right"></i></a>
-            {% endif %}
-        </div>
+                <details class="sg-desplegable">
+                  <summary class="sg-btn sg-btn--fantasma sg-btn--icono" aria-label="Más acciones para {{ u.get_full_name }}">{% icono "ellipsis" %}</summary>
+                  <div class="sg-hoja sg-hoja__cuerpo sg-pila">
+                    <form method="post" action="{% url 'usuarios:editar_usuario' u.id %}" class="sg-form">{% csrf_token %}
+                      <div class="sg-campo"><label for="e-rol-{{ u.id }}">Rol</label>
+                        <select id="e-rol-{{ u.id }}" name="rol">
+                          <option value="DOCENTE_PLANTA"{% if u.rol == 'DOCENTE_PLANTA' %} selected{% endif %}>Docente de planta</option>
+                          <option value="COORDINADOR"{% if u.rol == 'COORDINADOR' %} selected{% endif %}>Coordinadora</option></select></div>
+                      <div class="sg-campo"><label for="e-prog-{{ u.id }}">Programa</label>
+                        <select id="e-prog-{{ u.id }}" name="programa_id"><option value="">Sin programa</option>{% for p in programas %}<option value="{{ p.id }}"{% if u.programa_academico.id == p.id %} selected{% endif %}>{{ p.nombre }}</option>{% endfor %}</select></div>
+                      <button type="submit" class="sg-btn sg-btn--marca">Guardar cambios</button>
+                    </form>
+                    <form method="post" action="{% url 'usuarios:eliminar_usuario' u.id %}">{% csrf_token %}
+                      <button type="submit" class="sg-btn sg-btn--peligro sg-btn--bloque" data-confirmar="{{ u.get_full_name }} perderá el acceso. Sus evidencias se conservan." data-confirmar-titulo="Eliminar usuario">{% icono "trash-2" %}<span>Eliminar usuario</span></button></form>
+                  </div>
+                </details>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
     </div>
+    {% include "partials/paginacion.html" %}
+    {% else %}
+      {% include "componentes/estado_vacio.html" with icono="users" titulo="No hay personas con esos filtros" %}
     {% endif %}
-
-<!-- Modal para Editar Usuario -->
-<div id="editModal" class="hidden modal-overlay">
-    <div class="card edit-modal-card">
-        <div class="modal-header">
-            <h2 class="modal-title">Asignar Rol y Programa</h2>
-            <p id="editUserName" class="text-xs text-muted mt-sm"></p>
-        </div>
-        <form id="editForm" method="post" action="" onsubmit="return confirm('¿Estás seguro de que deseas aplicar estos cambios al usuario?');">
-            {% csrf_token %}
-            <div class="card-body modal-body">
-                <div class="form-group">
-                    <label class="form-label">Rol Institucional</label>
-                    <div class="select-wrapper">
-                        <select name="rol" id="editRol" class="form-select" required>
-                            <option value="DOCENTE_PLANTA">Docente de Planta</option>
-                            <option value="COORDINADOR">Coordinador</option>
-                            <option value="DECANA">Decana</option>
-                        </select>
-                        <i data-lucide="chevron-down"></i>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Programa Académico</label>
-                    <div class="select-wrapper">
-                        <select name="programa_id" id="editPrograma" class="form-select">
-                            <option value="">-- Sin Programa (Institucional) --</option>
-                            {% for p in programas %}
-                                <option value="{{ p.id }}">{{ p.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                        <i data-lucide="chevron-down"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" onclick="closeEditModal()" class="btn btn-ghost btn-sm">Cancelar</button>
-                <button type="submit" class="btn btn-primary btn-sm">Confirmar</button>
-            </div>
-        </form>
-    </div>
+  </section>
 </div>
-
 {% endblock %}
-
-{% block extra_js %}
-<script>
-    // --- View Toggle Logic ---
-    const toggleBtns = document.querySelectorAll('.view-toggle-btn');
-    const btnList = toggleBtns[0];
-    const btnGrid = toggleBtns[1];
-    const listView = document.getElementById('listView');
-    const gridView = document.getElementById('gridView');
-
-    if (btnList && btnGrid) {
-        btnList.addEventListener('click', () => {
-            btnList.classList.add('view-btn-active');
-            btnList.classList.remove('view-btn-inactive');
-            btnGrid.classList.add('view-btn-inactive');
-            btnGrid.classList.remove('view-btn-active');
-            listView.style.display = 'block';
-            gridView.style.display = 'none';
-            gridView.classList.add('hidden');
-            localStorage.setItem('userViewPref', 'list');
-        });
-
-        btnGrid.addEventListener('click', () => {
-            btnGrid.classList.add('view-btn-active');
-            btnGrid.classList.remove('view-btn-inactive');
-            btnList.classList.add('view-btn-inactive');
-            btnList.classList.remove('view-btn-active');
-            listView.style.display = 'none';
-            gridView.style.display = 'grid';
-            gridView.classList.remove('hidden');
-            localStorage.setItem('userViewPref', 'grid');
-        });
-
-        // Restore preference
-        const pref = localStorage.getItem('userViewPref');
-        if (pref === 'grid') btnGrid.click();
-    }
-
-    function openEditModal(userId, fullName, rol, programaId) {
-        const modal = document.getElementById('editModal');
-        const form = document.getElementById('editForm');
-        const userNameLabel = document.getElementById('editUserName');
-        
-        userNameLabel.textContent = `Editando a: ${fullName}`;
-        form.action = `/usuarios/gestion/${userId}/editar/`;
-        
-        document.getElementById('editRol').value = rol;
-        document.getElementById('editPrograma').value = programaId;
-        
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-    }
-
-    function closeEditModal() {
-        const modal = document.getElementById('editModal');
-        modal.classList.add('hidden');
-        modal.style.display = '';
-    }
-
-    window.onclick = function(event) {
-        const modal = document.getElementById('editModal');
-        if (event.target == modal) closeEditModal();
-    }
-
-    const searchInput = document.querySelector('input[name="q"]');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('filterForm').submit();
-        });
-    }
-</script>
-{% endblock %}
-
-
-

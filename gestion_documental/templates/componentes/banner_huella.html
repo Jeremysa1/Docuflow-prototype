@@ -1,0 +1,66 @@
+{% load sigea %}
+{% comment %}
+Banner con huella de 12 columnas.
+  modo="facultad": huella = MetricasService.huella_facultad() (Decana, Coordinadora)
+  modo="personal": personal = MetricasService.huella_personal(user) (docente)
+Contexto: titular, nota (HTML ya escapado en la vista con format_html), cifra, cifra_detalle, acciones = [{url, texto, icono, clase}].
+{% endcomment %}
+<section class="sg-banner" aria-labelledby="banner-titular">
+  <div class="sg-banner__texto">
+    <h1 id="banner-titular" class="sg-banner__titular">{{ user.first_name|default:user.username|capfirst }}, {{ titular|lower }}</h1>
+    <p class="sg-banner__cifra"><strong>{{ cifra }}</strong><span>{{ cifra_detalle }}</span></p>
+    {% if nota %}<p class="sg-banner__nota">{{ nota|safe }}</p>{% endif %}
+    {% if acciones %}<div class="sg-banner__acciones">{% for a in acciones %}<a class="sg-btn {{ a.clase }}" href="{{ a.url }}">{% icono a.icono %}<span>{{ a.texto }}</span></a>{% endfor %}</div>{% endif %}
+  </div>
+
+  {% if modo == 'personal' %}
+  <div class="sg-pila">
+    <ul class="sg-huella sg-huella--personal" role="list"
+        aria-label="Tus evidencias de los últimos 12 meses: {{ personal.totales.aprobadas }} aprobadas, {{ personal.totales.pendientes }} en revisión, {{ personal.totales.rechazadas }} rechazadas">
+      {% for col in personal.columnas %}
+      <li class="sg-huella__col" title="{{ col.etiqueta }} {{ col.anio }}: {{ col.aprobadas }} aprobadas, {{ col.pendientes }} en revisión, {{ col.rechazadas }} rechazadas">
+        <div class="sg-huella__pozo">
+          {% if col.total %}
+          <div class="sg-huella__pila" style="--altura: {{ col.altura }}%; --i: {{ col.i }}">
+            {% if col.aprobadas %}<span class="sg-huella__tramo sg-huella__tramo--aprobadas" style="--peso: {{ col.aprobadas }}"></span>{% endif %}
+            {% if col.pendientes %}<span class="sg-huella__tramo sg-huella__tramo--pendientes" style="--peso: {{ col.pendientes }}"></span>{% endif %}
+            {% if col.rechazadas %}<span class="sg-huella__tramo sg-huella__tramo--rechazadas" style="--peso: {{ col.rechazadas }}"></span>{% endif %}
+          </div>
+          {% else %}<span class="sg-huella__vacia"></span>{% endif %}
+        </div>
+        <span class="sg-huella__pie"><span class="sg-huella__codigo">{{ col.etiqueta }}</span><span class="sg-huella__valor">{{ col.total }}</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    <ul class="sg-leyenda" aria-hidden="true">
+      <li><span class="sg-leyenda__muestra sg-huella__tramo--aprobadas"></span>Aprobadas</li>
+      <li><span class="sg-leyenda__muestra sg-huella__tramo--pendientes"></span>En revisión</li>
+      <li><span class="sg-leyenda__muestra sg-huella__tramo--rechazadas"></span>Rechazadas</li>
+    </ul>
+  </div>
+  {% else %}
+  <div class="sg-pila">
+    <ul class="sg-huella" role="list"
+        aria-label="Avance por factor CNA: {% for c in huella.celdas %}{{ c.codigo }} {{ c.aprobados }} de {{ c.meta }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+      {% for c in huella.celdas %}
+      <li class="sg-huella__item">
+        <a class="sg-huella__col" href="{% url 'documentos:busqueda' %}?factor={{ c.codigo }}&amp;estado=APROBADO"
+           title="{{ c.codigo }} · {{ c.nombre }}: {{ c.aprobados }} de {{ c.meta }} ({{ c.gradacion.etiqueta }})">
+          <span class="sg-huella__pozo"><span class="sg-huella__barra sg-grad-{{ c.gradacion.nivel }}" style="--altura: {{ c.altura }}%; --i: {{ forloop.counter0 }}"></span></span>
+          <span class="sg-huella__pie"><span class="sg-huella__codigo"><span class="sg-huella__f">F</span>{{ c.codigo|slice:"1:" }}</span><span class="sg-huella__valor">{{ c.aprobados }}/{{ c.meta }}</span></span>
+          <span class="sg-oculto">{{ c.nombre }}, {{ c.gradacion.etiqueta }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    <ul class="sg-leyenda" aria-hidden="true">
+      <li><span class="sg-leyenda__muestra sg-leyenda__muestra--g0"></span>Sin evidencia</li>
+      <li><span class="sg-leyenda__muestra sg-leyenda__muestra--g1"></span>No se cumple</li>
+      <li><span class="sg-leyenda__muestra sg-leyenda__muestra--g2"></span>Insatisfactorio</li>
+      <li><span class="sg-leyenda__muestra sg-leyenda__muestra--g3"></span>Aceptable</li>
+      <li><span class="sg-leyenda__muestra sg-leyenda__muestra--g4"></span>Alto grado</li>
+      <li><span class="sg-leyenda__muestra sg-leyenda__muestra--g5"></span>Pleno</li>
+    </ul>
+  </div>
+  {% endif %}
+</section>

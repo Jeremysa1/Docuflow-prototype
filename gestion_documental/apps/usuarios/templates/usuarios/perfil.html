@@ -1,113 +1,45 @@
 {% extends 'base.html' %}
-{% block title %}Configuración de Perfil - SIGEA{% endblock %}
-{% block page_title %}Mi Perfil{% endblock %}
+{% load sigea %}
+{% block title %}Tu perfil · SIGEA{% endblock %}
 
 {% block content %}
-
-    <header class="page-header">
-        <div class="page-header-info">
-            <h1>Mi Perfil</h1>
-            <p>Configuración y datos administrativos de tu cuenta.</p>
-        </div>
-    </header>
-
-    <div class="grid-profile">
-        
-        <!-- LADO IZQUIERDO: AVATAR Y ROL -->
-        <div class="card">
-            <div class="card-body text-center">
-                <form id="avatarForm" method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="avatar-container">
-                        <div class="avatar-circle">
-                            {% if usuario.foto_perfil %}
-                                <img src="{{ usuario.foto_perfil.url }}" alt="Perfil">
-                            {% else %}
-                                {{ usuario.get_iniciales }}
-                            {% endif %}
-                        </div>
-                        <label for="foto_perfil_input" class="avatar-edit-btn" title="Cambiar foto">
-                            <i data-lucide="camera"></i>
-                        </label>
-                        <input type="file" id="foto_perfil_input" name="foto_perfil" accept="image/*" onchange="document.getElementById('avatarForm').submit()" class="hidden">
-                    </div>
-                </form>
-
-                <h2 class="profile-name">{{ usuario.get_full_name }}</h2>
-                <p class="text-sm text-muted mb-lg">{{ usuario.email }}</p>
-                
-                <div class="role-badge-wrapper">
-                    {% if usuario.rol == 'DECANA' %}
-                        <span class="badge badge-purple badge-pill">{{ usuario.get_rol_display }}</span>
-                    {% elif usuario.rol == 'COORDINADOR' %}
-                        <span class="badge badge-brand badge-pill badge-brand-bordered">{{ usuario.get_rol_display }}</span>
-                    {% else %}
-                        <span class="badge badge-neutral badge-pill">{{ usuario.get_rol_display }}</span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- LADO DERECHO: DETALLES -->
-        <div class="card profile-details-card">
-            <div class="tab-bar">
-                <div class="tab-item active">
-                    Datos Administrativos
-                </div>
-            </div>
-            
-            <div class="card-body">
-                <div class="grid-2 mb-3xl profile-info-grid">
-                    <div class="info-field">
-                        <span class="info-label">Nombre de usuario</span>
-                        <span class="info-value">{{ usuario.username }}</span>
-                    </div>
-                    <div class="info-field">
-                        <span class="info-label">Programa Académico</span>
-                        <span class="info-value">{{ usuario.programa_academico.nombre|default:"Institucional" }}</span>
-                    </div>
-                    <div class="info-field">
-                        <span class="info-label">Estado de la cuenta</span>
-                        <div>
-                            {% if usuario.is_active and usuario.esta_habilitado %}
-                                <span class="badge badge-success badge-pill">
-                                    <i data-lucide="check"></i> Habilitada
-                                </span>
-                            {% else %}
-                                <span class="badge badge-danger badge-pill">
-                                    <i data-lucide="x"></i> Inhabilitada
-                                </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="info-field">
-                        <span class="info-label">Miembro desde</span>
-                        <span class="info-value">{{ usuario.date_joined|date:"d M, Y" }}</span>
-                    </div>
-                </div>
-
-                <hr class="profile-divider">
-
-                <div class="info-field mb-2xl">
-                    <span class="info-label">Último acceso al sistema</span>
-                    <span class="text-sm font-semibold text-muted">{{ usuario.last_login|date:"l, d de F de Y - H:i"|default:"Primera sesión en curso" }}</span>
-                </div>
-
-                <div class="security-section">
-                    <div>
-                        <h4 class="text-sm font-bold text-brand mb-sm">Seguridad de la Cuenta</h4>
-                        <p class="text-xs text-muted">Para cambiar tu contraseña, utiliza el flujo de recuperación institucional.</p>
-                    </div>
-                    <form method="post" action="{% url 'auth:logout' %}" class="logout-form">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-ghost btn-sm">
-                            <i data-lucide="log-out"></i>
-                            Cerrar Sesión
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
+<div class="sg-pagina">
+  <header class="sg-cabecera">
+    <div class="sg-fila">
+      <span class="sg-avatar sg-avatar--marca" aria-hidden="true">{{ usuario|iniciales }}</span>
+      <div class="sg-cabecera__texto">
+        <h1>{{ usuario.get_full_name|default:usuario.username }}</h1>
+        <p>{{ usuario.get_rol_display }}{% if usuario.programa_academico %} · {{ usuario.programa_academico.nombre }}{% endif %}</p>
+      </div>
     </div>
+  </header>
+
+  <div class="sg-rejilla sg-rejilla--mitades">
+    <section class="sg-hoja" aria-labelledby="cuenta-titulo">
+      <header class="sg-hoja__cabeza"><h2 id="cuenta-titulo">{% icono "user" %}Tu cuenta</h2></header>
+      <div class="sg-hoja__cuerpo">
+        <dl class="sg-datos">
+          <div><dt>Correo</dt><dd>{{ usuario.email }}</dd></div>
+          <div><dt>Usuario</dt><dd>{{ usuario.username }}</dd></div>
+          <div><dt>Rol</dt><dd>{{ usuario.get_rol_display }}</dd></div>
+          <div><dt>Programa</dt><dd>{{ usuario.programa_academico.nombre|default:"Toda la facultad" }}</dd></div>
+          <div><dt>Miembro desde</dt><dd>{{ usuario.date_joined|date:"j M Y" }}</dd></div>
+          <div><dt>Último ingreso</dt><dd>{{ usuario.last_login|date:"j M Y, H:i"|default:"—" }}</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="sg-hoja" aria-labelledby="seguridad-titulo">
+      <header class="sg-hoja__cabeza"><h2 id="seguridad-titulo">{% icono "shield-check" %}Seguridad</h2></header>
+      <div class="sg-hoja__cuerpo sg-pila">
+        <p class="sg-texto-2">Tu sesión se cierra tras 15 minutos sin actividad. Para cambiar tu contraseña usa la recuperación por correo.</p>
+        <div class="sg-fila">
+          <a class="sg-btn" href="{% url 'auth:recuperar_contrasena' %}">{% icono "key-round" %}<span>Cambiar contraseña</span></a>
+          <form method="post" action="{% url 'auth:logout' %}">{% csrf_token %}
+            <button type="submit" class="sg-btn sg-btn--peligro">{% icono "log-out" %}<span>Cerrar sesión</span></button></form>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
 {% endblock %}
