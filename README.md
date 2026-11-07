@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src=".github/assets/logo.png" alt="Logo de SIGEA" width="110">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-blanco.png">
+  <img src=".github/assets/logo.png" alt="Logo de SIGEA" width="110">
+</picture>
 
 # SIGEA
 
